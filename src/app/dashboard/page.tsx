@@ -17,6 +17,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { generateQrDataUrl } from "@/lib/qr";
+import { getAppUrl } from "@/lib/utils";
 
 export default async function DashboardOverviewPage() {
   const user = await getSessionUser();
