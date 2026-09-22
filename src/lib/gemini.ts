@@ -48,7 +48,7 @@ Do not wrap in markdown quotes if possible, output strictly JSON.
 `;
 
       const response = await client.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.6-flash",
         contents: prompt,
       });
 
@@ -112,7 +112,7 @@ Keep it under 3-4 sentences. If rating is 4-5, express heartfelt gratitude. If r
 `;
 
       const response = await client.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.6-flash",
         contents: prompt,
       });
 
