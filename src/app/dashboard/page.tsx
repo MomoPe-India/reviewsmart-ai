@@ -74,7 +74,7 @@ export default async function DashboardOverviewPage() {
   });
 
   // Quick QR data URL
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = getAppUrl();
   const reviewUrl = `${appUrl}/r/${business.slug}`;
   const qrDataUrl = await generateQrDataUrl(reviewUrl, {
     width: 320,

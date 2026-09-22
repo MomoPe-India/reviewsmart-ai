@@ -2,6 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAppUrl } from "@/lib/utils";
 import PrintStudioClient from "@/components/studio/PrintStudioClient";
 
 export default async function StudioPage() {
@@ -16,7 +17,7 @@ export default async function StudioPage() {
     redirect("/dashboard/settings");
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = getAppUrl();
   const reviewUrl = `${appUrl}/r/${business.slug}`;
 
   return (
