@@ -2,6 +2,8 @@ import React from "react";
 import { prisma } from "@/lib/prisma";
 import AdminPlansClient from "@/components/admin/AdminPlansClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPlansPage() {
   const plans = await prisma.subscriptionPlan.findMany({
     orderBy: { price: "asc" },

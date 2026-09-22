@@ -2,6 +2,8 @@ import React from "react";
 import { prisma } from "@/lib/prisma";
 import AdminPaymentsClient from "@/components/admin/AdminPaymentsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPaymentsPage() {
   const payments = await prisma.upiPayment.findMany({
     orderBy: { createdAt: "desc" },

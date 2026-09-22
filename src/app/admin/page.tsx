@@ -11,6 +11,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminOverviewPage() {
   const totalUsers = await prisma.user.count({
     where: { role: "BUSINESS_OWNER" },

@@ -2,6 +2,8 @@ import React from "react";
 import { prisma } from "@/lib/prisma";
 import { Store, ArrowUpRight, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminBusinessesPage() {
   const businesses = await prisma.business.findMany({
     orderBy: { createdAt: "desc" },
