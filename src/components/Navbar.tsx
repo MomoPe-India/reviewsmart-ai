@@ -118,6 +118,12 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link
+                href="/login"
+                className="text-xs font-bold px-3.5 py-2 rounded-xl text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition"
+              >
+                Sign In
+              </Link>
+              <Link
                 href="/create"
                 className="text-xs font-bold px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
               >
@@ -131,6 +137,7 @@ export default function Navbar() {
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg"
+          aria-label="Toggle Navigation Menu"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -138,7 +145,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-3">
+        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-5 space-y-3 shadow-xl">
           <Link
             href="/#features"
             onClick={() => setMobileMenuOpen(false)}
@@ -150,7 +157,7 @@ export default function Navbar() {
             href="/r/food-bites"
             target="_blank"
             onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-between text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg"
+            className="flex items-center justify-between text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200"
           >
             Live Customer Review Page
             <ExternalLink className="w-4 h-4" />
@@ -192,13 +199,22 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link
-                href="/create"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs"
-              >
-                Create Smart Card Free
-              </Link>
+              <div className="flex flex-col gap-2 pt-1">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition"
+                >
+                  Sign In (User ID &amp; PIN)
+                </Link>
+                <Link
+                  href="/create"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md transition"
+                >
+                  Create Smart Card Free
+                </Link>
+              </div>
             )}
           </div>
         </div>

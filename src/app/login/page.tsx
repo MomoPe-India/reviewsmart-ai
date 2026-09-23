@@ -53,14 +53,13 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.user?.role === "SUPER_ADMIN") {
-        router.push("/admin");
-      } else if (data.user?.role === "MARKETING_AGENT") {
-        router.push("/agent");
-      } else {
-        router.push("/dashboard");
-      }
-      router.refresh();
+      const targetPath =
+        data.user?.role === "SUPER_ADMIN"
+          ? "/admin"
+          : data.user?.role === "MARKETING_AGENT"
+          ? "/agent"
+          : "/dashboard";
+      window.location.href = targetPath;
     } catch {
       setError("An unexpected network error occurred. Please try again.");
       setLoading(false);
@@ -86,12 +85,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.user?.role === "SUPER_ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
-      router.refresh();
+      window.location.href = data.user?.role === "SUPER_ADMIN" ? "/admin" : "/dashboard";
     } catch {
       setError("An unexpected network error occurred. Please try again.");
       setLoading(false);

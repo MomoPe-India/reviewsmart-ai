@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   LayoutDashboard,
 } from "lucide-react";
+import AdminMobileBottomNav from "@/components/navigation/AdminMobileBottomNav";
 
 export default async function AdminLayout({
   children,
@@ -23,13 +24,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-20 lg:pb-0">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Admin Sidebar */}
-          <aside className="lg:col-span-1 space-y-4">
+          {/* Admin Sidebar (Desktop only) */}
+          <aside className="hidden lg:block lg:col-span-1 space-y-4 no-print">
             <div className="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
               <div className="flex items-center gap-2 text-amber-400 mb-1">
                 <ShieldCheck className="w-5 h-5" />
@@ -93,9 +94,12 @@ export default async function AdminLayout({
           </aside>
 
           {/* Admin Main View */}
-          <main className="lg:col-span-4">{children}</main>
+          <main className="lg:col-span-4 pb-6">{children}</main>
         </div>
       </div>
+
+      {/* Super Admin Native App Style Bottom Navigation for Mobile */}
+      <AdminMobileBottomNav />
     </div>
   );
 }
