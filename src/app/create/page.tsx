@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import confetti from "canvas-confetti";
+import { printElement } from "@/lib/print";
 
 interface IndustryPreset {
   id: string;
@@ -251,7 +252,14 @@ export default function CreateCardPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    setActiveTab("stand");
+    setTimeout(() => {
+      printElement(
+        "print-target",
+        `${businessName || "Business"} - 4x6 Acrylic Stand`,
+        "@page { size: 4in 6in; margin: 0; }"
+      );
+    }, 150);
   };
 
   const handleDownloadStandPng = async () => {
@@ -279,16 +287,39 @@ export default function CreateCardPage() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Initials badge
-    ctx.fillStyle = primaryColor;
-    ctx.beginPath();
-    ctx.roundRect(550, 95, 100, 100, 20);
-    ctx.fill();
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 44px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(businessName.slice(0, 2).toUpperCase() || "RS", 600, 145);
+    // Business Logo / Initials Badge
+    let logoDrawn = false;
+    if (logoUrl) {
+      try {
+        const logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        await new Promise((resolve, reject) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = reject;
+          logoImg.src = logoUrl;
+        });
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(550, 95, 100, 100, 20);
+        ctx.clip();
+        ctx.drawImage(logoImg, 550, 95, 100, 100);
+        ctx.restore();
+        logoDrawn = true;
+      } catch {
+        logoDrawn = false;
+      }
+    }
+    if (!logoDrawn) {
+      ctx.fillStyle = primaryColor;
+      ctx.beginPath();
+      ctx.roundRect(550, 95, 100, 100, 20);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 44px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(businessName.slice(0, 2).toUpperCase() || "RS", 600, 145);
+    }
 
     // Business Name
     ctx.fillStyle = "#0f172a";

@@ -87,7 +87,7 @@ body {
 
 @media print {
   @page {
-    margin: 0;
+    margin: 8mm;
     size: auto;
   }
 
@@ -106,17 +106,28 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    min-height: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
 
-  /* Hide navigation, sidebars, headers, floating bars, and control panels */
+  /* Hide navigation, sidebars, headers, floating bars, buttons, and control panels */
   nav,
   aside,
   header,
   footer,
   .no-print,
-  [role="navigation"] {
+  [role="navigation"],
+  button,
+  input {
     display: none !important;
+  }
+
+  /* Reset layout containers to avoid clipping */
+  main,
+  div,
+  section {
+    overflow: visible !important;
   }
 
   /* Visibility isolation for clean printing */
@@ -126,27 +137,29 @@ body {
 
   #print-target,
   #print-target * {
-    visibility: visible;
+    visibility: visible !important;
   }
 
   #print-target {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 15mm auto !important;
     box-shadow: none !important;
     background: #ffffff !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    display: flex !important;
   }
 
   /* For table tent A4 layout */
   #print-target.table-tent-sheet {
-    position: absolute !important;
-    top: 0 !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    margin: 10mm auto !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
   }
 }

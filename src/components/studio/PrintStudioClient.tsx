@@ -19,6 +19,7 @@ import {
   FileText,
 } from "lucide-react";
 import QRCode from "qrcode";
+import { printElement } from "@/lib/print";
 
 interface BusinessData {
   id: string;
@@ -86,7 +87,25 @@ export default function PrintStudioClient({
   };
 
   const handlePrint = () => {
-    window.print();
+    if (format === "stand") {
+      printElement(
+        "print-target",
+        `${business.name} - 4x6 Acrylic Stand`,
+        "@page { size: 4in 6in; margin: 0; }"
+      );
+    } else if (format === "nfc") {
+      printElement(
+        "print-target",
+        `${business.name} - Smart Card`,
+        "@page { size: 3.375in 2.125in; margin: 0; }"
+      );
+    } else {
+      printElement(
+        "print-target",
+        `${business.name} - Table Tent`,
+        "@page { size: A4 portrait; margin: 8mm; }"
+      );
+    }
   };
 
   const handleCopyNfcUrl = async () => {
@@ -125,16 +144,39 @@ export default function PrintStudioClient({
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Business Logo Initials Badge
-        ctx.fillStyle = qrColor;
-        ctx.beginPath();
-        ctx.roundRect(550, 95, 100, 100, 20);
-        ctx.fill();
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 44px -apple-system, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(business.name.slice(0, 2).toUpperCase(), 600, 145);
+        // Business Logo / Initials Badge
+        let logoDrawn = false;
+        if (business.logoUrl) {
+          try {
+            const logoImg = new Image();
+            logoImg.crossOrigin = "anonymous";
+            await new Promise((resolve, reject) => {
+              logoImg.onload = resolve;
+              logoImg.onerror = reject;
+              logoImg.src = business.logoUrl!;
+            });
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(550, 95, 100, 100, 20);
+            ctx.clip();
+            ctx.drawImage(logoImg, 550, 95, 100, 100);
+            ctx.restore();
+            logoDrawn = true;
+          } catch {
+            logoDrawn = false;
+          }
+        }
+        if (!logoDrawn) {
+          ctx.fillStyle = qrColor;
+          ctx.beginPath();
+          ctx.roundRect(550, 95, 100, 100, 20);
+          ctx.fill();
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 44px -apple-system, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(business.name.slice(0, 2).toUpperCase(), 600, 145);
+        }
 
         // Business Name
         ctx.fillStyle = "#0f172a";
