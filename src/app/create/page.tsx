@@ -27,6 +27,10 @@ import {
   Share2,
   Wand2,
   Zap,
+  Lock,
+  Upload,
+  Camera,
+  Award,
 } from "lucide-react";
 import QRCode from "qrcode";
 import confetti from "canvas-confetti";
@@ -101,20 +105,25 @@ const INDUSTRY_PRESETS: IndustryPreset[] = [
 
 interface GoogleSearchResult {
   name: string;
+  branchName?: string;
   address: string;
   category: string;
   googleReviewUrl: string;
   suggestedTags: string[];
   rating: number;
+  reviewCount?: string;
   logoUrl?: string | null;
 }
+
+export type LuxuryTheme = "royal-gold" | "pearl-gold" | "emerald-gold" | "sapphire-gold";
 
 export default function CreateCardPage() {
   const [businessName, setBusinessName] = useState("My Sweet Bakery");
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryPreset>(INDUSTRY_PRESETS[0]);
   const [googleReviewUrl, setGoogleReviewUrl] = useState("");
   const [businessAddress, setBusinessAddress] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#4f46e5");
+  const [primaryColor, setPrimaryColor] = useState("#d4af37");
+  const [luxuryTheme, setLuxuryTheme] = useState<LuxuryTheme>("royal-gold");
   const [tagline, setTagline] = useState("Share your visit & get instant AI review drafts!");
   const [tags, setTags] = useState(INDUSTRY_PRESETS[0].tags.split(","));
   const [selectedTags, setSelectedTags] = useState<string[]>([tags[0], tags[1]]);
@@ -126,6 +135,23 @@ export default function CreateCardPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
   const [website, setWebsite] = useState("");
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Please upload an image smaller than 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === "string") {
+          setLogoUrl(event.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Google Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -540,34 +566,49 @@ export default function CreateCardPage() {
               {/* Search Results Dropdown List */}
               {searchResults.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-indigo-100">
-                  <span className="text-[11px] font-bold text-indigo-900 block">
-                    Click your business to auto-fill:
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-indigo-900 block">
+                      Found {searchResults.length} matching locations — Select your exact branch:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSearchResults([])}
+                      className="text-[10px] text-slate-400 hover:text-slate-600"
+                    >
+                      Clear
+                    </button>
+                  </div>
                   {searchResults.map((b, idx) => (
                     <div
                       key={idx}
                       onClick={() => handleSelectBusiness(b)}
-                      className="p-3 rounded-2xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-md cursor-pointer transition flex items-center justify-between gap-3 group"
+                      className="p-3.5 rounded-2xl bg-white border-2 border-indigo-100 hover:border-indigo-500 hover:shadow-md cursor-pointer transition flex items-center justify-between gap-3 group"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-xs font-bold text-slate-900 truncate">
                             {b.name}
                           </h4>
-                          <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded">
-                            ★ {b.rating}
+                          {b.branchName && (
+                            <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <MapPin className="w-2.5 h-2.5" />
+                              {b.branchName}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                            ★ {b.rating} {b.reviewCount && <span className="text-[9px] font-normal text-slate-500">({b.reviewCount})</span>}
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                        <p className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-1">
                           <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
                           {b.address}
                         </p>
                       </div>
                       <button
                         type="button"
-                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-[11px] group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-[11px] group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0 shadow-sm"
                       >
-                        Auto-Fill ✨
+                        Select Branch ✨
                       </button>
                     </div>
                   ))}
@@ -613,6 +654,60 @@ export default function CreateCardPage() {
                   placeholder="e.g. Indiranagar, Bengaluru"
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
                 />
+              </div>
+
+              {/* Official Brand Logo Upload Card */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Upload className="w-3.5 h-3.5 text-amber-600" />
+                    Official Brand Logo (Optional)
+                  </label>
+                  {logoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setLogoUrl(null)}
+                      className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 px-2 py-0.5 rounded-md"
+                    >
+                      Remove Logo
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl border-2 border-amber-400 bg-white flex items-center justify-center p-1.5 shadow-sm overflow-hidden flex-shrink-0">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="Brand Logo" className="w-full h-full object-contain rounded-xl" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 text-center leading-tight">
+                        No Logo
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100/50 text-slate-800 text-xs font-bold cursor-pointer shadow-sm transition">
+                      <Camera className="w-3.5 h-3.5 text-amber-600" />
+                      <span>{logoUrl ? "Change Logo (Phone / PC)" : "Upload Logo (Phone / Gallery)"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      PNG, JPG or WebP. Automatically framed in metallic gold!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-amber-100/80 text-[10px] sm:text-[11px] text-amber-900 font-medium flex items-start gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-700 flex-shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Pro Tip for Best Acrylic Print:</strong> If Google Maps does not have a sharp brand logo, upload your official logo image here. It will automatically be framed in gold on your 4"×6" countertop stand!
+                  </span>
+                </div>
               </div>
 
               {/* Industry Preset Selector */}
@@ -673,19 +768,64 @@ export default function CreateCardPage() {
                 2. Brand Color &amp; Copy
               </label>
 
+              {/* Stand Luxury Themes */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+                  <span>Standee Luxury Theme (4" × 6" Acrylic Display)</span>
+                  <span className="text-[10px] text-amber-600 font-extrabold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    Flipkart L-Shape Fit
+                  </span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "royal-gold", name: "Royal Gold & Black", bg: "#0b0f19", border: "#d4af37", text: "#ffffff", badge: "👑 Flagship Luxury" },
+                    { id: "pearl-gold", name: "Pearl White & Gold", bg: "#ffffff", border: "#d4af37", text: "#0f172a", badge: "🕊️ Clean Minimal" },
+                    { id: "emerald-gold", name: "Imperial Emerald", bg: "#064e3b", border: "#f59e0b", text: "#ffffff", badge: "🌿 Gemstone Vibe" },
+                    { id: "sapphire-gold", name: "Sapphire Navy", bg: "#0a192f", border: "#f59e0b", text: "#ffffff", badge: "💎 Executive Class" },
+                  ].map((th) => (
+                    <button
+                      key={th.id}
+                      type="button"
+                      onClick={() => {
+                        setLuxuryTheme(th.id as LuxuryTheme);
+                        setPrimaryColor(th.border);
+                      }}
+                      className={`p-2.5 rounded-2xl border text-left transition relative flex flex-col justify-between ${
+                        luxuryTheme === th.id
+                          ? "border-amber-400 bg-amber-50/70 shadow-md ring-2 ring-amber-400/40"
+                          : "border-slate-200 bg-white hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div
+                          className="w-4 h-4 rounded-full border-2 border-amber-400 shadow-sm flex-shrink-0"
+                          style={{ backgroundColor: th.bg }}
+                        />
+                        <span className="text-[11px] font-bold text-slate-800 truncate">
+                          {th.name}
+                        </span>
+                      </div>
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100/80 px-1.5 py-0.5 rounded w-fit">
+                        {th.badge}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
-                  Primary Brand Color
+                  Border Foil &amp; Brand Accent
                 </label>
                 <div className="flex items-center gap-2">
-                  {["#4f46e5", "#ea580c", "#059669", "#db2777", "#0284c7", "#0f172a"].map((c) => (
+                  {["#d4af37", "#f59e0b", "#4f46e5", "#059669", "#dc2626", "#0f172a"].map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setPrimaryColor(c)}
                       style={{ backgroundColor: c }}
                       className={`w-7 h-7 rounded-xl transition-transform ${
-                        primaryColor === c ? "ring-2 ring-offset-2 ring-indigo-600 scale-110" : "hover:scale-105"
+                        primaryColor === c ? "ring-2 ring-offset-2 ring-amber-400 scale-110" : "hover:scale-105"
                       }`}
                     />
                   ))}
@@ -801,35 +941,45 @@ export default function CreateCardPage() {
               </div>
             </div>
 
-            {/* Quick Action Buttons */}
+            {/* Locked Action Buttons with Monetization Safeguard */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
               <button
                 type="button"
                 onClick={() => setClaimModalOpen(true)}
-                className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-indigo-600 to-indigo-700 hover:from-amber-600 hover:to-indigo-800 active:scale-98 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-100 transition"
               >
-                <span>Save Permanent Card &amp; Unlock UPI Pass</span>
+                <Lock className="w-4 h-4 text-amber-300" />
+                <span>Save Permanent Card &amp; Unlock UPI Pass (₹299)</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  className="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                  onClick={() => setClaimModalOpen(true)}
+                  className="py-2.5 px-2 rounded-xl bg-slate-100 hover:bg-amber-50 hover:border-amber-300 border border-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition group"
+                  title="Unlock high-res print upon activation"
                 >
-                  <Printer className="w-3.5 h-3.5" />
-                  Print Stand Now
+                  <Lock className="w-3.5 h-3.5 text-amber-600 group-hover:scale-110 transition" />
+                  <span>Print Stand (Locked)</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={handleDownloadStandPng}
-                  className="py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                  onClick={() => setClaimModalOpen(true)}
+                  className="py-2.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition group"
+                  title="Unlock 300 DPI download upon activation"
                 >
-                  <Download className="w-3.5 h-3.5 text-emerald-400" />
-                  Download PNG
+                  <Lock className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition" />
+                  <span>Download 300 DPI (Locked)</span>
                 </button>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-950 text-[11px] font-medium flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <span>
+                  <strong>Draft Watermark Notice:</strong> The preview below displays a draft watermark. Once your one-time pass is activated via UPI, the watermark is removed and 300 DPI high-res printing is unlocked!
+                </span>
               </div>
 
               {/* Founder Feature: WhatsApp Customer Invite Generator */}
@@ -898,87 +1048,206 @@ export default function CreateCardPage() {
             {/* PREVIEW 1: Physical Acrylic Stand (Sized for print) */}
             {activeTab === "stand" && (
               <div className="w-full flex flex-col items-center justify-center bg-slate-200/50 p-6 sm:p-10 rounded-3xl border border-slate-200 min-h-[580px]">
-                <div
-                  id="print-target"
-                  className="bg-white rounded-3xl p-8 flex flex-col items-center text-center justify-between relative transition-all border border-slate-200"
-                  style={{
-                    width: "360px",
-                    height: "540px",
-                    boxShadow: "0 25px 30px -10px rgba(0, 0, 0, 0.15)",
-                  }}
-                >
-                  {/* Top Brand Accent Bar */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-3 rounded-t-3xl"
-                    style={{ backgroundColor: primaryColor }}
-                  />
+                {(() => {
+                  const themeConfig = {
+                    "royal-gold": {
+                      bg: "#0b0f19",
+                      border: "#d4af37",
+                      innerBorder: "#f59e0b80",
+                      text: "#ffffff",
+                      subtext: "#cbd5e1",
+                      ribbonBg: "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950",
+                      qrBox: "bg-white border-2 border-amber-400 shadow-xl",
+                      nfcBg: "bg-amber-400 text-slate-950 border-white",
+                    },
+                    "pearl-gold": {
+                      bg: "#ffffff",
+                      border: "#d4af37",
+                      innerBorder: "#d4af3760",
+                      text: "#0f172a",
+                      subtext: "#475569",
+                      ribbonBg: "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950",
+                      qrBox: "bg-white border-2 border-amber-400 shadow-xl",
+                      nfcBg: "bg-amber-400 text-slate-950 border-white",
+                    },
+                    "emerald-gold": {
+                      bg: "#064e3b",
+                      border: "#f59e0b",
+                      innerBorder: "#f59e0b70",
+                      text: "#ffffff",
+                      subtext: "#a7f3d0",
+                      ribbonBg: "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950",
+                      qrBox: "bg-white border-2 border-amber-400 shadow-xl",
+                      nfcBg: "bg-amber-400 text-slate-950 border-white",
+                    },
+                    "sapphire-gold": {
+                      bg: "#0a192f",
+                      border: "#f59e0b",
+                      innerBorder: "#f59e0b70",
+                      text: "#ffffff",
+                      subtext: "#bfdbfe",
+                      ribbonBg: "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950",
+                      qrBox: "bg-white border-2 border-amber-400 shadow-xl",
+                      nfcBg: "bg-amber-400 text-slate-950 border-white",
+                    },
+                  }[luxuryTheme];
 
-                  {/* Stand Header */}
-                  <div className="flex flex-col items-center mt-3">
+                  return (
                     <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md mb-2"
-                      style={{ backgroundColor: primaryColor }}
+                      id="print-target"
+                      className="rounded-3xl p-6 sm:p-7 flex flex-col items-center text-center justify-between relative transition-all border-[3px] shadow-2xl select-none overflow-hidden"
+                      style={{
+                        width: "360px",
+                        height: "540px",
+                        backgroundColor: themeConfig.bg,
+                        borderColor: themeConfig.border,
+                        boxShadow: "0 25px 40px -10px rgba(0, 0, 0, 0.4)",
+                      }}
                     >
-                      {businessName.slice(0, 2).toUpperCase() || "RS"}
-                    </div>
-                    <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-                      {businessName}
-                    </h2>
-                    {businessAddress && (
-                      <p className="text-[10px] text-slate-400">{businessAddress}</p>
-                    )}
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <div className="flex items-center text-amber-400">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        ))}
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-600 ml-1">5.0 on Google</span>
-                    </div>
-                  </div>
-
-                  {/* QR Code Container with High Error Redundancy */}
-                  <div className="p-3 bg-white rounded-2xl border-2 border-slate-100 shadow-sm relative my-2">
-                    {qrDataUrl ? (
-                      <img
-                        src={qrDataUrl}
-                        alt="Review QR Code"
-                        className="w-40 h-40 object-contain"
+                      {/* Inner Hairline Gold Border */}
+                      <div
+                        className="absolute inset-2.5 rounded-2xl border pointer-events-none"
+                        style={{ borderColor: themeConfig.innerBorder }}
                       />
-                    ) : (
-                      <div className="w-40 h-40 bg-slate-100 animate-pulse rounded-xl" />
-                    )}
 
-                    {/* NFC Indicator */}
-                    <div className="absolute -bottom-3 -right-3 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md border-2 border-white">
-                      <Radio className="w-4 h-4 text-indigo-400" />
+                      {/* Delicate Corner Filigree Accents */}
+                      <div className="absolute top-3.5 left-3.5 text-amber-400 font-serif text-xs pointer-events-none select-none">┌</div>
+                      <div className="absolute top-3.5 right-3.5 text-amber-400 font-serif text-xs pointer-events-none select-none">┐</div>
+                      <div className="absolute bottom-3.5 left-3.5 text-amber-400 font-serif text-xs pointer-events-none select-none">└</div>
+                      <div className="absolute bottom-3.5 right-3.5 text-amber-400 font-serif text-xs pointer-events-none select-none">┘</div>
+
+                      {/* DRAFT WATERMARK OVERLAY */}
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-20 select-none">
+                        <div className="transform -rotate-45 text-center px-5 py-3.5 bg-slate-950/80 backdrop-blur-[2px] border-2 border-amber-400 rounded-2xl shadow-2xl">
+                          <span className="text-amber-300 font-black tracking-widest text-[11px] sm:text-xs uppercase block drop-shadow-md">
+                            🔒 PREVIEW DRAFT • REVIEW SMART AI
+                          </span>
+                          <span className="text-white text-[9px] font-extrabold tracking-wider block mt-0.5">
+                            UNLOCK 300 DPI UNWATERMARKED PRINT UPON PAYMENT
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Top Luxury Ribbon Badge */}
+                      <div className={`px-4 py-1 rounded-full text-[10px] font-black tracking-wider uppercase shadow-md ${themeConfig.ribbonBg} flex items-center gap-1.5 z-10`}>
+                        <Award className="w-3.5 h-3.5" />
+                        <span>5.0 Google Excellence Award</span>
+                      </div>
+
+                      {/* Stand Header: Logo & Store Name */}
+                      <div className="flex flex-col items-center mt-1 z-10">
+                        <div className="w-14 h-14 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-2 overflow-hidden">
+                          {logoUrl ? (
+                            <img
+                              src={logoUrl}
+                              alt={businessName}
+                              className="w-full h-full object-contain rounded-full"
+                            />
+                          ) : (
+                            <span className="text-lg font-black text-amber-600">
+                              {businessName.slice(0, 2).toUpperCase() || "RS"}
+                            </span>
+                          )}
+                        </div>
+
+                        <h2
+                          className="text-base font-black tracking-tight leading-tight max-w-[280px]"
+                          style={{ color: themeConfig.text }}
+                        >
+                          {businessName}
+                        </h2>
+
+                        {businessAddress && (
+                          <p
+                            className="text-[10px] truncate max-w-[260px] mt-0.5 font-medium"
+                            style={{ color: themeConfig.subtext }}
+                          >
+                            📍 {businessAddress}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-1 mt-1">
+                          <div className="flex items-center text-amber-400">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                          <span
+                            className="text-[11px] font-extrabold ml-1"
+                            style={{ color: themeConfig.text }}
+                          >
+                            5.0 on Google
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Centerpiece QR Code */}
+                      <div className={`p-3 rounded-2xl relative my-1 z-10 ${themeConfig.qrBox}`}>
+                        {qrDataUrl ? (
+                          <img
+                            src={qrDataUrl}
+                            alt="Review QR Code"
+                            className="w-36 h-36 object-contain"
+                          />
+                        ) : (
+                          <div className="w-36 h-36 bg-slate-100 animate-pulse rounded-xl" />
+                        )}
+
+                        {/* NFC Contactless Indicator */}
+                        <div className={`absolute -bottom-2.5 -right-2.5 px-2 py-1 rounded-full text-[9px] font-black shadow-md border-2 flex items-center gap-1 ${themeConfig.nfcBg}`}>
+                          <Radio className="w-3 h-3 animate-pulse" />
+                          <span>NFC TAP</span>
+                        </div>
+                      </div>
+
+                      {/* Micro 3-Step Instruction Guide */}
+                      <div className="w-full px-2 py-1.5 rounded-xl bg-black/20 border border-white/10 text-[9px] font-bold z-10" style={{ color: themeConfig.subtext }}>
+                        ① Scan QR with Camera &bull; ② Pick Instant Compliments &bull; ③ Post in 5 Sec
+                      </div>
+
+                      {/* Stand Footer */}
+                      <div className="space-y-0.5 pb-0.5 z-10">
+                        <h3
+                          className="text-xs font-black tracking-tight"
+                          style={{ color: themeConfig.text }}
+                        >
+                          {headline}
+                        </h3>
+                        <p
+                          className="text-[10px] max-w-[260px] font-medium"
+                          style={{ color: themeConfig.subtext }}
+                        >
+                          {subtitle}
+                        </p>
+                        <div className="pt-1 text-[9px] font-bold text-amber-400 flex items-center justify-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-400" />
+                          <span>ReviewSmart AI &bull; Verified Google Partner</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  );
+                })()}
 
-                  {/* Stand Footer */}
-                  <div className="space-y-1 pb-1">
-                    <h3 className="text-sm font-bold text-slate-800 leading-tight">
-                      {headline}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 max-w-[240px]">
-                      {subtitle}
-                    </p>
-                    <div className="pt-2 text-[10px] font-semibold text-indigo-600 flex items-center justify-center gap-1">
-                      <Sparkles className="w-3 h-3 text-indigo-500" />
-                      Powered by AI Review Assistant
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-400 mt-4 no-print text-center">
-                  💡 This is what your 4"x6" countertop acrylic stand looks like. Print directly or save as PNG!
+                <p className="text-xs text-slate-500 mt-4 no-print text-center font-medium">
+                  👑 Flipkart 4"×6" (A6) Portrait L-Shape Fit. Unlock high-res 300 DPI unwatermarked print via UPI!
                 </p>
               </div>
             )}
 
             {/* PREVIEW 2: Interactive Mobile Funnel */}
             {activeTab === "card" && (
-              <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-slate-200/80 relative">
+              <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-slate-200/80 relative overflow-hidden">
+                {/* DRAFT WATERMARK OVERLAY ON MOBILE PREVIEW */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-20 select-none">
+                  <div className="transform -rotate-45 text-center px-4 py-3 bg-slate-950/80 backdrop-blur-[2px] border border-amber-400 rounded-2xl shadow-2xl">
+                    <span className="text-amber-300 font-black tracking-widest text-[10px] uppercase block drop-shadow-md">
+                      🔒 PREVIEW DRAFT • REVIEW SMART AI
+                    </span>
+                    <span className="text-white text-[8px] font-extrabold tracking-wider block mt-0.5">
+                      ACTIVATE VIA UPI TO REMOVE WATERMARK
+                    </span>
+                  </div>
+                </div>
                 {/* Floating Negative Shield Badge */}
                 <div className="absolute -top-3.5 -right-3.5 px-3.5 py-1 rounded-full bg-emerald-500 text-white text-[11px] font-bold shadow-md flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />

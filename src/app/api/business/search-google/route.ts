@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("query");
+  const query = searchParams.get("query") || searchParams.get("q");
   return handleSearch(query);
 }
 
@@ -34,31 +34,38 @@ async function handleSearch(query: string | null) {
 You are a business discovery assistant for local Indian merchants.
 The user is searching for their business on Google Maps with query: "${cleanQuery}".
 
-Find up to 3 most likely matching real businesses on Google Maps. For each business:
-1. Provide the exact business name ("name")
-2. Provide the locality and city ("address")
-3. Detect the main category ("category": Cafe, Restaurant, Dental Clinic, Salon, Retail, Hospital, Gym, etc.)
-4. Construct the direct Google Maps search & review URL:
+Find up to 5 matching real businesses or branch locations on Google Maps.
+CRITICAL FOR MULTI-BRANCH CHAINS: If "${cleanQuery}" is a brand or business with multiple outlets or branches across different localities/cities (e.g. Paradise Biryani, Chai Point, Domino's, Apollo Clinic, Naturals Salon), return up to 5 distinct branch locations so the merchant can easily choose their specific branch from the dropdown!
+
+For each business/branch:
+1. "name": The full business name with branch specification if applicable (e.g. "Paradise Biryani - Secunderabad", "Paradise Biryani - Hitech City")
+2. "branchName": The locality or neighborhood name (e.g. "Hitech City", "Koramangala", "Main Branch")
+3. "address": Full street address including locality, city, state, pin code
+4. "category": Main business category (e.g. Cafe & Bakery, Restaurant & Dining, Dental Clinic, Unisex Salon, Retail Store, Gym & Fitness)
+5. "googleReviewUrl": Direct Google Maps review/search URL:
    "https://www.google.com/maps/search/?api=1&query=" + URI encoded (name + " " + address)
-5. Provide 5 positive tag chips for customer reviews ("suggestedTags": array of 5 strings)
-6. Provide approximate rating e.g. 4.8 ("rating": number)
-7. If publicly available/known, provide business logo or profile image URL ("logoUrl": string or null if none)
+6. "suggestedTags": Array of 5 positive compliment chips for customer reviews
+7. "rating": Numerical rating e.g. 4.8
+8. "reviewCount": Approximate review count e.g. "1,240 reviews"
+9. "logoUrl": Publicly available logo URL or null
 
 Respond strictly in valid JSON format:
 {
   "results": [
     {
-      "name": "Exact Name",
-      "address": "Locality, City, State",
-      "category": "Cafe & Restaurant",
+      "name": "Paradise Biryani - Hitech City",
+      "branchName": "Hitech City",
+      "address": "Opposite Cyber Towers, Madhapur, Hitech City, Hyderabad, Telangana",
+      "category": "Restaurant & Dining",
       "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=...",
-      "suggestedTags": ["Great Coffee", "Cozy Ambience", "Friendly Staff", "Fast Wifi", "Clean Tables"],
-      "rating": 4.9,
+      "suggestedTags": ["Mutton Biryani", "Fast Service", "Hygienic Dining", "Courteous Staff", "Great Ambience"],
+      "rating": 4.8,
+      "reviewCount": "4,820 reviews",
       "logoUrl": null
     }
   ]
 }
-Do not include markdown backticks or explanations. Output pure JSON.
+Do not include markdown backticks or text outside JSON. Output pure JSON only.
 `;
 
       const response = await client.models.generateContent({

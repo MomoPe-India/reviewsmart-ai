@@ -4,45 +4,73 @@ import { generateAiReviews } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessId, slug, selectedTags = [], customNote } = await req.json();
+    const body = await req.json();
+    const {
+      businessId,
+      slug,
+      businessName: directName,
+      tagline: directTagline,
+      selectedTags = [],
+      customNote,
+      keywords: directKeywords,
+      tone: directTone,
+    } = body;
 
-    const business = await prisma.business.findFirst({
-      where: {
-        OR: [
-          ...(businessId ? [{ id: businessId }] : []),
-          ...(slug ? [{ slug }] : []),
-        ],
-      },
-    });
+    let businessName = directName || "Our Store";
+    let tagline = directTagline || null;
+    let keywords = directKeywords || "";
+    let tone = directTone || "friendly";
+    let foundBusinessId: string | null = null;
 
-    if (!business) {
-      return NextResponse.json({ error: "Business not found" }, { status: 404 });
+    if (businessId || slug) {
+      const business = await prisma.business.findFirst({
+        where: {
+          OR: [
+            ...(businessId ? [{ id: businessId }] : []),
+            ...(slug ? [{ slug }] : []),
+          ],
+        },
+      });
+
+      if (business) {
+        businessName = business.name;
+        tagline = business.tagline;
+        keywords = business.keywords || keywords;
+        tone = business.reviewPromptTone || tone;
+        foundBusinessId = business.id;
+      }
     }
 
     const reviews = await generateAiReviews({
-      businessName: business.name,
-      tagline: business.tagline,
+      businessName,
+      tagline,
       selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
-      keywords: business.keywords,
-      tone: business.reviewPromptTone,
+      keywords,
+      tone,
       customNote,
     });
 
-    // Log analytics in the background
-    try {
-      await prisma.reviewAnalytics.create({
-        data: {
-          businessId: business.id,
-          eventType: "AI_GENERATED",
-          rating: 5,
-          deviceType: "mobile",
-        },
-      });
-    } catch (e) {
-      console.warn("Analytics error:", e);
+    // Log analytics in the background if business exists
+    if (foundBusinessId) {
+      try {
+        await prisma.reviewAnalytics.create({
+          data: {
+            businessId: foundBusinessId,
+            eventType: "AI_GENERATED",
+            rating: 5,
+            deviceType: "mobile",
+          },
+        });
+      } catch (e) {
+        console.warn("Analytics error:", e);
+      }
     }
 
-    return NextResponse.json({ success: true, reviews });
+    return NextResponse.json({
+      success: true,
+      reviews,
+      review: reviews[0]?.text || "Excellent service and high quality! Highly recommended.",
+    });
   } catch (error) {
     console.error("Generate review error:", error);
     return NextResponse.json(

@@ -23,17 +23,23 @@ import {
   LogOut,
   UserCheck,
   Star,
+  Camera,
+  Award,
+  Radio,
+  Upload,
 } from "lucide-react";
 import QRCode from "qrcode";
 
 interface GoogleSearchResult {
-  placeId: string;
+  placeId?: string;
   name: string;
+  branchName?: string;
   address: string;
   rating?: number;
-  reviewCount?: number;
+  reviewCount?: number | string;
   reviewUrl?: string;
-  logoUrl?: string;
+  googleReviewUrl?: string;
+  logoUrl?: string | null;
 }
 
 interface AgentSession {
@@ -86,13 +92,32 @@ export default function AgentPosPage() {
       .finally(() => setAuthLoading(false));
   }, [router]);
 
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Please upload an image under 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === "string") {
+          setCustomLogoUrl(event.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Google Search Handler
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
     try {
       const res = await fetch(
-        `/api/business/search-google?q=${encodeURIComponent(searchQuery)}`
+        `/api/business/search-google?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
       if (res.ok && data.results) {
@@ -111,6 +136,9 @@ export default function AgentPosPage() {
     setSelectedPlace(b);
     setSearchResults([]);
     setSearchQuery(b.name);
+    if (b.logoUrl) {
+      setCustomLogoUrl(b.logoUrl);
+    }
   };
 
   // Generate UPI QR when deal is created
@@ -155,8 +183,11 @@ export default function AgentPosPage() {
           googleAddress: selectedPlace.address,
           googleReviewUrl:
             selectedPlace.reviewUrl ||
-            `https://search.google.com/local/writereview?placeid=${selectedPlace.placeId}`,
-          logoUrl: selectedPlace.logoUrl,
+            selectedPlace.googleReviewUrl ||
+            (selectedPlace.placeId
+              ? `https://search.google.com/local/writereview?placeid=${selectedPlace.placeId}`
+              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name)}`),
+          logoUrl: customLogoUrl || selectedPlace.logoUrl || null,
           whatsapp: whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null,
           instagram: instagram ? `https://instagram.com/${instagram.replace("@", "")}` : null,
           negotiatedPrice,
@@ -364,54 +395,126 @@ export default function AgentPosPage() {
                 </button>
               </div>
 
-              {/* Search Results Dropdown */}
+              {/* Search Results Dropdown with Branch Disambiguation */}
               {searchResults.length > 0 && (
-                <div className="space-y-1.5 pt-1 max-h-48 overflow-y-auto">
-                  {searchResults.map((r) => (
+                <div className="space-y-1.5 pt-1 max-h-56 overflow-y-auto">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                    Select Exact Branch Outlet:
+                  </span>
+                  {searchResults.map((r, idx) => (
                     <button
-                      key={r.placeId}
+                      key={r.placeId || idx}
                       type="button"
                       onClick={() => handleSelectBusiness(r)}
-                      className="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-indigo-950/40 border border-slate-700 text-left transition flex items-center gap-2.5"
+                      className="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-indigo-950/40 border border-slate-700 text-left transition flex items-center justify-between gap-2.5"
                     >
-                      <MapPin className="w-4 h-4 text-indigo-400 flex-shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold text-white truncate">{r.name}</div>
-                        <div className="text-[10px] text-slate-400 truncate">{r.address}</div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-white truncate">{r.name}</span>
+                          {r.branchName && (
+                            <span className="text-[9px] font-bold text-indigo-300 bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-800">
+                              📍 {r.branchName}
+                            </span>
+                          )}
+                          {r.rating && (
+                            <span className="text-[9px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
+                              ★ {r.rating} {r.reviewCount && `(${r.reviewCount})`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400 truncate mt-0.5">{r.address}</div>
                       </div>
+                      <span className="px-2 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 text-[10px] font-bold flex-shrink-0">
+                        Select
+                      </span>
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Selected Business Preview Badge */}
+              {/* Selected Business Preview Badge & Logo Uploader */}
               {selectedPlace && (
-                <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white overflow-hidden flex-shrink-0">
-                      {selectedPlace.logoUrl ? (
-                        <img
-                          src={selectedPlace.logoUrl}
-                          alt={selectedPlace.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        selectedPlace.name.slice(0, 2).toUpperCase()
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold text-white truncate">
-                        {selectedPlace.name}
+                <div className="space-y-3 pt-2">
+                  <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-slate-900 border border-amber-400 flex items-center justify-center font-bold text-white overflow-hidden flex-shrink-0">
+                        {customLogoUrl || selectedPlace.logoUrl ? (
+                          <img
+                            src={customLogoUrl || selectedPlace.logoUrl || ""}
+                            alt={selectedPlace.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-amber-400">{selectedPlace.name.slice(0, 2).toUpperCase()}</span>
+                        )}
                       </div>
-                      <div className="text-[10px] text-amber-400 flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-amber-400" />
-                        <span>Google 5.0 Demo Ready</span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-white truncate">
+                          {selectedPlace.name}
+                        </div>
+                        <div className="text-[10px] text-amber-400 flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-amber-400" />
+                          <span>Google 5.0 Live Stand Ready</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Camera / Logo Photo Uploader for Reps */}
+                    <label className="px-2.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition flex-shrink-0 shadow-md">
+                      <Camera className="w-3 h-3" />
+                      <span>{customLogoUrl ? "Change Photo" : "Snap Store Board"}</span>
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    </label>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    Selected
-                  </span>
+
+                  {/* LIVE 4"x6" COUNTERTOP ACRYLIC STAND DEMO ON AGENT'S PHONE */}
+                  <div className="p-4 rounded-3xl bg-slate-950 border-2 border-amber-400/80 shadow-2xl relative overflow-hidden text-center select-none">
+                    <div className="absolute inset-1.5 rounded-2xl border border-amber-400/40 pointer-events-none" />
+
+                    <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-[9px] font-black uppercase tracking-wider mb-2 shadow-sm">
+                      <Award className="w-3 h-3" />
+                      <span>5.0 Google Excellence Award</span>
+                    </div>
+
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-1.5 overflow-hidden">
+                        {customLogoUrl || selectedPlace.logoUrl ? (
+                          <img
+                            src={customLogoUrl || selectedPlace.logoUrl || ""}
+                            alt={selectedPlace.name}
+                            className="w-full h-full object-contain rounded-full"
+                          />
+                        ) : (
+                          <span className="text-xs font-black text-amber-600">
+                            {selectedPlace.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-xs font-black text-white max-w-[240px] truncate">
+                        {selectedPlace.name}
+                      </h4>
+                      <p className="text-[9px] text-slate-400 max-w-[220px] truncate mt-0.5">
+                        📍 {selectedPlace.address}
+                      </p>
+                    </div>
+
+                    {/* QR Code Inset Box */}
+                    <div className="my-2.5 mx-auto w-32 h-32 bg-white rounded-xl border-2 border-amber-400 flex flex-col items-center justify-center shadow-lg relative p-2">
+                      <QrCode className="w-24 h-24 text-slate-900" />
+                      <div className="absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[8px] font-black border border-white flex items-center gap-0.5">
+                        <Radio className="w-2.5 h-2.5" />
+                        <span>NFC TAP</span>
+                      </div>
+                    </div>
+
+                    <div className="text-[8px] font-bold text-amber-300 py-1 bg-white/5 rounded-lg border border-white/10 mb-1">
+                      ① Scan QR &bull; ② Pick AI Compliments &bull; ③ Post in 5 Sec
+                    </div>
+
+                    <span className="text-[8px] font-medium text-slate-500">
+                      Flipkart 4"×6" (A6) Portrait Acrylic Standee Fit
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
