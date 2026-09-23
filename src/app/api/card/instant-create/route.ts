@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, signToken, COOKIE_NAME } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
+import { detectIndustry } from "@/lib/industry";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -76,12 +77,23 @@ export async function POST(req: NextRequest) {
       counter++;
     }
 
+    // Detect Industry Intelligence
+    const industry = detectIndustry(businessName, body.category || "", tagline || "");
+    const finalCategory = body.category || industry.label;
+    const finalTagline = tagline || industry.tagline;
+    const finalTags =
+      tagChips && tagChips.trim() && tagChips !== "Friendly Staff,Fast Service,Great Quality,Fair Pricing,Clean Ambiance"
+        ? tagChips.trim()
+        : industry.tags.join(",");
+    const finalKeywords = keywords && keywords.trim() ? keywords.trim() : industry.keywords;
+
     const business = await prisma.business.create({
       data: {
         userId: user.id,
         name: businessName.trim(),
         slug: uniqueSlug,
-        tagline: tagline || "Review our service & share your experience!",
+        tagline: finalTagline,
+        category: finalCategory,
         logoUrl: logoUrl || null,
         primaryColor: primaryColor || "#4f46e5",
         googleReviewUrl: googleReviewUrl || null,
@@ -90,12 +102,8 @@ export async function POST(req: NextRequest) {
         instagram: instagram && instagram.trim() ? instagram.trim() : null,
         website: website && website.trim() ? website.trim() : null,
         minRatingForGoogle: 4,
-        keywords:
-          keywords ||
-          "exceptional service, highly recommended, friendly staff, prompt delivery, great experience",
-        tagChips:
-          tagChips ||
-          "Friendly Staff,Fast Service,Great Quality,Fair Pricing,Clean Ambiance",
+        keywords: finalKeywords,
+        tagChips: finalTags,
         reviewPromptTone: "friendly",
         isPaid: true,
       },

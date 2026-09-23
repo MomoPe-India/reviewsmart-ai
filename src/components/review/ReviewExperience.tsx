@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Share2,
 } from "lucide-react";
+import { detectIndustry } from "@/lib/industry";
 
 interface BusinessData {
   id: string;
@@ -35,6 +36,7 @@ interface BusinessData {
   instagram: string | null;
   facebook: string | null;
   website: string | null;
+  category?: string | null;
   minRatingForGoogle: number;
   tagChips: string;
   keywords: string;
@@ -72,11 +74,23 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const [modalCopiedText, setModalCopiedText] = useState("");
   const [modalReCopied, setModalReCopied] = useState(false);
 
-  // Parse tag chips
-  const tagsList = (business.tagChips || "")
+  // Detect Industry Intelligence
+  const industry = detectIndustry(business.name, business.category || "", business.tagline || "");
+
+  // Parse tag chips with industry intelligence
+  const rawTags = (business.tagChips || "")
     .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
+
+  const isGenericRestaurantChips =
+    rawTags.length >= 4 &&
+    rawTags.includes("Clean Ambiance") &&
+    rawTags.includes("Friendly Staff") &&
+    industry.type !== "RESTAURANT_FOOD";
+
+  const tagsList =
+    rawTags.length > 0 && !isGenericRestaurantChips ? rawTags : industry.tags;
 
   // Resolved Google URL
   const googleUrl =
@@ -138,6 +152,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
           businessId: business.id,
           slug: business.slug,
           businessName: business.name,
+          category: business.category || industry.label,
           selectedTags: tagsToUse,
           customNote,
         }),
@@ -226,7 +241,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const isNegative = rating > 0 && rating < business.minRatingForGoogle;
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between p-4 sm:p-6 pb-12 transition-all relative overflow-hidden">
+    <div className="w-full max-w-md mx-auto min-h-screen sm:min-h-0 bg-slate-900 text-slate-100 flex flex-col justify-between p-4 sm:p-6 pb-12 sm:rounded-3xl sm:border sm:border-slate-800 sm:shadow-2xl transition-all relative overflow-hidden">
       {/* Ambient Brand Background Glow */}
       <div
         className="absolute -top-32 -left-32 w-80 h-80 rounded-full blur-3xl opacity-30 pointer-events-none"
@@ -528,7 +543,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 type="text"
                 value={customNote}
                 onChange={(e) => setCustomNote(e.target.value)}
-                placeholder="Mention specific dishes or staff name (optional)..."
+                placeholder={industry.placeholder}
                 className="w-full text-xs p-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>

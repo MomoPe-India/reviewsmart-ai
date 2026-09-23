@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
     let tone = directTone || "friendly";
     let foundBusinessId: string | null = null;
 
+    let category = body.category || "";
+
     if (businessId || slug) {
       const business = await prisma.business.findFirst({
         where: {
@@ -37,6 +39,7 @@ export async function POST(req: NextRequest) {
         tagline = business.tagline;
         keywords = business.keywords || keywords;
         tone = business.reviewPromptTone || tone;
+        category = business.category || category;
         foundBusinessId = business.id;
       }
     }
@@ -48,6 +51,7 @@ export async function POST(req: NextRequest) {
       keywords,
       tone,
       customNote,
+      category,
     });
 
     // Log analytics in the background if business exists

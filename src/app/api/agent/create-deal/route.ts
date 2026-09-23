@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { detectIndustry } from "@/lib/industry";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -104,13 +105,21 @@ export async function POST(req: NextRequest) {
     const randomSuffix = crypto.randomBytes(2).toString("hex");
     const uniqueSlug = `${baseSlug || "store"}-${randomSuffix}`;
 
+    // Detect Industry Intelligence
+    const industry = detectIndustry(merchantName, body.category || "", body.tagline || "");
+    const finalCategory = body.category || industry.label;
+    const finalTagline = body.tagline || industry.tagline;
+    const finalTags = body.tagChips || industry.tags.join(",");
+    const finalKeywords = body.keywords || industry.keywords;
+
     // Create Business Profile
     const business = await prisma.business.create({
       data: {
         userId: merchantUser.id,
         name: merchantName,
         slug: uniqueSlug,
-        tagline: "Review our service & share your experience!",
+        tagline: finalTagline,
+        category: finalCategory,
         logoUrl: logoUrl || null,
         googlePlaceId: googlePlaceId || null,
         googleReviewUrl: googleReviewUrl,
@@ -118,6 +127,10 @@ export async function POST(req: NextRequest) {
         whatsapp: whatsapp || null,
         instagram: instagram || null,
         website: website || null,
+        tagChips: finalTags,
+        keywords: finalKeywords,
+        minRatingForGoogle: 4,
+        reviewPromptTone: "friendly",
         isPaid: true,
       },
     });

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="70%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#030712" />
+    </radialGradient>
+
+    <!-- Metallic Gold Outer Ring Gradient -->
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="25%" stop-color="#f59e0b" />
+      <stop offset="50%" stop-color="#d97706" />
+      <stop offset="75%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#78350f" />
+    </linearGradient>
+
+    <!-- Tech Cyan-Blue Gradient for 'M' -->
+    <linearGradient id="techM1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+
+    <linearGradient id="techM2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="50%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+
+    <!-- Drop Shadow Filters -->
+    <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Base Plate -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGlow)" />
+
+  <!-- Outer Gold Border -->
+  <rect x="16" y="16" width="480" height="480" rx="90" fill="none" stroke="url(#goldRing)" stroke-width="4" opacity="0.85" />
+  <rect x="26" y="26" width="460" height="460" rx="82" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.4" />
+
+  <!-- Tech Circuit Nodes / Star Points -->
+  <circle cx="256" cy="74" r="5" fill="#38bdf8" filter="url(#glowFilter)" />
+  <line x1="256" y1="80" x2="256" y2="115" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.5" />
+
+  <circle cx="100" cy="180" r="4" fill="#60a5fa" opacity="0.6" />
+  <line x1="100" y1="184" x2="135" y2="215" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.3" />
+
+  <circle cx="412" cy="180" r="4" fill="#60a5fa" opacity="0.6" />
+  <line x1="412" y1="184" x2="377" y2="215" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.3" />
+
+  <!-- Central Modern Geometric 'M' Emblem -->
+  <g transform="translate(106, 120)">
+    <!-- Left Pillar -->
+    <path d="M10 200 L10 40 L65 0 L65 200 Z" fill="url(#techM1)" />
+    <!-- Left Slope -->
+    <path d="M65 0 L150 140 L150 200 L65 60 Z" fill="url(#techM2)" opacity="0.95" />
+    <!-- Right Slope -->
+    <path d="M235 0 L150 140 L150 200 L235 60 Z" fill="url(#techM1)" opacity="0.95" />
+    <!-- Right Pillar -->
+    <path d="M290 200 L290 40 L235 0 L235 200 Z" fill="url(#techM2)" />
+    <!-- Apex Node Diamond -->
+    <polygon points="150,115 165,135 150,155 135,135" fill="url(#goldAccent)" filter="url(#glowFilter)" />
+  </g>
+
+  <!-- Brand Typography -->
+  <!-- "MOMO IT" -->
+  <text x="256" y="380" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="38" font-weight="900" fill="#ffffff" letter-spacing="4">
+    MOMO <tspan fill="#f59e0b">IT</tspan>
+  </text>
+
+  <!-- "TECHNOLOGIES" -->
+  <text x="256" y="415" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="16" font-weight="700" fill="#94a3b8" letter-spacing="6">
+    TECHNOLOGIES
+  </text>
+
+  <!-- Golden 5-Stars Badge Under Typography -->
+  <g transform="translate(176, 435)">
+    <text font-family="sans-serif" font-size="18" fill="#f59e0b" letter-spacing="4">★★★★★</text>
+  </g>
+</svg>

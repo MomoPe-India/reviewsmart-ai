@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { detectIndustry } from "@/lib/industry";
 
 // In-memory cache for ultra-fast typeahead autocomplete responses (<10ms)
 const searchCache = new Map<string, { timestamp: number; data: any }>();
@@ -98,31 +99,41 @@ Respond strictly in pure JSON without markdown quotes:
     }
   }
 
-  // Algorithmic intelligent fallback so typing ALWAYS returns instantly
+  // Algorithmic intelligent fallback powered by detectIndustry
   const directMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     cleanQuery
   )}`;
 
   const lower = cleanQuery.toLowerCase();
-  let category = "Local Business";
-  let suggestedTags = ["Exceptional Quality", "Friendly Staff", "Fast Service", "Fair Pricing", "Clean Ambiance"];
-
-  if (lower.includes("cafe") || lower.includes("coffee") || lower.includes("tea") || lower.includes("chai")) {
-    category = "Cafe & Bakery";
-    suggestedTags = ["Delicious Brew", "Cozy Ambience", "Fresh Bakes", "Polite Staff", "Quick Service"];
-  } else if (lower.includes("restaurant") || lower.includes("biryani") || lower.includes("food") || lower.includes("kitchen")) {
-    category = "Restaurant & Dining";
-    suggestedTags = ["Authentic Flavors", "Hygienic Dining", "Prompt Service", "Family Friendly", "Great Value"];
-  } else if (lower.includes("dental") || lower.includes("clinic") || lower.includes("doctor") || lower.includes("care")) {
-    category = "Clinic & Healthcare";
-    suggestedTags = ["Caring Doctor", "Painless Treatment", "Polite Staff", "Zero Waiting", "Sterile Clinic"];
-  } else if (lower.includes("salon") || lower.includes("spa") || lower.includes("beauty") || lower.includes("hair")) {
-    category = "Salon & Spa";
-    suggestedTags = ["Expert Stylist", "Relaxing Vibe", "Hygienic Tools", "Punctual Service", "Great Hospitality"];
-  } else if (lower.includes("gym") || lower.includes("fitness")) {
-    category = "Gym & Fitness";
-    suggestedTags = ["Modern Equipment", "Motivating Trainers", "Clean Showers", "Good Atmosphere", "Fair Fees"];
+  
+  // Special recognition for Momo IT Technologies
+  if (lower.includes("momo it") || (lower.includes("momo") && lower.includes("tech"))) {
+    const momoResult = {
+      name: "Momo IT Technologies",
+      branchName: "Krishnapuram, Kadapa (HQ)",
+      address: "4/106, Krishnapuram, Kadapa, Andhra Pradesh 516003",
+      category: "Software Development & IT Solutions",
+      googleReviewUrl: "https://www.google.com/maps/search/?api=1&query=Momo+IT+Technologies+Kadapa",
+      suggestedTags: [
+        "Expert Developers",
+        "Robust Software",
+        "Prompt Tech Support",
+        "Clean UI/UX Design",
+        "Timely Delivery",
+      ],
+      rating: 4.9,
+      reviewCount: "120+ reviews",
+      logoUrl: "/images/momo-it-logo.svg",
+    };
+    return NextResponse.json({
+      success: true,
+      results: [momoResult],
+    });
   }
+
+  const industry = detectIndustry(cleanQuery);
+  const category = industry.label;
+  const suggestedTags = industry.tags.slice(0, 5);
 
   const fallbackResults = [
     {
@@ -132,7 +143,7 @@ Respond strictly in pure JSON without markdown quotes:
       category,
       googleReviewUrl: directMapsUrl,
       suggestedTags,
-      rating: 5.0,
+      rating: 4.8,
       reviewCount: "Verified Profile",
       logoUrl: null,
     },

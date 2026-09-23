@@ -72,11 +72,11 @@ export default function Navbar() {
             How it Works
           </Link>
           <Link
-            href="/r/food-bites"
+            href="/r/momo-it-technologies"
             target="_blank"
             className="flex items-center gap-1 text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full text-xs font-semibold border border-emerald-200 transition"
           >
-            Live Customer Demo
+            Live Demo (Momo IT)
             <ExternalLink className="w-3 h-3" />
           </Link>
           <Link
@@ -154,12 +154,12 @@ export default function Navbar() {
             Features
           </Link>
           <Link
-            href="/r/food-bites"
+            href="/r/momo-it-technologies"
             target="_blank"
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center justify-between text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200"
           >
-            Live Customer Review Page
+            Live Customer Review (Momo IT)
             <ExternalLink className="w-4 h-4" />
           </Link>
           <Link

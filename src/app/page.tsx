@@ -52,11 +52,11 @@ export default function HomePage() {
                 </Link>
 
                 <Link
-                  href="/r/food-bites"
+                  href="/r/momo-it-technologies"
                   target="_blank"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-sm shadow-sm transition flex items-center justify-center gap-2"
                 >
-                  <span>Experience Live Customer Demo</span>
+                  <span>Experience Live Demo (Momo IT)</span>
                   <ExternalLink className="w-4 h-4 text-slate-400" />
                 </Link>
               </div>

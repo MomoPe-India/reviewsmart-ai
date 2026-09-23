@@ -50,6 +50,7 @@ export default async function PublicReviewPage({
       facebook: true,
       website: true,
       minRatingForGoogle: true,
+      category: true,
       tagChips: true,
       keywords: true,
       reviewPromptTone: true,
@@ -61,7 +62,7 @@ export default async function PublicReviewPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 flex items-center justify-center sm:py-6">
+    <main className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-0 sm:py-8 sm:px-4 selection:bg-amber-500 selection:text-slate-950">
       <ReviewExperience business={business} />
     </main>
   );

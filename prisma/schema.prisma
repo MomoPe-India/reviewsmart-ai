@@ -59,6 +59,7 @@ model Business {
   name               String
   slug               String            @unique
   tagline            String?           @default("Review our service & share your experience!")
+  category           String?           @default("Local Business")
   logoUrl            String?
   primaryColor       String            @default("#4f46e5")
   googlePlaceId      String?

@@ -79,6 +79,35 @@ export default function AgentPosPage() {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Live Review Pitch Preview
+  const [pitchDrafts, setPitchDrafts] = useState<any[]>([]);
+  const [loadingPitchDrafts, setLoadingPitchDrafts] = useState(false);
+  const [showPitchPreview, setShowPitchPreview] = useState(false);
+
+  const handleGeneratePitchReviews = async (place: GoogleSearchResult) => {
+    setLoadingPitchDrafts(true);
+    setShowPitchPreview(true);
+    try {
+      const res = await fetch("/api/ai/generate-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: place.name,
+          category: place.category,
+          selectedTags: place.suggestedTags || [],
+        }),
+      });
+      const data = await res.json();
+      if (data.reviews && data.reviews.length > 0) {
+        setPitchDrafts(data.reviews);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingPitchDrafts(false);
+    }
+  };
+
   // Verify Agent Session
   useEffect(() => {
     fetch("/api/auth/me")
@@ -200,6 +229,7 @@ export default function AgentPosPage() {
     if (b.logoUrl) {
       setCustomLogoUrl(b.logoUrl);
     }
+    handleGeneratePitchReviews(b);
   };
 
   // Generate UPI QR when deal is created
@@ -635,6 +665,85 @@ export default function AgentPosPage() {
                     <span className="text-[8px] font-medium text-slate-500">
                       Flipkart 4"×6" (A6) Portrait Acrylic Standee Fit
                     </span>
+                  </div>
+
+                  {/* LIVE AI REVIEWS PITCH DEMO FOR AGENTS */}
+                  <div className="p-4 rounded-3xl bg-slate-900/90 border border-amber-400/40 shadow-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                        <Sparkles className="w-4 h-4 text-amber-400" />
+                        <span>AI Review Pitch Demo</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                        {selectedPlace.category || "Domain AI"}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-300">
+                      Show this to the merchant: When their customers scan the QR, ReviewSmart AI generates these tailored 5-star reviews:
+                    </p>
+
+                    {/* Compliment Chips */}
+                    {selectedPlace.suggestedTags && selectedPlace.suggestedTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {selectedPlace.suggestedTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700"
+                          >
+                            ✓ {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Review Drafts Cards */}
+                    {loadingPitchDrafts ? (
+                      <div className="py-6 text-center text-xs text-slate-400 space-y-2">
+                        <Loader2 className="w-5 h-5 text-amber-400 animate-spin mx-auto" />
+                        <p>Drafting tailored 5-star reviews for {selectedPlace.name}...</p>
+                      </div>
+                    ) : pitchDrafts.length > 0 ? (
+                      <div className="space-y-2 pt-1">
+                        {pitchDrafts.map((d) => (
+                          <div
+                            key={d.id}
+                            className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-left space-y-1"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-white flex items-center gap-1">
+                                <span className="text-amber-400">★</span> {d.headline}
+                              </span>
+                              <span className="text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">
+                                {d.tone}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-300 leading-relaxed font-normal">
+                              "{d.text}"
+                            </p>
+                          </div>
+                        ))}
+                        <div className="text-center pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleGeneratePitchReviews(selectedPlace)}
+                            className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center justify-center gap-1 mx-auto"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            Regenerate Fresh AI Reviews
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleGeneratePitchReviews(selectedPlace)}
+                        className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Generate Live AI Reviews for Merchant
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
