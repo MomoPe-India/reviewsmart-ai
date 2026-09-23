@@ -10,10 +10,8 @@ import {
   ExternalLink,
   MessageSquare,
   Send,
-  Phone,
   Globe,
   Instagram,
-  Facebook,
   ShieldCheck,
   Heart,
   Loader2,
@@ -245,62 +243,88 @@ export default function ReviewExperience({ business }: { business: BusinessData 
           {business.tagline || "Thank you for visiting! We appreciate your support."}
         </p>
 
-        {/* Social / Direct Links */}
-        <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-slate-100 w-full">
-          {business.whatsapp && (
-            <a
-              href={business.whatsapp}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="WhatsApp"
-              className="p-2 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition"
-            >
-              <MessageSquare className="w-4 h-4" />
-            </a>
-          )}
-          {business.phone && (
-            <a
-              href={`tel:${business.phone}`}
-              aria-label="Phone"
-              className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
-          )}
-          {business.instagram && (
-            <a
-              href={business.instagram}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Instagram"
-              className="p-2 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition"
-            >
-              <Instagram className="w-4 h-4" />
-            </a>
-          )}
-          {business.facebook && (
-            <a
-              href={business.facebook}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Facebook"
-              className="p-2 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition"
-            >
-              <Facebook className="w-4 h-4" />
-            </a>
-          )}
-          {business.website && (
-            <a
-              href={business.website}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Website"
-              className="p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
-            >
-              <Globe className="w-4 h-4" />
-            </a>
-          )}
-        </div>
+        {/* Social / Direct Links - Strictly WhatsApp, Instagram & Website (Only highlighted if updated) */}
+        {(() => {
+          // Format WhatsApp URL
+          let formattedWhatsApp: string | null = null;
+          if (business.whatsapp && business.whatsapp.trim()) {
+            const val = business.whatsapp.trim();
+            if (val.startsWith("http://") || val.startsWith("https://")) {
+              formattedWhatsApp = val;
+            } else {
+              const digits = val.replace(/\D/g, "");
+              if (digits) {
+                const waNum = digits.length === 10 ? `91${digits}` : digits;
+                formattedWhatsApp = `https://wa.me/${waNum}`;
+              }
+            }
+          }
+
+          // Format Instagram URL
+          let formattedInstagram: string | null = null;
+          if (business.instagram && business.instagram.trim()) {
+            const val = business.instagram.trim();
+            if (val.startsWith("http://") || val.startsWith("https://")) {
+              formattedInstagram = val;
+            } else {
+              const handle = val.replace(/^@/, "").trim();
+              if (handle) {
+                formattedInstagram = `https://instagram.com/${handle}`;
+              }
+            }
+          }
+
+          // Format Website URL
+          let formattedWebsite: string | null = null;
+          if (business.website && business.website.trim()) {
+            const val = business.website.trim();
+            formattedWebsite = val.startsWith("http://") || val.startsWith("https://") ? val : `https://${val}`;
+          }
+
+          const hasSocial = Boolean(formattedWhatsApp || formattedInstagram || formattedWebsite);
+          if (!hasSocial) return null;
+
+          return (
+            <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-slate-100 w-full animate-fadeIn">
+              {formattedWhatsApp && (
+                <a
+                  href={formattedWhatsApp}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Chat on WhatsApp"
+                  title="Chat on WhatsApp"
+                  className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-md shadow-emerald-200 hover:bg-[#20ba59] hover:scale-110 active:scale-95 transition-all"
+                >
+                  <MessageSquare className="w-5 h-5 fill-white/20" />
+                </a>
+              )}
+              {formattedInstagram && (
+                <a
+                  href={formattedInstagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Follow on Instagram"
+                  title="Follow on Instagram"
+                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center shadow-md shadow-pink-200 hover:opacity-90 hover:scale-110 active:scale-95 transition-all"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {formattedWebsite && (
+                <a
+                  href={formattedWebsite}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Visit Website"
+                  title="Visit Website"
+                  className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200 hover:bg-indigo-700 hover:scale-110 active:scale-95 transition-all"
+                >
+                  <Globe className="w-5 h-5" />
+                </a>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Main Experience Flow */}

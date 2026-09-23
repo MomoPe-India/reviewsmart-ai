@@ -212,16 +212,16 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Feature 6 */}
+            {/* Feature 6: 1 Customer = 1 Business Location & Multi-Store Add-ons */}
             <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 hover:border-indigo-200 hover:shadow-lg transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center mb-6 shadow-md shadow-slate-300">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-6 shadow-md shadow-indigo-200">
                 <Building className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-slate-900 mb-2">
-                White-Label Reseller Panel
+                Multi-Store &amp; Branch Add-ons
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Run this software as your own digital agency business. Create custom subscription tiers, manage merchant clients, and sell physical NFC review cards with 90%+ margins.
+                1 License = 1 Dedicated Business Location. Have multiple stores or outlets? Easily add extra branch review cards and QR passes at just ₹499 per branch without duplicate setup fees.
               </p>
             </div>
           </div>
@@ -285,10 +285,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-              Transparent Pricing
+              Simple, Transparent Pricing
             </h2>
             <p className="text-3xl font-black text-slate-900 tracking-tight">
-              Plans for Single Stores and Agency Resellers
+              Single Business License (1 Location = 1 Card)
             </p>
           </div>
 
@@ -391,6 +391,27 @@ export default function HomePage() {
                 Create &amp; Get 1 Year / Lifetime Pass for ₹999
               </Link>
             </div>
+          </div>
+
+          {/* Multi-Store / Multi-Branch Banner (1 License = 1 Location Policy) */}
+          <div className="mt-8 max-w-4xl mx-auto p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-800/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold mb-1">
+                🏪 Own Multiple Businesses or Branches?
+              </div>
+              <h4 className="text-base font-bold text-white">
+                Additional Location Pass: Only ₹499 per Extra Branch
+              </h4>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Each ReviewSmart AI card is tied to one Google Maps profile. Need cards for a 2nd or 3rd branch? Add them instantly for ₹499 each with 0% extra gateway fees.
+              </p>
+            </div>
+            <Link
+              href="/create"
+              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs whitespace-nowrap transition shadow-md flex items-center gap-1.5"
+            >
+              Add Extra Store Pass (₹499)
+            </Link>
           </div>
         </div>
       </section>

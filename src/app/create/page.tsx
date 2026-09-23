@@ -105,6 +105,7 @@ interface GoogleSearchResult {
   googleReviewUrl: string;
   suggestedTags: string[];
   rating: number;
+  logoUrl?: string | null;
 }
 
 export default function CreateCardPage() {
@@ -118,6 +119,12 @@ export default function CreateCardPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([tags[0], tags[1]]);
   const [headline, setHeadline] = useState("Scan to Review Us on Google");
   const [subtitle, setSubtitle] = useState("Tap your phone or scan with camera");
+
+  // Logo & Direct Contact links (strictly WhatsApp, Instagram, Website)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [whatsapp, setWhatsapp] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [website, setWebsite] = useState("");
 
   // Google Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -177,6 +184,7 @@ export default function CreateCardPage() {
     setBusinessName(b.name);
     setBusinessAddress(b.address);
     setGoogleReviewUrl(b.googleReviewUrl);
+    setLogoUrl(b.logoUrl || null);
 
     if (b.suggestedTags && b.suggestedTags.length > 0) {
       setTags(b.suggestedTags);
@@ -358,6 +366,10 @@ export default function CreateCardPage() {
           googleReviewUrl,
           primaryColor,
           tagline,
+          logoUrl,
+          whatsapp,
+          instagram,
+          website,
           keywords: selectedIndustry.keywords,
           tagChips: tags.join(","),
         }),
@@ -665,6 +677,73 @@ export default function CreateCardPage() {
               </div>
             </div>
 
+            {/* Step 3: Direct Contact & Social Links (Strictly WhatsApp, Instagram, Website) */}
+            <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <Share2 className="w-4 h-4 text-indigo-600" />
+                  3. Contact &amp; Social Links (Optional)
+                </label>
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                  Highlighted Icons
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Only links you provide will appear as highlighted buttons on your customer review card. Empty links remain hidden.
+              </p>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  WhatsApp (Mobile Number or Link)
+                </label>
+                <input
+                  type="text"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  placeholder="e.g. 9876543210 or https://wa.me/919876543210"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Instagram Profile (@handle or URL)
+                </label>
+                <input
+                  type="text"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                  placeholder="e.g. @mybusiness or instagram.com/mybusiness"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Website URL
+                </label>
+                <input
+                  type="text"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="e.g. https://mybusiness.com"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
+                />
+              </div>
+
+              {/* Logo auto-sync indicator */}
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                <span>
+                  {logoUrl ? (
+                    <strong className="text-emerald-700">✓ Google Maps Logo auto-synced!</strong>
+                  ) : (
+                    <span><strong>Google Maps Profile Logo:</strong> Auto-fetched on search. If not found, your brand initials badge displays automatically. Zero custom logo upload needed.</span>
+                  )}
+                </span>
+              </div>
+            </div>
+
             {/* Quick Action Buttons */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
               <button
@@ -852,13 +931,38 @@ export default function CreateCardPage() {
                 {/* Card Header */}
                 <div className="flex flex-col items-center text-center pb-4 border-b border-slate-100">
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md mb-2"
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md mb-2 overflow-hidden"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    {businessName.slice(0, 2).toUpperCase() || "RS"}
+                    {logoUrl ? (
+                      <img src={logoUrl} alt={businessName} className="w-full h-full object-cover" />
+                    ) : (
+                      businessName.slice(0, 2).toUpperCase() || "RS"
+                    )}
                   </div>
                   <h3 className="text-base font-bold text-slate-900">{businessName}</h3>
                   <p className="text-xs text-slate-500">{tagline}</p>
+
+                  {/* Social Icons Live Preview (Strictly WhatsApp, Instagram, Website) */}
+                  {(whatsapp || instagram || website) && (
+                    <div className="flex items-center justify-center gap-2 mt-2.5">
+                      {whatsapp && (
+                        <span className="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-sm text-[10px] font-bold" title="WhatsApp">
+                          WA
+                        </span>
+                      )}
+                      {instagram && (
+                        <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white flex items-center justify-center shadow-sm text-[10px] font-bold" title="Instagram">
+                          IG
+                        </span>
+                      )}
+                      {website && (
+                        <span className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-sm text-[10px] font-bold" title="Website">
+                          WEB
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Interactive Star Clicker */}
                   <div className="flex items-center gap-2 mt-3 cursor-pointer">

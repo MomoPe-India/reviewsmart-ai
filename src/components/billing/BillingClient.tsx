@@ -30,7 +30,7 @@ export default function BillingClient({
   settings,
   recentPayments: initialPayments,
 }: BillingClientProps) {
-  const [selectedPlan, setSelectedPlan] = useState<"MONTHLY_299" | "LIFETIME_999">("MONTHLY_299");
+  const [selectedPlan, setSelectedPlan] = useState<"MONTHLY_299" | "LIFETIME_999" | "ADDON_499">("MONTHLY_299");
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copiedUpi, setCopiedUpi] = useState(false);
 
@@ -46,9 +46,19 @@ export default function BillingClient({
   const upiPayee = settings?.upiPayeeName || "Damerla Mohan";
   const digitalPrice = settings?.digitalPrice || 299;
   const physicalPrice = settings?.physicalPrice || 999;
+  const addonPrice = 499;
 
-  const currentAmount = selectedPlan === "MONTHLY_299" ? digitalPrice : physicalPrice;
-  const transactionNote = `ReviewPass-${business?.slug || "Activation"}`;
+  const currentAmount =
+    selectedPlan === "MONTHLY_299"
+      ? digitalPrice
+      : selectedPlan === "LIFETIME_999"
+      ? physicalPrice
+      : addonPrice;
+
+  const transactionNote =
+    selectedPlan === "ADDON_499"
+      ? `BranchAddon-${business?.slug || "Multi"}`
+      : `ReviewPass-${business?.slug || "Activation"}`;
 
   // Standard UPI URI Scheme
   const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(
@@ -198,6 +208,36 @@ export default function BillingClient({
                 Zero Monthly Renewal Hassle
               </li>
             </ul>
+          </div>
+
+          {/* Additional Branch / Multi-Location Pass (1 License = 1 Location) */}
+          <div
+            onClick={() => setSelectedPlan("ADDON_499")}
+            className={`sm:col-span-2 p-5 rounded-3xl border-2 cursor-pointer transition-all ${
+              selectedPlan === "ADDON_499"
+                ? "border-emerald-600 bg-emerald-50/40 shadow-md ring-2 ring-emerald-500/20"
+                : "border-slate-200 bg-white hover:border-slate-300"
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-800">
+                    Additional Location Pass (Multi-Branch / Multi-Store)
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    1 License = 1 Location
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Own more than 1 store or multiple branches? Each ReviewSmart AI card is tied to one Google Maps profile. Select this to activate an extra outlet for ₹499.
+                </p>
+              </div>
+              <div className="flex items-baseline gap-1.5 flex-shrink-0">
+                <span className="text-2xl font-black text-slate-900">₹{addonPrice}</span>
+                <span className="text-xs text-slate-400">/ branch</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -367,7 +407,7 @@ export default function BillingClient({
                       UTR: {p.utrNumber}
                     </div>
                     <div className="text-[11px] text-slate-500">
-                      ₹{p.amount} • {p.planType === "LIFETIME_999" ? "1 Year / Lifetime Pass" : "1 Month Pass"}
+                      ₹{p.amount} • {p.planType === "LIFETIME_999" ? "1 Year / Lifetime Pass" : p.planType === "ADDON_499" ? "Additional Location Pass" : "1 Month Pass"}
                     </div>
                   </div>
                   <div>

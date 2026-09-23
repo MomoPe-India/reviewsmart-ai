@@ -55,10 +55,10 @@ export default async function AdminOverviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-black text-white tracking-tight">
-            Reseller Platform Overview 💼
+            Platform Management Overview 📊
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Monitor client accounts, subscription revenue, and review card volume.
+            Monitor store accounts, subscription revenue, and review card volume.
           </p>
         </div>
 

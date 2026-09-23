@@ -169,19 +169,37 @@ export default function SettingsClient({ business }: { business: BusinessData })
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Logo Image URL
+              Google Maps Profile Logo / Avatar
             </label>
-            <input
-              type="url"
-              name="logoUrl"
-              value={form.logoUrl}
-              onChange={handleChange}
-              placeholder="https://example.com/logo.png"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+                {form.logoUrl ? (
+                  <img
+                    src={form.logoUrl}
+                    alt={form.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-base font-black text-indigo-600">
+                    {form.name.slice(0, 2).toUpperCase() || "RS"}
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] leading-snug">
+                {form.logoUrl ? (
+                  <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5" /> Auto-synced from Google Maps
+                  </span>
+                ) : (
+                  <span className="text-slate-500">
+                    No custom logo on Google profile. Smart brand initials badge is shown automatically.
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
           <div>
@@ -329,68 +347,51 @@ export default function SettingsClient({ business }: { business: BusinessData })
         </div>
       </div>
 
-      {/* 5. Direct Contact & Social Links */}
+      {/* 5. Direct Contact & Social Links (Strictly WhatsApp, Instagram & Website) */}
       <div className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-sm space-y-4">
-        <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <Store className="w-4 h-4 text-indigo-600" />
-          Direct Contact &amp; Social Links
-        </h2>
+        <div>
+          <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <Store className="w-4 h-4 text-indigo-600" />
+            Direct Contact &amp; Social Links
+          </h2>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Only links provided below will appear as highlighted action icons on your customer review page. Leave empty to hide.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              WhatsApp Link
+              WhatsApp (Number or Link)
             </label>
             <input
               type="text"
               name="whatsapp"
               value={form.whatsapp}
               onChange={handleChange}
-              placeholder="https://wa.me/15551234567"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              placeholder="e.g. 9876543210 or https://wa.me/919876543210"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Direct 1-tap chat button for customers.
+            </span>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="+1 (555) 234-5678"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Instagram Profile URL
+              Instagram Profile (@handle or URL)
             </label>
             <input
               type="text"
               name="instagram"
               value={form.instagram}
               onChange={handleChange}
-              placeholder="https://instagram.com/mybusiness"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              placeholder="e.g. @mybusiness or https://instagram.com/mybusiness"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Facebook Page URL
-            </label>
-            <input
-              type="text"
-              name="facebook"
-              value={form.facebook}
-              onChange={handleChange}
-              placeholder="https://facebook.com/mybusiness"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Grows your Instagram following directly from the review page.
+            </span>
           </div>
         </div>
 
@@ -399,13 +400,16 @@ export default function SettingsClient({ business }: { business: BusinessData })
             Website URL
           </label>
           <input
-            type="url"
+            type="text"
             name="website"
             value={form.website}
             onChange={handleChange}
             placeholder="https://mybusiness.com"
             className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
+          <span className="text-[10px] text-slate-400 mt-0.5 block">
+            Direct link to your official menu, store, or website.
+          </span>
         </div>
       </div>
 

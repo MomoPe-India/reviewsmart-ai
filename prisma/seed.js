@@ -71,10 +71,11 @@ async function main() {
       price: 999.0,
       currency: "INR",
       durationDays: 3650,
-      maxCards: 3,
+      maxCards: 1,
       features: JSON.stringify([
         "Special Launch Offer: was ₹1,999 (Save ₹1,000!)",
         "Full 1 Year / Lifetime Uninterrupted Access",
+        "1 Business Location License (1 Card)",
         "Gemini AI Unlimited Review Generations",
         "Print Studio: Unlimited Acrylic Stands & Cards",
         "AI Review Reply Assistant for Google Maps",
@@ -88,10 +89,11 @@ async function main() {
       price: 999.0,
       currency: "INR",
       durationDays: 3650,
-      maxCards: 3,
+      maxCards: 1,
       features: JSON.stringify([
         "Special Launch Offer: was ₹1,999 (Save ₹1,000!)",
         "Full 1 Year / Lifetime Uninterrupted Access",
+        "1 Business Location License (1 Card)",
         "Gemini AI Unlimited Review Generations",
         "Print Studio: Unlimited Acrylic Stands & Cards",
         "AI Review Reply Assistant for Google Maps",
@@ -101,40 +103,49 @@ async function main() {
     },
   });
 
-  const agencyPlan = await prisma.subscriptionPlan.upsert({
-    where: { id: "plan_agency" },
+  // Additional Branch / Multi-Location Pass (1 Business = 1 License policy)
+  const addonPlan = await prisma.subscriptionPlan.upsert({
+    where: { id: "plan_addon" },
     update: {
-      name: "Agency Multi-Store Pass",
-      price: 2999.0,
+      name: "Additional Branch Location Pass",
+      price: 499.0,
       currency: "INR",
       durationDays: 3650,
-      maxCards: 15,
+      maxCards: 1,
       features: JSON.stringify([
-        "15 Smart Review Cards / Client Locations",
-        "Full Reseller White-Label Management",
-        "Unlimited Gemini AI Generations",
-        "Print Studio & Direct UPI Activation",
-        "Priority WhatsApp Support",
+        "1 Additional Store / Branch Review Card",
+        "Separate Google Place ID & Review Funnel",
+        "Unlimited AI Generations for Branch",
+        "Print Studio Access for Branch Stand",
+        "Direct UPI Activation (0% Fee)",
       ]),
       isActive: true,
     },
     create: {
-      id: "plan_agency",
-      name: "Agency Multi-Store Pass",
-      price: 2999.0,
+      id: "plan_addon",
+      name: "Additional Branch Location Pass",
+      price: 499.0,
       currency: "INR",
       durationDays: 3650,
-      maxCards: 15,
+      maxCards: 1,
       features: JSON.stringify([
-        "15 Smart Review Cards / Client Locations",
-        "Full Reseller White-Label Management",
-        "Unlimited Gemini AI Generations",
-        "Print Studio & Direct UPI Activation",
-        "Priority WhatsApp Support",
+        "1 Additional Store / Branch Review Card",
+        "Separate Google Place ID & Review Funnel",
+        "Unlimited AI Generations for Branch",
+        "Print Studio Access for Branch Stand",
+        "Direct UPI Activation (0% Fee)",
       ]),
       isActive: true,
     },
   });
+
+  // Deactivate old agency reseller plan if present
+  try {
+    await prisma.subscriptionPlan.updateMany({
+      where: { id: "plan_agency" },
+      data: { isActive: false },
+    });
+  } catch (e) {}
 
   // 3. Super Admin
   const adminPassword = await bcrypt.hash("admin123", 10);

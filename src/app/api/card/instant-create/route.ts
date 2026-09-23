@@ -16,6 +16,10 @@ export async function POST(req: NextRequest) {
       keywords,
       tagChips,
       tagline,
+      logoUrl,
+      whatsapp,
+      instagram,
+      website,
     } = body;
 
     if (!businessName || !businessName.trim()) {
@@ -78,10 +82,13 @@ export async function POST(req: NextRequest) {
         name: businessName.trim(),
         slug: uniqueSlug,
         tagline: tagline || "Review our service & share your experience!",
+        logoUrl: logoUrl || null,
         primaryColor: primaryColor || "#4f46e5",
         googleReviewUrl: googleReviewUrl || null,
         phone: cleanPhone,
-        whatsapp: cleanPhone,
+        whatsapp: whatsapp && whatsapp.trim() ? whatsapp.trim() : cleanPhone,
+        instagram: instagram && instagram.trim() ? instagram.trim() : null,
+        website: website && website.trim() ? website.trim() : null,
         minRatingForGoogle: 4,
         keywords:
           keywords ||

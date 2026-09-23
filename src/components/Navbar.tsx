@@ -178,7 +178,7 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-xs"
                   >
-                    Reseller Owner Panel
+                    Owner Admin Panel
                   </Link>
                 )}
                 <button

@@ -42,6 +42,7 @@ Find up to 3 most likely matching real businesses on Google Maps. For each busin
    "https://www.google.com/maps/search/?api=1&query=" + URI encoded (name + " " + address)
 5. Provide 5 positive tag chips for customer reviews ("suggestedTags": array of 5 strings)
 6. Provide approximate rating e.g. 4.8 ("rating": number)
+7. If publicly available/known, provide business logo or profile image URL ("logoUrl": string or null if none)
 
 Respond strictly in valid JSON format:
 {
@@ -52,7 +53,8 @@ Respond strictly in valid JSON format:
       "category": "Cafe & Restaurant",
       "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=...",
       "suggestedTags": ["Great Coffee", "Cozy Ambience", "Friendly Staff", "Fast Wifi", "Clean Tables"],
-      "rating": 4.9
+      "rating": 4.9,
+      "logoUrl": null
     }
   ]
 }
@@ -115,6 +117,7 @@ Do not include markdown backticks or explanations. Output pure JSON.
         googleReviewUrl: directMapsUrl,
         suggestedTags,
         rating: 5.0,
+        logoUrl: null,
       },
     ],
   });

@@ -34,12 +34,12 @@ export default async function AdminLayout({
               <div className="flex items-center gap-2 text-amber-400 mb-1">
                 <ShieldCheck className="w-5 h-5" />
                 <span className="text-xs font-black uppercase tracking-wider">
-                  Owner Reseller Mode
+                  Owner Admin Mode
                 </span>
               </div>
               <h2 className="text-sm font-bold text-white">Platform Control</h2>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Manage clients, plans, and reseller white-label settings
+                Manage stores, subscription passes, and system settings
               </p>
             </div>
 
@@ -49,7 +49,7 @@ export default async function AdminLayout({
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition"
               >
                 <LayoutDashboard className="w-4 h-4 text-slate-400" />
-                Reseller Overview
+                Platform Overview
               </Link>
               <Link
                 href="/admin/plans"
