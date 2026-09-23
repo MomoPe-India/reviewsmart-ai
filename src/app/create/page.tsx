@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import {
@@ -153,11 +153,25 @@ export default function CreateCardPage() {
     }
   };
 
-  // Google Search state
+  // Google Search & Live Typeahead state
   const [searchQuery, setSearchQuery] = useState("");
   const [searchingGoogle, setSearchingGoogle] = useState(false);
   const [searchResults, setSearchResults] = useState<GoogleSearchResult[]>([]);
   const [searchError, setSearchError] = useState("");
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   // Preview interactive state
   const [activeTab, setActiveTab] = useState<"stand" | "card">("stand");
@@ -205,27 +219,68 @@ export default function CreateCardPage() {
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Handle Google Business search
+  // Live Typeahead: auto-queries Google Maps as user types
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    setSearchError("");
+
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    if (!value || value.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearchDropdownOpen(false);
+      setSearchingGoogle(false);
+      return;
+    }
+
+    setIsSearchDropdownOpen(true);
+    setSearchingGoogle(true);
+
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/business/search-google?query=${encodeURIComponent(value.trim())}`);
+        const data = await res.json();
+        if (res.ok && data.results && data.results.length > 0) {
+          setSearchResults(data.results);
+          setIsSearchDropdownOpen(true);
+        } else {
+          setSearchResults([]);
+          setSearchError("No exact match found. You can enter details manually below.");
+        }
+      } catch {
+        setSearchError("Could not search Google Maps. Please enter details manually below.");
+      } finally {
+        setSearchingGoogle(false);
+      }
+    }, 280); // 280ms debounce for lightning quick feel
+  };
+
+  // Immediate search on submit / enter
   const handleSearchGoogle = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim() || searchQuery.trim().length < 2) return;
 
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
     setSearchingGoogle(true);
     setSearchError("");
+    setIsSearchDropdownOpen(true);
+
     try {
-      const res = await fetch("/api/business/search-google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: searchQuery.trim() }),
-      });
+      const res = await fetch(`/api/business/search-google?query=${encodeURIComponent(searchQuery.trim())}`);
       const data = await res.json();
       if (res.ok && data.results && data.results.length > 0) {
         setSearchResults(data.results);
+        setIsSearchDropdownOpen(true);
       } else {
         setSearchError("No business found. You can enter your details manually below.");
       }
     } catch {
-      setSearchError("Could not search Google. Please enter your name below.");
+      setSearchError("Could not search Google. Please enter your details below.");
     } finally {
       setSearchingGoogle(false);
     }
@@ -237,6 +292,8 @@ export default function CreateCardPage() {
     setBusinessAddress(b.address);
     setGoogleReviewUrl(b.googleReviewUrl);
     setLogoUrl(b.logoUrl || null);
+    setSearchQuery(b.name + (b.branchName ? ` - ${b.branchName}` : ""));
+    setIsSearchDropdownOpen(false);
 
     if (b.suggestedTags && b.suggestedTags.length > 0) {
       setTags(b.suggestedTags);
@@ -254,7 +311,6 @@ export default function CreateCardPage() {
       setPrimaryColor(matched.color);
     }
 
-    setSearchResults([]);
     confetti({ particleCount: 40, spread: 60, origin: { y: 0.4 } });
     generateLiveAiReview(b.name, b.suggestedTags);
   };
@@ -514,106 +570,153 @@ export default function CreateCardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Form Controls (Hidden on Print) */}
           <div className="lg:col-span-5 space-y-4 no-print">
-            {/* GOOGLE BUSINESS SEARCH BOX (NEW HERO FEATURE) */}
-            <div className="bg-gradient-to-br from-indigo-50/90 to-purple-50/70 p-5 rounded-3xl border border-indigo-200/80 shadow-sm space-y-3">
+            {/* GOOGLE BUSINESS SEARCH BOX (LIVE REAL-TIME AUTOCOMPLETE) */}
+            <div className="bg-gradient-to-br from-indigo-50/95 via-purple-50/80 to-white p-5 rounded-3xl border-2 border-indigo-200/90 shadow-sm space-y-3 relative z-30">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-black text-indigo-950 flex items-center gap-2">
                   <Search className="w-4 h-4 text-indigo-600" />
-                  Auto-Find Your Google Business
+                  Live Google Maps Profile Finder
                 </label>
-                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100/80 px-2 py-0.5 rounded-full">
-                  Recommended
+                <span className="text-[10px] font-extrabold text-indigo-700 bg-indigo-100/90 px-2 py-0.5 rounded-full border border-indigo-200 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-indigo-600" />
+                  Auto-Typeahead
                 </span>
               </div>
 
-              <p className="text-[11px] text-slate-600">
-                Don't know your Google review URL? Just type your shop name &amp; city — we'll grab it automatically!
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Start typing your store name — matching Google Maps branches drop down automatically as you type!
               </p>
 
-              <form onSubmit={handleSearchGoogle} className="flex gap-2">
-                <div className="relative flex-1">
-                  <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              {/* Real-Time Typeahead Input Container */}
+              <div ref={searchContainerRef} className="relative">
+                <form onSubmit={handleSearchGoogle} className="relative flex items-center">
+                  <MapPin className="w-4 h-4 text-indigo-500 absolute left-3.5 top-3.5 z-10 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="e.g. Chai Point Indiranagar Bangalore"
-                    className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-indigo-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(e) => handleSearchInputChange(e.target.value)}
+                    onFocus={() => {
+                      if (searchResults.length > 0) setIsSearchDropdownOpen(true);
+                    }}
+                    placeholder="Type business name (e.g. Paradise Biryani, Chai Point, Apollo Clinic)..."
+                    className="w-full text-xs pl-10 pr-24 py-3 rounded-2xl border-2 border-indigo-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold text-slate-900 shadow-sm transition placeholder:font-normal placeholder:text-slate-400"
                   />
-                </div>
-                <button
-                  type="submit"
-                  disabled={searchingGoogle}
-                  className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition flex-shrink-0 disabled:opacity-60"
-                >
-                  {searchingGoogle ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <span>Search</span>
-                      <Search className="w-3.5 h-3.5" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {searchError && (
-                <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">
-                  {searchError}
-                </p>
-              )}
-
-              {/* Search Results Dropdown List */}
-              {searchResults.length > 0 && (
-                <div className="space-y-2 pt-2 border-t border-indigo-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-indigo-900 block">
-                      Found {searchResults.length} matching locations — Select your exact branch:
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setSearchResults([])}
-                      className="text-[10px] text-slate-400 hover:text-slate-600"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                  {searchResults.map((b, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => handleSelectBusiness(b)}
-                      className="p-3.5 rounded-2xl bg-white border-2 border-indigo-100 hover:border-indigo-500 hover:shadow-md cursor-pointer transition flex items-center justify-between gap-3 group"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="text-xs font-bold text-slate-900 truncate">
-                            {b.name}
-                          </h4>
-                          {b.branchName && (
-                            <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                              <MapPin className="w-2.5 h-2.5" />
-                              {b.branchName}
-                            </span>
-                          )}
-                          <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
-                            ★ {b.rating} {b.reviewCount && <span className="text-[9px] font-normal text-slate-500">({b.reviewCount})</span>}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                          {b.address}
-                        </p>
-                      </div>
+                  <div className="absolute right-2.5 top-2 z-10 flex items-center gap-1.5">
+                    {searchingGoogle ? (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded-xl border border-indigo-200 animate-pulse">
+                        <Loader2 className="w-3 h-3 animate-spin text-indigo-600" />
+                        <span>Searching...</span>
+                      </span>
+                    ) : searchQuery.length >= 2 ? (
                       <button
                         type="button"
-                        className="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-[11px] group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0 shadow-sm"
+                        onClick={() => handleSearchGoogle()}
+                        className="px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] shadow-sm transition"
                       >
-                        Select Branch ✨
+                        Search
+                      </button>
+                    ) : null}
+                  </div>
+                </form>
+
+                {searchError && (
+                  <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 mt-2">
+                    {searchError}
+                  </p>
+                )}
+
+                {/* FLOATING LIVE AUTOCOMPLETE DROPDOWN */}
+                {isSearchDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl border-2 border-indigo-300 shadow-2xl z-50 overflow-hidden divide-y divide-slate-100 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[380px] overflow-y-auto">
+                    <div className="p-2.5 bg-gradient-to-r from-indigo-50 to-purple-50 flex items-center justify-between sticky top-0 z-20 backdrop-blur-md">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-indigo-600" />
+                        {searchingGoogle
+                          ? "Looking up Google Maps profiles..."
+                          : `Recognize your store (${searchResults.length} branch${searchResults.length === 1 ? "" : "es"} found)`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsSearchDropdownOpen(false)}
+                        className="text-[10px] font-bold text-slate-400 hover:text-slate-700 bg-white/80 px-2 py-0.5 rounded-md border border-slate-200"
+                      >
+                        Close ✕
                       </button>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    {searchingGoogle && searchResults.length === 0 && (
+                      <div className="p-6 text-center space-y-2">
+                        <Loader2 className="w-6 h-6 text-indigo-600 animate-spin mx-auto" />
+                        <p className="text-xs font-bold text-slate-800">Searching Google Maps...</p>
+                        <p className="text-[10px] text-slate-500">Finding verified branch locations, addresses &amp; ratings</p>
+                      </div>
+                    )}
+
+                    {searchResults.map((b, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectBusiness(b)}
+                        className="p-3.5 hover:bg-indigo-50/80 cursor-pointer transition flex items-start gap-3 group"
+                      >
+                        {/* Visual Recognition Pin / Logo */}
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-sm mt-0.5 group-hover:scale-105 transition-transform overflow-hidden">
+                          {b.logoUrl ? (
+                            <img src={b.logoUrl} alt={b.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <MapPin className="w-5 h-5 text-white" />
+                          )}
+                        </div>
+
+                        {/* Store Recognition Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-black text-slate-900 group-hover:text-indigo-600 transition">
+                              {b.name}
+                            </h4>
+                            {b.branchName && (
+                              <span className="text-[10px] font-black text-indigo-700 bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                                📍 {b.branchName}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-amber-800 font-extrabold bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
+                              ★ {b.rating}
+                              {b.reviewCount && (
+                                <span className="text-[9px] font-semibold text-amber-900">
+                                  ({b.reviewCount})
+                                </span>
+                              )}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-slate-600 font-medium line-clamp-1 mt-1">
+                            {b.address}
+                          </p>
+
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                              {b.category}
+                            </span>
+                            <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5">
+                              <CheckCircle2 className="w-2.5 h-2.5" /> Verified Google Profile
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Select Action Indicator */}
+                        <div className="flex-shrink-0 self-center">
+                          <button
+                            type="button"
+                            className="px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-black text-[11px] group-hover:bg-indigo-600 group-hover:text-white transition shadow-sm flex items-center gap-1"
+                          >
+                            <span>Select</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Step 1: Business Identity */}

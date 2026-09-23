@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -35,11 +35,13 @@ interface GoogleSearchResult {
   name: string;
   branchName?: string;
   address: string;
+  category?: string;
   rating?: number;
   reviewCount?: number | string;
   reviewUrl?: string;
   googleReviewUrl?: string;
   logoUrl?: string | null;
+  suggestedTags?: string[];
 }
 
 interface AgentSession {
@@ -111,17 +113,75 @@ export default function AgentPosPage() {
     }
   };
 
-  // Google Search Handler
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  // Live Typeahead: Queries Google Maps as agent types
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    if (!value || value.trim().length < 2) {
+      setSearchResults([]);
+      setIsDropdownOpen(false);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsDropdownOpen(true);
     setIsSearching(true);
+
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/business/search-google?query=${encodeURIComponent(value.trim())}`
+        );
+        const data = await res.json();
+        if (res.ok && data.results && data.results.length > 0) {
+          setSearchResults(data.results);
+          setIsDropdownOpen(true);
+        } else {
+          setSearchResults([]);
+        }
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 280);
+  };
+
+  // Immediate manual Search Handler
+  const handleSearch = async () => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) return;
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    setIsSearching(true);
+    setIsDropdownOpen(true);
     try {
       const res = await fetch(
-        `/api/business/search-google?query=${encodeURIComponent(searchQuery)}`
+        `/api/business/search-google?query=${encodeURIComponent(searchQuery.trim())}`
       );
       const data = await res.json();
       if (res.ok && data.results) {
         setSearchResults(data.results);
+        setIsDropdownOpen(true);
       } else {
         setSearchResults([]);
       }
@@ -135,7 +195,8 @@ export default function AgentPosPage() {
   const handleSelectBusiness = (b: GoogleSearchResult) => {
     setSelectedPlace(b);
     setSearchResults([]);
-    setSearchQuery(b.name);
+    setIsDropdownOpen(false);
+    setSearchQuery(b.name + (b.branchName ? ` - ${b.branchName}` : ""));
     if (b.logoUrl) {
       setCustomLogoUrl(b.logoUrl);
     }
@@ -366,71 +427,131 @@ export default function AgentPosPage() {
               </div>
             )}
 
-            {/* STEP 1: Search & Demo Generator */}
-            <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3">
-              <label className="text-xs font-bold text-white flex items-center gap-1.5">
-                <Store className="w-4 h-4 text-indigo-400" />
-                Step 1: Search Merchant's Google Business
-              </label>
+            {/* STEP 1: Search & Demo Generator (LIVE TYPEAHEAD AUTOCOMPLETE) */}
+            <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3 relative z-30">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Store className="w-4 h-4 text-indigo-400" />
+                  Step 1: Search Merchant's Google Business
+                </label>
+                <span className="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-800 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
+                  Live Typeahead
+                </span>
+              </div>
 
-              <div className="relative flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <div ref={searchContainerRef} className="relative">
+                <div className="relative flex items-center">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchInputChange(e.target.value)}
+                    onFocus={() => {
+                      if (searchResults.length > 0) setIsDropdownOpen(true);
+                    }}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
-                    placeholder="Type restaurant / salon name..."
-                    className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Type store name (e.g. Paradise Biryani, Chai Point)..."
+                    className="w-full text-xs pl-10 pr-24 py-3 rounded-2xl bg-slate-800/90 border-2 border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-inner"
                   />
+                  <div className="absolute right-2.5 top-2 z-10 flex items-center gap-1">
+                    {isSearching ? (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-2 py-1 rounded-xl border border-indigo-800 animate-pulse">
+                        <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
+                        <span>Searching...</span>
+                      </span>
+                    ) : searchQuery.length >= 2 ? (
+                      <button
+                        type="button"
+                        onClick={handleSearch}
+                        className="px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold shadow-sm transition"
+                      >
+                        Search
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleSearch}
-                  disabled={isSearching}
-                  className="px-3 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex-shrink-0 disabled:opacity-50"
-                >
-                  {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
-                </button>
-              </div>
 
-              {/* Search Results Dropdown with Branch Disambiguation */}
-              {searchResults.length > 0 && (
-                <div className="space-y-1.5 pt-1 max-h-56 overflow-y-auto">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
-                    Select Exact Branch Outlet:
-                  </span>
-                  {searchResults.map((r, idx) => (
-                    <button
-                      key={r.placeId || idx}
-                      type="button"
-                      onClick={() => handleSelectBusiness(r)}
-                      className="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-indigo-950/40 border border-slate-700 text-left transition flex items-center justify-between gap-2.5"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-bold text-white truncate">{r.name}</span>
-                          {r.branchName && (
-                            <span className="text-[9px] font-bold text-indigo-300 bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-800">
-                              📍 {r.branchName}
-                            </span>
-                          )}
-                          {r.rating && (
-                            <span className="text-[9px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
-                              ★ {r.rating} {r.reviewCount && `(${r.reviewCount})`}
-                            </span>
+                {/* Floating Live Autocomplete Dropdown */}
+                {isDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 rounded-2xl border-2 border-indigo-500/40 shadow-2xl z-50 overflow-hidden divide-y divide-slate-800 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[340px] overflow-y-auto">
+                    <div className="p-2 bg-slate-800/90 flex items-center justify-between sticky top-0 z-20 backdrop-blur-md">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-indigo-400" />
+                        {isSearching ? "Searching Google Maps..." : `Matching Google Stores (${searchResults.length})`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="text-[10px] font-bold text-slate-400 hover:text-white"
+                      >
+                        Close ✕
+                      </button>
+                    </div>
+
+                    {isSearching && searchResults.length === 0 && (
+                      <div className="p-5 text-center space-y-2">
+                        <Loader2 className="w-5 h-5 text-indigo-400 animate-spin mx-auto" />
+                        <p className="text-xs font-bold text-slate-200">Finding Google Maps profiles...</p>
+                        <p className="text-[10px] text-slate-400">Locating verified branches &amp; addresses</p>
+                      </div>
+                    )}
+
+                    {searchResults.map((r, idx) => (
+                      <div
+                        key={r.placeId || idx}
+                        onClick={() => handleSelectBusiness(r)}
+                        className="p-3 hover:bg-indigo-950/40 cursor-pointer transition flex items-start gap-2.5 group"
+                      >
+                        {/* Store Icon */}
+                        <div className="w-9 h-9 rounded-xl bg-indigo-900/60 border border-indigo-700/50 flex items-center justify-center text-white font-bold flex-shrink-0 mt-0.5 group-hover:scale-105 transition-transform overflow-hidden">
+                          {r.logoUrl ? (
+                            <img src={r.logoUrl} alt={r.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <MapPin className="w-4 h-4 text-indigo-300" />
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400 truncate mt-0.5">{r.address}</div>
+
+                        {/* Store Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-bold text-white group-hover:text-indigo-300 transition">
+                              {r.name}
+                            </span>
+                            {r.branchName && (
+                              <span className="text-[9px] font-bold text-indigo-300 bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-800">
+                                📍 {r.branchName}
+                              </span>
+                            )}
+                            {r.rating && (
+                              <span className="text-[9px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
+                                ★ {r.rating} {r.reviewCount && `(${r.reviewCount})`}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5">{r.address}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[8px] font-semibold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
+                              {r.category}
+                            </span>
+                            <span className="text-[8px] font-semibold text-emerald-400 flex items-center gap-0.5">
+                              <CheckCircle2 className="w-2.5 h-2.5" /> Google Verified
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Select Pill */}
+                        <button
+                          type="button"
+                          className="px-2.5 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 text-[10px] font-bold group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0 self-center"
+                        >
+                          Select ➔
+                        </button>
                       </div>
-                      <span className="px-2 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 text-[10px] font-bold flex-shrink-0">
-                        Select
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Selected Business Preview Badge & Logo Uploader */}
               {selectedPlace && (
