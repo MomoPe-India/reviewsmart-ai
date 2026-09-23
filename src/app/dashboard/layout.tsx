@@ -15,6 +15,8 @@ import {
   Store,
 } from "lucide-react";
 
+import BranchSwitcher from "@/components/dashboard/BranchSwitcher";
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -25,9 +27,17 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const business = await prisma.business.findFirst({
+  const businesses = await prisma.business.findMany({
     where: { userId: user.id },
-    select: { id: true, name: true, slug: true, logoUrl: true, primaryColor: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      logoUrl: true,
+      primaryColor: true,
+      googleAddress: true,
+    },
+    orderBy: { createdAt: "asc" },
   });
 
   return (
@@ -38,44 +48,11 @@ export default async function DashboardLayout({
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Sidebar */}
           <aside className="lg:col-span-1 space-y-4 no-print">
-            {/* Store Profile Card */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold overflow-hidden flex-shrink-0">
-                  {business?.logoUrl ? (
-                    <img
-                      src={business.logoUrl}
-                      alt={business.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Store className="w-5 h-5" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-xs font-bold text-slate-900 truncate">
-                    {business?.name || "My Business"}
-                  </h2>
-                  <p className="text-[11px] text-slate-400 truncate">
-                    /{business?.slug || "portal"}
-                  </p>
-                </div>
-              </div>
-
-              {business && (
-                <div className="mt-3 pt-3 border-t border-slate-100">
-                  <a
-                    href={`/r/${business.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-1.5 px-2.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-[11px] font-semibold flex items-center justify-between transition"
-                  >
-                    <span>View Live Card</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              )}
-            </div>
+            {/* Interactive Multi-Branch Switcher */}
+            <BranchSwitcher
+              branches={businesses}
+              activeBranchId={businesses[0]?.id || ""}
+            />
 
             {/* Navigation Menu */}
             <nav className="bg-white p-2 rounded-2xl border border-slate-200/70 shadow-sm space-y-1 text-xs font-medium">
@@ -85,6 +62,18 @@ export default async function DashboardLayout({
               >
                 <LayoutDashboard className="w-4 h-4 text-slate-400" />
                 Overview
+              </Link>
+              <Link
+                href="/dashboard/branches"
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Store className="w-4 h-4 text-indigo-500" />
+                  <span>My Outlets</span>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                  {businesses.length}
+                </span>
               </Link>
               <Link
                 href="/dashboard/studio"

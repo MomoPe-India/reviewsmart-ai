@@ -4,13 +4,21 @@ import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import BillingClient from "@/components/billing/BillingClient";
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams?: { branchId?: string; plan?: string };
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const business = await prisma.business.findFirst({
-    where: { userId: user.id },
-  });
+  const business = searchParams?.branchId
+    ? await prisma.business.findFirst({
+        where: { id: searchParams.branchId, userId: user.id },
+      })
+    : await prisma.business.findFirst({
+        where: { userId: user.id },
+      });
 
   const subscription = await prisma.userSubscription.findUnique({
     where: { userId: user.id },
@@ -43,6 +51,7 @@ export default async function BillingPage() {
         subscription={subscription}
         settings={settings}
         recentPayments={recentPayments}
+        initialPlan={searchParams?.plan === "ADDON_BRANCH" ? "ADDON_BRANCH" : "MONTHLY_299"}
       />
     </div>
   );

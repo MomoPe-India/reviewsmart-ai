@@ -4,13 +4,21 @@ import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import SettingsClient from "@/components/settings/SettingsClient";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams?: { branchId?: string };
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const business = await prisma.business.findFirst({
-    where: { userId: user.id },
-  });
+  const business = searchParams?.branchId
+    ? await prisma.business.findFirst({
+        where: { id: searchParams.branchId, userId: user.id },
+      })
+    : await prisma.business.findFirst({
+        where: { userId: user.id },
+      });
 
   return (
     <div className="space-y-6">

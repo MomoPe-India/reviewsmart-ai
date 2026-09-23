@@ -22,6 +22,7 @@ interface BillingClientProps {
   subscription: any;
   settings: any;
   recentPayments: any[];
+  initialPlan?: "MONTHLY_299" | "LIFETIME_999" | "ADDON_BRANCH";
 }
 
 export default function BillingClient({
@@ -29,8 +30,12 @@ export default function BillingClient({
   subscription,
   settings,
   recentPayments: initialPayments,
+  initialPlan,
 }: BillingClientProps) {
-  const [selectedPlan, setSelectedPlan] = useState<"MONTHLY_299" | "LIFETIME_999" | "ADDON_499">("MONTHLY_299");
+  const [selectedPlan, setSelectedPlan] = useState<"MONTHLY_299" | "LIFETIME_999" | "ADDON_BRANCH">(
+    initialPlan || "MONTHLY_299"
+  );
+  const [branchQty, setBranchQty] = useState(1);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copiedUpi, setCopiedUpi] = useState(false);
 
@@ -46,18 +51,18 @@ export default function BillingClient({
   const upiPayee = settings?.upiPayeeName || "Damerla Mohan";
   const digitalPrice = settings?.digitalPrice || 299;
   const physicalPrice = settings?.physicalPrice || 999;
-  const addonPrice = 499;
+  const addonPrice = 99;
 
   const currentAmount =
     selectedPlan === "MONTHLY_299"
       ? digitalPrice
       : selectedPlan === "LIFETIME_999"
       ? physicalPrice
-      : addonPrice;
+      : addonPrice * branchQty;
 
   const transactionNote =
-    selectedPlan === "ADDON_499"
-      ? `BranchAddon-${business?.slug || "Multi"}`
+    selectedPlan === "ADDON_BRANCH"
+      ? `BranchAddon-${branchQty}Stores-${business?.slug || "Multi"}`
       : `ReviewPass-${business?.slug || "Activation"}`;
 
   // Standard UPI URI Scheme
@@ -210,32 +215,73 @@ export default function BillingClient({
             </ul>
           </div>
 
-          {/* Additional Branch / Multi-Location Pass (1 License = 1 Location) */}
+          {/* Additional Branch / Multi-Location Pass (Only ₹99 per Extra Branch, Unlimited Branches) */}
           <div
-            onClick={() => setSelectedPlan("ADDON_499")}
+            onClick={() => setSelectedPlan("ADDON_BRANCH")}
             className={`sm:col-span-2 p-5 rounded-3xl border-2 cursor-pointer transition-all ${
-              selectedPlan === "ADDON_499"
+              selectedPlan === "ADDON_BRANCH"
                 ? "border-emerald-600 bg-emerald-50/40 shadow-md ring-2 ring-emerald-500/20"
                 : "border-slate-200 bg-white hover:border-slate-300"
             }`}
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-800">
-                    Additional Location Pass (Multi-Branch / Multi-Store)
+                    Additional Branch Location Pass
                   </span>
                   <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                    1 License = 1 Location
+                    Only ₹99 / Branch • No Limit
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Own more than 1 store or multiple branches? Each ReviewSmart AI card is tied to one Google Maps profile. Select this to activate an extra outlet for ₹499.
+                  Own more than 1 store or multiple branches? Add as many extra branch review cards as you need. Each branch gets its own Google review link, stand, and private shield.
                 </p>
+
+                {/* Interactive Quantity Selector */}
+                {selectedPlan === "ADDON_BRANCH" && (
+                  <div
+                    className="mt-3 flex items-center gap-3 bg-white p-2 rounded-xl border border-emerald-200 w-fit"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="text-xs font-semibold text-slate-700">
+                      Branches to add:
+                    </span>
+                    <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                      <button
+                        type="button"
+                        onClick={() => setBranchQty(Math.max(1, branchQty - 1))}
+                        className="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-black text-xs"
+                      >
+                        -
+                      </button>
+                      <span className="px-3 py-1 font-bold text-xs text-slate-900 font-mono bg-white">
+                        {branchQty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setBranchQty(branchQty + 1)}
+                        className="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-black text-xs"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-xs text-emerald-700 font-bold">
+                      {branchQty} branch{branchQty > 1 ? "es" : ""} = ₹{branchQty * 99}
+                    </span>
+                  </div>
+                )}
               </div>
+
               <div className="flex items-baseline gap-1.5 flex-shrink-0">
-                <span className="text-2xl font-black text-slate-900">₹{addonPrice}</span>
-                <span className="text-xs text-slate-400">/ branch</span>
+                <span className="text-2xl font-black text-slate-900">
+                  ₹{selectedPlan === "ADDON_BRANCH" ? addonPrice * branchQty : addonPrice}
+                </span>
+                <span className="text-xs text-slate-400">
+                  {selectedPlan === "ADDON_BRANCH" && branchQty > 1
+                    ? `total for ${branchQty} branches`
+                    : "/ extra branch"}
+                </span>
               </div>
             </div>
           </div>
@@ -407,7 +453,7 @@ export default function BillingClient({
                       UTR: {p.utrNumber}
                     </div>
                     <div className="text-[11px] text-slate-500">
-                      ₹{p.amount} • {p.planType === "LIFETIME_999" ? "1 Year / Lifetime Pass" : p.planType === "ADDON_499" ? "Additional Location Pass" : "1 Month Pass"}
+                      ₹{p.amount} • {p.planType === "LIFETIME_999" ? "1 Year / Lifetime Pass" : p.planType === "ADDON_BRANCH" || p.planType === "ADDON_499" ? "Additional Branch Pass (₹99)" : "1 Month Pass"}
                     </div>
                   </div>
                   <div>

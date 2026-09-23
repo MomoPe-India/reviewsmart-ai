@@ -4,13 +4,21 @@ import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ReviewReplyClient from "@/components/assistant/ReviewReplyClient";
 
-export default async function AssistantPage() {
+export default async function AssistantPage({
+  searchParams,
+}: {
+  searchParams?: { branchId?: string };
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const business = await prisma.business.findFirst({
-    where: { userId: user.id },
-  });
+  const business = searchParams?.branchId
+    ? await prisma.business.findFirst({
+        where: { id: searchParams.branchId, userId: user.id },
+      })
+    : await prisma.business.findFirst({
+        where: { userId: user.id },
+      });
 
   if (!business) redirect("/dashboard/settings");
 

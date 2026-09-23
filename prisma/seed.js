@@ -103,36 +103,38 @@ async function main() {
     },
   });
 
-  // Additional Branch / Multi-Location Pass (1 Business = 1 License policy)
+  // Additional Branch / Multi-Location Pass (Only ₹99 per Extra Branch, Unlimited Branches)
   const addonPlan = await prisma.subscriptionPlan.upsert({
     where: { id: "plan_addon" },
     update: {
-      name: "Additional Branch Location Pass",
-      price: 499.0,
+      name: "Additional Branch Location Pass (₹99/branch)",
+      price: 99.0,
       currency: "INR",
       durationDays: 3650,
-      maxCards: 1,
+      maxCards: 999,
       features: JSON.stringify([
-        "1 Additional Store / Branch Review Card",
+        "1 Additional Store / Branch Review Card (Only ₹99)",
+        "No Limit: Add as many branches as you operate",
         "Separate Google Place ID & Review Funnel",
-        "Unlimited AI Generations for Branch",
-        "Print Studio Access for Branch Stand",
+        "Unlimited AI Review Generations for Branch",
+        "Print Studio Access for Branch Stand (PDF & 300 DPI)",
         "Direct UPI Activation (0% Fee)",
       ]),
       isActive: true,
     },
     create: {
       id: "plan_addon",
-      name: "Additional Branch Location Pass",
-      price: 499.0,
+      name: "Additional Branch Location Pass (₹99/branch)",
+      price: 99.0,
       currency: "INR",
       durationDays: 3650,
-      maxCards: 1,
+      maxCards: 999,
       features: JSON.stringify([
-        "1 Additional Store / Branch Review Card",
+        "1 Additional Store / Branch Review Card (Only ₹99)",
+        "No Limit: Add as many branches as you operate",
         "Separate Google Place ID & Review Funnel",
-        "Unlimited AI Generations for Branch",
-        "Print Studio Access for Branch Stand",
+        "Unlimited AI Review Generations for Branch",
+        "Print Studio Access for Branch Stand (PDF & 300 DPI)",
         "Direct UPI Activation (0% Fee)",
       ]),
       isActive: true,

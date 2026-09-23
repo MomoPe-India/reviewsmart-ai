@@ -221,7 +221,7 @@ export default function HomePage() {
                 Multi-Store &amp; Branch Add-ons
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                1 License = 1 Dedicated Business Location. Have multiple stores or outlets? Easily add extra branch review cards and QR passes at just ₹499 per branch without duplicate setup fees.
+                1 License = 1 Dedicated Business Location. Have multiple stores or outlets? Easily add extra branch review cards and QR passes at just ₹99 per branch with zero limit on total branches.
               </p>
             </div>
           </div>
@@ -393,24 +393,24 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Multi-Store / Multi-Branch Banner (1 License = 1 Location Policy) */}
+          {/* Multi-Store / Multi-Branch Banner (Only ₹99 per Extra Branch, Unlimited Branches) */}
           <div className="mt-8 max-w-4xl mx-auto p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-800/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold mb-1">
-                🏪 Own Multiple Businesses or Branches?
+                🏪 Own Multiple Businesses or Branches? (No Limit)
               </div>
               <h4 className="text-base font-bold text-white">
-                Additional Location Pass: Only ₹499 per Extra Branch
+                Additional Location Pass: Only ₹99 per Extra Branch
               </h4>
               <p className="text-xs text-slate-300 mt-0.5">
-                Each ReviewSmart AI card is tied to one Google Maps profile. Need cards for a 2nd or 3rd branch? Add them instantly for ₹499 each with 0% extra gateway fees.
+                Each ReviewSmart AI card is tied to one Google Maps profile. Need cards for a 2nd, 3rd, or 10th branch? Add as many branches as you operate for only ₹99 each.
               </p>
             </div>
             <Link
               href="/create"
               className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs whitespace-nowrap transition shadow-md flex items-center gap-1.5"
             >
-              Add Extra Store Pass (₹499)
+              Add Extra Store Pass (₹99)
             </Link>
           </div>
         </div>
