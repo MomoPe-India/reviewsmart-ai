@@ -252,7 +252,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@reviewsmart.ai"
+                    placeholder="momopedeals@gmail.com"
                     className="w-full text-xs sm:text-sm pl-10 pr-3.5 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium bg-slate-50/50 focus:bg-white transition"
                   />
                 </div>

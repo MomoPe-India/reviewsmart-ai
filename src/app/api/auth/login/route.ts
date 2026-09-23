@@ -50,8 +50,13 @@ export async function POST(req: NextRequest) {
     // FLOW 2: Master Email & Password (for Super Admin)
     else if (email && password) {
       const cleanEmail = String(email).toLowerCase().trim();
-      user = await prisma.user.findUnique({
-        where: { email: cleanEmail },
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: cleanEmail },
+            { userIdTag: cleanEmail },
+          ],
+        },
       });
 
       if (!user) {

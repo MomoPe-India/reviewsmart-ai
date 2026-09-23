@@ -151,18 +151,42 @@ async function main() {
     });
   } catch (e) {}
 
-  // 3. Super Admin (Email & Password Only)
+  // 3. Super Admin (Email & Password Only) - Main Owner: momopedeals@gmail.com
   const adminPassword = await bcrypt.hash("admin123", 10);
-  const adminUser = await prisma.user.upsert({
+  const adminPin = await bcrypt.hash("1234", 10);
+
+  const mainAdmin = await prisma.user.upsert({
+    where: { email: "momopedeals@gmail.com" },
+    update: {
+      password: adminPassword,
+      pinCode: adminPin,
+      userIdTag: "momopedeals",
+      role: "SUPER_ADMIN",
+    },
+    create: {
+      email: "momopedeals@gmail.com",
+      name: "MomoPe Owner",
+      password: adminPassword,
+      pinCode: adminPin,
+      userIdTag: "momopedeals",
+      role: "SUPER_ADMIN",
+    },
+  });
+
+  const secondaryAdmin = await prisma.user.upsert({
     where: { email: "admin@reviewsmart.ai" },
     update: {
       password: adminPassword,
+      pinCode: adminPin,
+      userIdTag: "admin",
       role: "SUPER_ADMIN",
     },
     create: {
       email: "admin@reviewsmart.ai",
       name: "Platform Admin",
       password: adminPassword,
+      pinCode: adminPin,
+      userIdTag: "admin",
       role: "SUPER_ADMIN",
     },
   });
