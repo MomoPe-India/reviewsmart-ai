@@ -42,7 +42,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
@@ -124,10 +124,10 @@ export default function Navbar() {
                 Sign In
               </Link>
               <Link
-                href="/register"
+                href="/create"
                 className="text-xs font-semibold px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
               >
-                Get Started
+                Create Card Free
               </Link>
             </div>
           )}
@@ -207,11 +207,11 @@ export default function Navbar() {
                   Sign In
                 </Link>
                 <Link
-                  href="/register"
+                  href="/create"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs"
                 >
-                  Get Started
+                  Create Card Free
                 </Link>
               </>
             )}

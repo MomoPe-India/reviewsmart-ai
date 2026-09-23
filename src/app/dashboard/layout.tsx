@@ -37,7 +37,7 @@ export default async function DashboardLayout({
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Sidebar */}
-          <aside className="lg:col-span-1 space-y-4">
+          <aside className="lg:col-span-1 space-y-4 no-print">
             {/* Store Profile Card */}
             <div className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-sm">
               <div className="flex items-center gap-3">

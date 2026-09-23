@@ -86,11 +86,67 @@ body {
 }
 
 @media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html,
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 100% !important;
   }
-  .no-print {
+
+  /* Hide navigation, sidebars, headers, floating bars, and control panels */
+  nav,
+  aside,
+  header,
+  footer,
+  .no-print,
+  [role="navigation"] {
     display: none !important;
+  }
+
+  /* Visibility isolation for clean printing */
+  body * {
+    visibility: hidden;
+  }
+
+  #print-target,
+  #print-target * {
+    visibility: visible;
+  }
+
+  #print-target {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* For table tent A4 layout */
+  #print-target.table-tent-sheet {
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 10mm auto !important;
   }
 }

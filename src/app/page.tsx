@@ -44,10 +44,10 @@ export default function HomePage() {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
                 <Link
-                  href="/register"
+                  href="/create"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm shadow-lg shadow-indigo-200 transition flex items-center justify-center gap-2 group"
                 >
-                  Create Your Smart Card Free
+                  Create Your Smart Card (No Login Needed)
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
@@ -329,10 +329,10 @@ export default function HomePage() {
                 </div>
               </div>
               <Link
-                href="/register"
+                href="/create"
                 className="mt-8 w-full py-3.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs text-center transition shadow-sm"
               >
-                Get 1 Month Pass for ₹299
+                Create &amp; Get 1 Month Pass for ₹299
               </Link>
             </div>
 
@@ -379,10 +379,10 @@ export default function HomePage() {
                 </div>
               </div>
               <Link
-                href="/register"
+                href="/create"
                 className="mt-8 w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs text-center shadow-lg shadow-emerald-950/30 transition"
               >
-                Get 1 Year / Lifetime Pass for ₹999
+                Create &amp; Get 1 Year / Lifetime Pass for ₹999
               </Link>
             </div>
           </div>
