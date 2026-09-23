@@ -59,6 +59,13 @@ export default async function AdminLayout({
                 Subscription Plans
               </Link>
               <Link
+                href="/admin/agents"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition"
+              >
+                <Users className="w-4 h-4 text-slate-400" />
+                Marketing Agents
+              </Link>
+              <Link
                 href="/admin/businesses"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition"
               >
@@ -70,7 +77,7 @@ export default async function AdminLayout({
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-emerald-400 hover:bg-slate-700 hover:text-emerald-300 font-bold transition border-t border-slate-700 mt-1 pt-2"
               >
                 <span className="w-4 h-4 flex items-center justify-center font-bold">₹</span>
-                UPI Payments &amp; Setup
+                UPI Payments &amp; Deals
               </Link>
             </nav>
 

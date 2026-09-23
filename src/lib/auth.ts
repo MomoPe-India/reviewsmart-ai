@@ -10,7 +10,10 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string | null;
-  role: string;
+  role: string; // "SUPER_ADMIN" | "BUSINESS_OWNER" | "MARKETING_AGENT"
+  userIdTag?: string | null;
+  agentCode?: string | null;
+  phone?: string | null;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -21,6 +24,14 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
+export async function hashPin(pin: string): Promise<string> {
+  return bcrypt.hash(pin.trim(), 10);
+}
+
+export async function verifyPin(pin: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(pin.trim(), hash);
+}
+
 export function signToken(user: SessionUser): string {
   return jwt.sign(
     {
@@ -28,6 +39,8 @@ export function signToken(user: SessionUser): string {
       email: user.email,
       name: user.name,
       role: user.role,
+      userIdTag: user.userIdTag || null,
+      agentCode: user.agentCode || null,
     },
     JWT_SECRET,
     { expiresIn: "7d" }
@@ -53,7 +66,15 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   // Verify in database to ensure user still exists & status is good
   const user = await prisma.user.findUnique({
     where: { id: decoded.id },
-    select: { id: true, email: true, name: true, role: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      userIdTag: true,
+      agentCode: true,
+      phone: true,
+    },
   });
 
   return user;

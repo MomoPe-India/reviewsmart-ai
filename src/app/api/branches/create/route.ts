@@ -33,6 +33,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Enforce max 1 extra branch (Total 2 locations: 1 main + 1 extra)
+    const existingCount = await prisma.business.count({
+      where: { userId: user.id },
+    });
+
+    if (existingCount >= 2 && user.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        {
+          error:
+            "Self-serve limit reached (1 Main + 1 Extra Branch). To connect 3 or more branch locations for your chain, please contact our enterprise team on WhatsApp.",
+        },
+        { status: 403 }
+      );
+    }
+
     // Base business for fallback phone or branding
     const existingBranch = await prisma.business.findFirst({
       where: { userId: user.id },

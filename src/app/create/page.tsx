@@ -137,9 +137,34 @@ export default function CreateCardPage() {
   const [activeTab, setActiveTab] = useState<"stand" | "card">("stand");
   const [rating, setRating] = useState<number>(5);
   const [mockAiReview, setMockAiReview] = useState(INDUSTRY_PRESETS[0].sampleReview);
+  const [isGeneratingAiReview, setIsGeneratingAiReview] = useState(false);
   const [copiedReview, setCopiedReview] = useState(false);
   const [copiedWhatsAppMsg, setCopiedWhatsAppMsg] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
+
+  const generateLiveAiReview = async (customBusinessName?: string, tagsToUse?: string[]) => {
+    setIsGeneratingAiReview(true);
+    try {
+      const res = await fetch("/api/ai/generate-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: customBusinessName || businessName || "Our Store",
+          selectedTags: tagsToUse || selectedTags,
+          keywords: selectedIndustry?.keywords || "",
+          rating: rating || 5,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.review) {
+        setMockAiReview(data.review);
+      }
+    } catch {
+      // Keep existing
+    } finally {
+      setIsGeneratingAiReview(false);
+    }
+  };
 
   // Claim modal state
   const [claimModalOpen, setClaimModalOpen] = useState(false);
@@ -205,6 +230,7 @@ export default function CreateCardPage() {
 
     setSearchResults([]);
     confetti({ particleCount: 40, spread: 60, origin: { y: 0.4 } });
+    generateLiveAiReview(b.name, b.suggestedTags);
   };
 
   // Auto generate 1-tap Google Review link
@@ -1023,12 +1049,28 @@ export default function CreateCardPage() {
                 {rating >= 4 ? (
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                      <span>✨ AI Generated Draft:</span>
-                      <span className="text-emerald-600 font-bold">5-Star Verified</span>
+                      <span className="flex items-center gap-1 text-indigo-600">
+                        <Sparkles className="w-3.5 h-3.5" /> Live Gemini AI Draft:
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isGeneratingAiReview}
+                        onClick={() => generateLiveAiReview()}
+                        className="text-[10px] text-indigo-600 hover:text-indigo-800 font-bold hover:underline"
+                      >
+                        {isGeneratingAiReview ? "Regenerating..." : "↻ New AI Draft"}
+                      </button>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-xs text-slate-700 leading-relaxed">
-                      "{mockAiReview}"
+                    <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-xs text-slate-700 leading-relaxed min-h-[50px] flex items-center">
+                      {isGeneratingAiReview ? (
+                        <div className="flex items-center gap-2 text-indigo-600 text-xs py-1">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />
+                          <span>Gemini AI is crafting a real customer review...</span>
+                        </div>
+                      ) : (
+                        `"${mockAiReview}"`
+                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">

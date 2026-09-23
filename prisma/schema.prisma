@@ -13,7 +13,12 @@ model User {
   email        String            @unique
   name         String?
   password     String
-  role         String            @default("BUSINESS_OWNER") // "SUPER_ADMIN" | "BUSINESS_OWNER"
+  userIdTag    String?           @unique // Unique identifier: mobile number (e.g. 9876543210) or agent code (MKT-01)
+  pinCode      String?           // Hashed 4-6 digit numeric PIN
+  phone        String?
+  role         String            @default("BUSINESS_OWNER") // "SUPER_ADMIN" | "BUSINESS_OWNER" | "MARKETING_AGENT"
+  agentCode    String?           // Unique code for agents (e.g. MKT-01)
+  referredBy   String?           // Agent ID who onboarded the merchant
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   businesses   Business[]
@@ -103,7 +108,9 @@ model UpiPayment {
   id            String   @id @default(cuid())
   userId        String
   businessId    String?
-  planType      String   @default("MONTHLY_299") // "MONTHLY_299" | "LIFETIME_999"
+  agentId       String?  // If sale was closed by a field marketing agent
+  agentCode     String?  // E.g. "MKT-01"
+  planType      String   @default("MONTHLY_299") // "MONTHLY_299" | "LIFETIME_999" | "ADDON_BRANCH" | "NEGOTIATED_DEAL"
   amount        Float    @default(299)
   utrNumber     String   // 12-digit UPI reference number
   customerPhone String?
@@ -115,14 +122,15 @@ model UpiPayment {
 }
 
 model PlatformSetting {
-  id             String   @id @default("default")
-  platformName   String   @default("ReviewSmart AI")
-  supportEmail   String   @default("momopedeals@gmail.com")
-  customDomain   String?
-  currencySymbol String   @default("₹")
-  upiId          String   @default("momopedeals@oksbi")
-  upiPayeeName   String   @default("Damerla Mohan")
-  digitalPrice   Float    @default(299) // 1 Month Pass
-  physicalPrice  Float    @default(999) // 1 Year / Lifetime Pass
-  updatedAt      DateTime @updatedAt
+  id                 String   @id @default("default")
+  platformName       String   @default("ReviewSmart AI")
+  supportEmail       String   @default("momopedeals@gmail.com")
+  customDomain       String?
+  currencySymbol     String   @default("₹")
+  upiId              String   @default("momopedeals@oksbi")
+  upiPayeeName       String   @default("Damerla Mohan")
+  digitalPrice       Float    @default(299) // 1 Month Pass
+  physicalPrice      Float    @default(999) // 1 Year / Lifetime Pass
+  minNegotiatedPrice Float    @default(499) // Hard floor for agent deals
+  updatedAt          DateTime @updatedAt
 }

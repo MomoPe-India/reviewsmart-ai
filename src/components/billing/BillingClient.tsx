@@ -238,36 +238,17 @@ export default function BillingClient({
                   Own more than 1 store or multiple branches? Add as many extra branch review cards as you need. Each branch gets its own Google review link, stand, and private shield.
                 </p>
 
-                {/* Interactive Quantity Selector */}
+                {/* Extra Branch Notice */}
                 {selectedPlan === "ADDON_BRANCH" && (
                   <div
-                    className="mt-3 flex items-center gap-3 bg-white p-2 rounded-xl border border-emerald-200 w-fit"
+                    className="mt-3 p-3 bg-white rounded-xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="text-xs font-semibold text-slate-700">
-                      Branches to add:
+                    <span className="text-xs font-bold text-emerald-800">
+                      1 Extra Branch Pass: ₹99 one-time
                     </span>
-                    <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                      <button
-                        type="button"
-                        onClick={() => setBranchQty(Math.max(1, branchQty - 1))}
-                        className="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-black text-xs"
-                      >
-                        -
-                      </button>
-                      <span className="px-3 py-1 font-bold text-xs text-slate-900 font-mono bg-white">
-                        {branchQty}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setBranchQty(branchQty + 1)}
-                        className="px-2.5 py-1 text-slate-600 hover:bg-slate-200 font-black text-xs"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <span className="text-xs text-emerald-700 font-bold">
-                      {branchQty} branch{branchQty > 1 ? "es" : ""} = ₹{branchQty * 99}
+                    <span className="text-[11px] text-slate-500">
+                      Need 3+ branches? Contact us for Enterprise Chain Setup
                     </span>
                   </div>
                 )}
@@ -275,12 +256,10 @@ export default function BillingClient({
 
               <div className="flex items-baseline gap-1.5 flex-shrink-0">
                 <span className="text-2xl font-black text-slate-900">
-                  ₹{selectedPlan === "ADDON_BRANCH" ? addonPrice * branchQty : addonPrice}
+                  ₹{addonPrice}
                 </span>
                 <span className="text-xs text-slate-400">
-                  {selectedPlan === "ADDON_BRANCH" && branchQty > 1
-                    ? `total for ${branchQty} branches`
-                    : "/ extra branch"}
+                  / 1 extra branch
                 </span>
               </div>
             </div>

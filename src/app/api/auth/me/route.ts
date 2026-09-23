@@ -15,6 +15,9 @@ export async function GET() {
       email: true,
       name: true,
       role: true,
+      userIdTag: true,
+      agentCode: true,
+      phone: true,
       businesses: {
         select: {
           id: true,

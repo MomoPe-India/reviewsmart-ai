@@ -12,6 +12,7 @@ import {
   Sparkles,
   ExternalLink,
   MapPin,
+  Smartphone,
   X,
 } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -256,10 +257,14 @@ export default function BranchSwitcher({
                   setDropdownOpen(false);
                   setModalOpen(true);
                 }}
-                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+                className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition ${
+                  branches.length >= 2
+                    ? "bg-slate-800 hover:bg-slate-900 text-white"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
-                Add Extra Branch (Only ₹99)
+                {branches.length >= 2 ? "Add 3+ Branches (Enterprise)" : "Add Extra Branch (Only ₹99)"}
               </button>
             </div>
           </div>
@@ -278,18 +283,45 @@ export default function BranchSwitcher({
               <X className="w-5 h-5" />
             </button>
 
-            <div className="text-left space-y-1 mb-5">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
-                <Sparkles className="w-3 h-3 text-emerald-600" />
-                Unlimited Multi-Branch Support &bull; ₹99 / Outlet
+            {branches.length >= 2 ? (
+              <div className="text-center py-6 space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+                  <Store className="w-7 h-7" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-black text-slate-900">
+                    Maximum Self-Serve Branch Limit (2 Outlets)
+                  </h3>
+                  <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+                    You have currently active: <strong>1 Main Store + 1 Extra Branch Pass (₹99)</strong>.
+                    <br />
+                    We do not encourage self-serve creation of more than 1 extra branch. For chains operating 3 or more locations, we offer custom enterprise chain onboarding with dedicated account managers.
+                  </p>
+                </div>
+                <a
+                  href="https://wa.me/919999999999?text=Hi%2C%20I%20want%20to%20add%203%2B%20branches%20for%20my%20business%20on%20ReviewSmart%20AI"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shadow-md transition"
+                >
+                  <Smartphone className="w-4 h-4" />
+                  Contact Us on WhatsApp for 3+ Branches
+                </a>
               </div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">
-                Add Another Business / Branch
-              </h3>
-              <p className="text-xs text-slate-500">
-                Each extra branch gets its own dedicated Google Maps link, NFC/QR countertop stand, and sentiment filter shield.
-              </p>
-            </div>
+            ) : (
+              <>
+                <div className="text-left space-y-1 mb-5">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+                    <Sparkles className="w-3 h-3 text-emerald-600" />
+                    Additional Location Pass &bull; Only ₹99
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                    Add 1 Extra Branch Location
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Connect your second outlet with its own dedicated Google Maps link, NFC/QR stand, and private manager shield.
+                  </p>
+                </div>
 
             {errorMsg && (
               <div className="p-3 mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
@@ -468,6 +500,8 @@ export default function BranchSwitcher({
                 </button>
               </div>
             </form>
+            </>
+            )}
           </div>
         </div>
       )}

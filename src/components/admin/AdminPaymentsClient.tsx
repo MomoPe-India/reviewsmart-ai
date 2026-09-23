@@ -148,12 +148,25 @@ export default function AdminPaymentsClient({
             <label className="block text-xs font-semibold text-slate-300 mb-1">
               1 Year / Lifetime Pass Price (₹)
             </label>
+            <input
+              type="number"
+              value={settings.physicalPrice}
+              onChange={(e) => setSettings({ ...settings, physicalPrice: Number(e.target.value) })}
+              className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">
+              Agent Min Negotiated Floor (₹)
+            </label>
             <div className="flex gap-2">
               <input
                 type="number"
-                value={settings.physicalPrice}
-                onChange={(e) => setSettings({ ...settings, physicalPrice: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                min={100}
+                value={settings.minNegotiatedPrice || 499}
+                onChange={(e) => setSettings({ ...settings, minNegotiatedPrice: Number(e.target.value) })}
+                className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
               />
               <button
                 type="submit"
@@ -185,6 +198,7 @@ export default function AdminPaymentsClient({
               <thead className="text-[11px] text-slate-400 uppercase tracking-wider border-b border-slate-700">
                 <tr>
                   <th className="pb-3 font-semibold">Store / Client</th>
+                  <th className="pb-3 font-semibold">Source / Agent</th>
                   <th className="pb-3 font-semibold">12-Digit UTR Ref</th>
                   <th className="pb-3 font-semibold">Plan &amp; Amount</th>
                   <th className="pb-3 font-semibold">Customer Phone</th>
@@ -203,7 +217,18 @@ export default function AdminPaymentsClient({
                     <tr key={p.id} className="hover:bg-slate-700/30 transition">
                       <td className="py-3">
                         <div className="font-bold text-white">{storeName}</div>
-                        <div className="text-[10px] text-slate-400">{p.user?.email}</div>
+                        <div className="text-[10px] text-slate-400">{p.user?.email || p.user?.userIdTag}</div>
+                      </td>
+                      <td className="py-3">
+                        {p.agentCode ? (
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                            Agt: {p.agentCode}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-slate-700 text-slate-400 text-[10px]">
+                            Online Web
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 font-mono font-bold text-amber-300">
                         {p.utrNumber}
@@ -211,14 +236,20 @@ export default function AdminPaymentsClient({
                       <td className="py-3">
                         <span className="font-bold text-emerald-400 text-sm">₹{p.amount}</span>
                         <div className="text-[10px] text-slate-400">
-                          {p.planType === "LIFETIME_999" ? "1 Year / Lifetime Pass" : "1 Month Pass"}
+                          {p.planType === "NEGOTIATED_DEAL"
+                            ? "Field Negotiated Deal"
+                            : p.planType === "LIFETIME_999"
+                            ? "1 Year / Lifetime Pass"
+                            : p.planType === "ADDON_BRANCH"
+                            ? "Extra Branch Pass"
+                            : "1 Month Pass"}
                         </div>
                       </td>
-                      <td className="py-3 text-slate-300">
+                      <td className="py-3 text-slate-300 font-mono">
                         {p.customerPhone || "-"}
                       </td>
                       <td className="py-3">
-                        {p.planType === "LIFETIME_999" ? (
+                        {p.planType === "LIFETIME_999" || p.planType === "NEGOTIATED_DEAL" ? (
                           <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
                             365 Days / Lifetime
                           </span>

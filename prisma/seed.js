@@ -15,6 +15,7 @@ async function main() {
       supportEmail: "momopedeals@gmail.com",
       digitalPrice: 299,
       physicalPrice: 999,
+      minNegotiatedPrice: 499,
     },
     create: {
       id: "default",
@@ -25,6 +26,7 @@ async function main() {
       upiPayeeName: "Damerla Mohan",
       digitalPrice: 299,
       physicalPrice: 999,
+      minNegotiatedPrice: 499,
     },
   });
 
@@ -149,11 +151,14 @@ async function main() {
     });
   } catch (e) {}
 
-  // 3. Super Admin
+  // 3. Super Admin (Email & Password Only)
   const adminPassword = await bcrypt.hash("admin123", 10);
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@reviewsmart.ai" },
-    update: {},
+    update: {
+      password: adminPassword,
+      role: "SUPER_ADMIN",
+    },
     create: {
       email: "admin@reviewsmart.ai",
       name: "Platform Admin",
@@ -162,16 +167,47 @@ async function main() {
     },
   });
 
-  // 4. Demo Business User
-  const demoPassword = await bcrypt.hash("demo123", 10);
+  // 4. Marketing Agent (Field Sales Rep: MKT-01, PIN: 1234)
+  const agentPin = await bcrypt.hash("1234", 10);
+  const agentUser = await prisma.user.upsert({
+    where: { email: "mkt01@agent.reviewsmart.local" },
+    update: {
+      agentCode: "MKT-01",
+      userIdTag: "MKT-01",
+      pinCode: agentPin,
+      role: "MARKETING_AGENT",
+    },
+    create: {
+      email: "mkt01@agent.reviewsmart.local",
+      name: "Rajesh Sharma (Field Rep)",
+      agentCode: "MKT-01",
+      userIdTag: "MKT-01",
+      phone: "9876543200",
+      pinCode: agentPin,
+      password: agentPin,
+      role: "MARKETING_AGENT",
+    },
+  });
+
+  // 5. Demo Business User (Phone / User ID: 9876543210, PIN: 1234)
+  const demoPin = await bcrypt.hash("1234", 10);
   const demoUser = await prisma.user.upsert({
     where: { email: "demo@foodbites.com" },
-    update: {},
+    update: {
+      userIdTag: "9876543210",
+      phone: "9876543210",
+      pinCode: demoPin,
+      role: "BUSINESS_OWNER",
+    },
     create: {
       email: "demo@foodbites.com",
       name: "Alex Rivera",
-      password: demoPassword,
+      userIdTag: "9876543210",
+      phone: "9876543210",
+      pinCode: demoPin,
+      password: demoPin,
       role: "BUSINESS_OWNER",
+      referredBy: agentUser.id,
     },
   });
 
