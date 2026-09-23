@@ -128,9 +128,12 @@ export default function BillingClient({
                 Monthly Digital
               </span>
             </div>
-            <div className="flex items-baseline gap-1 my-2">
+            <div className="flex items-baseline gap-2 my-2">
               <span className="text-3xl font-black text-slate-900">₹{digitalPrice}</span>
-              <span className="text-xs text-slate-500">/ 30 days access</span>
+              <span className="text-sm text-slate-400 line-through">₹599</span>
+              <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                Save ₹300
+              </span>
             </div>
             <ul className="text-xs text-slate-600 space-y-1.5 mt-3 pt-3 border-t border-slate-200/60">
               <li className="flex items-center gap-1.5">
@@ -162,7 +165,7 @@ export default function BillingClient({
           >
             <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
               <Zap className="w-3 h-3" />
-              Best Value
+              Special Offer • Save 50%
             </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-slate-700">1 Year / Lifetime Pass</span>
@@ -170,9 +173,12 @@ export default function BillingClient({
                 One-Time Payment
               </span>
             </div>
-            <div className="flex items-baseline gap-1 my-2">
+            <div className="flex items-baseline gap-2 my-2">
               <span className="text-3xl font-black text-slate-900">₹{physicalPrice}</span>
-              <span className="text-xs text-slate-500">one-time payment</span>
+              <span className="text-sm text-slate-400 line-through">₹1,999</span>
+              <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">
+                Save ₹1,000!
+              </span>
             </div>
             <ul className="text-xs text-slate-600 space-y-1.5 mt-3 pt-3 border-t border-slate-200/60">
               <li className="flex items-center gap-1.5">

@@ -107,7 +107,7 @@ export default function AdminPlansClient({ initialPlans }: { initialPlans: PlanI
 
                 <div className="flex items-baseline gap-1 my-3">
                   <span className="text-3xl font-black text-white">
-                    ${p.price.toFixed(0)}
+                    {p.currency === "USD" ? "$" : "₹"}{p.price.toFixed(0)}
                   </span>
                   <span className="text-xs text-slate-400">
                     / {p.durationDays} days

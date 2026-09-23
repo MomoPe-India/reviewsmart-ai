@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import {
@@ -22,8 +22,11 @@ import {
   Radio,
   Scissors,
   Smartphone,
-  MessageSquare,
-  HelpCircle,
+  Search,
+  MapPin,
+  Share2,
+  Wand2,
+  Zap,
 } from "lucide-react";
 import QRCode from "qrcode";
 import confetti from "canvas-confetti";
@@ -95,24 +98,40 @@ const INDUSTRY_PRESETS: IndustryPreset[] = [
   },
 ];
 
+interface GoogleSearchResult {
+  name: string;
+  address: string;
+  category: string;
+  googleReviewUrl: string;
+  suggestedTags: string[];
+  rating: number;
+}
+
 export default function CreateCardPage() {
   const [businessName, setBusinessName] = useState("My Sweet Bakery");
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryPreset>(INDUSTRY_PRESETS[0]);
   const [googleReviewUrl, setGoogleReviewUrl] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#4f46e5");
   const [tagline, setTagline] = useState("Share your visit & get instant AI review drafts!");
   const [tags, setTags] = useState(INDUSTRY_PRESETS[0].tags.split(","));
   const [selectedTags, setSelectedTags] = useState<string[]>([tags[0], tags[1]]);
   const [headline, setHeadline] = useState("Scan to Review Us on Google");
-  const [subtitle, setSubtitle] = useState("Tap your phone or scan camera");
+  const [subtitle, setSubtitle] = useState("Tap your phone or scan with camera");
+
+  // Google Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchingGoogle, setSearchingGoogle] = useState(false);
+  const [searchResults, setSearchResults] = useState<GoogleSearchResult[]>([]);
+  const [searchError, setSearchError] = useState("");
 
   // Preview interactive state
-  const [activeTab, setActiveTab] = useState<"card" | "stand">("stand");
+  const [activeTab, setActiveTab] = useState<"stand" | "card">("stand");
   const [rating, setRating] = useState<number>(5);
   const [mockAiReview, setMockAiReview] = useState(INDUSTRY_PRESETS[0].sampleReview);
   const [copiedReview, setCopiedReview] = useState(false);
+  const [copiedWhatsAppMsg, setCopiedWhatsAppMsg] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
-  const [standFormat, setStandFormat] = useState<"stand" | "tent" | "nfc">("stand");
 
   // Claim modal state
   const [claimModalOpen, setClaimModalOpen] = useState(false);
@@ -127,6 +146,66 @@ export default function CreateCardPage() {
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Handle Google Business search
+  const handleSearchGoogle = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) return;
+
+    setSearchingGoogle(true);
+    setSearchError("");
+    try {
+      const res = await fetch("/api/business/search-google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: searchQuery.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.results && data.results.length > 0) {
+        setSearchResults(data.results);
+      } else {
+        setSearchError("No business found. You can enter your details manually below.");
+      }
+    } catch {
+      setSearchError("Could not search Google. Please enter your name below.");
+    } finally {
+      setSearchingGoogle(false);
+    }
+  };
+
+  // 1-Click Auto Fill from Search
+  const handleSelectBusiness = (b: GoogleSearchResult) => {
+    setBusinessName(b.name);
+    setBusinessAddress(b.address);
+    setGoogleReviewUrl(b.googleReviewUrl);
+
+    if (b.suggestedTags && b.suggestedTags.length > 0) {
+      setTags(b.suggestedTags);
+      setSelectedTags([b.suggestedTags[0], b.suggestedTags[1]]);
+    }
+
+    // Match industry
+    const matched = INDUSTRY_PRESETS.find(
+      (p) =>
+        b.category.toLowerCase().includes(p.name.toLowerCase().split(" ")[0]) ||
+        b.name.toLowerCase().includes(p.id)
+    );
+    if (matched) {
+      setSelectedIndustry(matched);
+      setPrimaryColor(matched.color);
+    }
+
+    setSearchResults([]);
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.4 } });
+  };
+
+  // Auto generate 1-tap Google Review link
+  const handleAutoGenerateLink = () => {
+    const query = `${businessName} ${businessAddress}`.trim();
+    if (!query) return;
+    const directUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    setGoogleReviewUrl(directUrl);
+  };
+
   // Update industry preset
   const handleSelectIndustry = (preset: IndustryPreset) => {
     setSelectedIndustry(preset);
@@ -139,11 +218,12 @@ export default function CreateCardPage() {
 
   // QR Code live preview update
   useEffect(() => {
-    const dummyUrl = typeof window !== "undefined"
-      ? `${window.location.origin}/r/${businessName.toLowerCase().replace(/[^a-z0-9]/g, "-") || "my-business"}`
-      : "https://reviewsmart-ai-44ep.vercel.app/r/demo";
+    const targetUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/r/${businessName.toLowerCase().replace(/[^a-z0-9]/g, "-") || "my-business"}`
+        : "https://reviewsmart-ai-44ep.vercel.app/r/demo";
 
-    QRCode.toDataURL(dummyUrl, {
+    QRCode.toDataURL(targetUrl, {
       width: 700,
       margin: 2,
       color: {
@@ -292,8 +372,8 @@ export default function CreateCardPage() {
 
       setCreatedResult(data);
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 90,
+        spread: 75,
         origin: { y: 0.6 },
       });
     } catch {
@@ -307,20 +387,19 @@ export default function CreateCardPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
 
-      {/* Main Builder Container */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Banner / Header */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-6 rounded-3xl shadow-xl no-print">
+        {/* Banner */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-indigo-950 via-indigo-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl no-print">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-indigo-200 text-[11px] font-bold mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-300 text-[11px] font-bold mb-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              Instant Free Card Studio &bull; No Login Required
+              100% Instant Creation &bull; No Sign-In or Password Required
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               Create Your Smart Review Card in 30 Seconds
             </h1>
             <p className="text-xs sm:text-sm text-indigo-200 mt-1 max-w-xl">
-              Type your business name below. See your live AI review gateway and 4"x6" countertop stand update in real time!
+              Search your Google business below or enter your name. We automatically capture your 1-tap review link and generate your stand!
             </p>
           </div>
 
@@ -330,7 +409,7 @@ export default function CreateCardPage() {
               onClick={() => setClaimModalOpen(true)}
               className="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-400/20 transition flex items-center gap-2 group whitespace-nowrap"
             >
-              <span>Save &amp; Claim My Card</span>
+              <span>Save &amp; Activate Pass</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
@@ -340,6 +419,93 @@ export default function CreateCardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Form Controls (Hidden on Print) */}
           <div className="lg:col-span-5 space-y-4 no-print">
+            {/* GOOGLE BUSINESS SEARCH BOX (NEW HERO FEATURE) */}
+            <div className="bg-gradient-to-br from-indigo-50/90 to-purple-50/70 p-5 rounded-3xl border border-indigo-200/80 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-indigo-950 flex items-center gap-2">
+                  <Search className="w-4 h-4 text-indigo-600" />
+                  Auto-Find Your Google Business
+                </label>
+                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100/80 px-2 py-0.5 rounded-full">
+                  Recommended
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-600">
+                Don't know your Google review URL? Just type your shop name &amp; city — we'll grab it automatically!
+              </p>
+
+              <form onSubmit={handleSearchGoogle} className="flex gap-2">
+                <div className="relative flex-1">
+                  <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="e.g. Chai Point Indiranagar Bangalore"
+                    className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-indigo-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={searchingGoogle}
+                  className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition flex-shrink-0 disabled:opacity-60"
+                >
+                  {searchingGoogle ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <span>Search</span>
+                      <Search className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {searchError && (
+                <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                  {searchError}
+                </p>
+              )}
+
+              {/* Search Results Dropdown List */}
+              {searchResults.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-indigo-100">
+                  <span className="text-[11px] font-bold text-indigo-900 block">
+                    Click your business to auto-fill:
+                  </span>
+                  {searchResults.map((b, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => handleSelectBusiness(b)}
+                      className="p-3 rounded-2xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-md cursor-pointer transition flex items-center justify-between gap-3 group"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-slate-900 truncate">
+                            {b.name}
+                          </h4>
+                          <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded">
+                            ★ {b.rating}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                          {b.address}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-[11px] group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0"
+                      >
+                        Auto-Fill ✨
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Step 1: Business Identity */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
@@ -363,6 +529,20 @@ export default function CreateCardPage() {
                   onChange={(e) => setBusinessName(e.target.value)}
                   placeholder="e.g. Royal Biryani &amp; Cafe"
                   className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-900"
+                />
+              </div>
+
+              {/* City / Locality Address */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  City / Locality (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={businessAddress}
+                  onChange={(e) => setBusinessAddress(e.target.value)}
+                  placeholder="e.g. Indiranagar, Bengaluru"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
                 />
               </div>
 
@@ -390,22 +570,34 @@ export default function CreateCardPage() {
                 </div>
               </div>
 
-              {/* Google Review Link */}
+              {/* Google Review Link + Auto Generate Link */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Google Review URL (Optional - add now or later)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-semibold text-slate-700">
+                    Google Review URL
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoGenerateLink}
+                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded-md"
+                  >
+                    <Wand2 className="w-3 h-3" /> Auto-Create from Name &amp; City
+                  </button>
+                </div>
                 <input
                   type="url"
                   value={googleReviewUrl}
                   onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                  placeholder="https://g.page/r/... or Maps review link"
+                  placeholder="https://search.google.com/local/writereview?placeid=... or Maps link"
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
                 />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Don't have a direct link? Click "Auto-Create" or search your business above.
+                </span>
               </div>
             </div>
 
-            {/* Step 2: Branding & Appearance */}
+            {/* Step 2: Branding & Copy */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
               <label className="text-xs font-bold text-slate-900 flex items-center gap-2">
                 <Palette className="w-4 h-4 text-indigo-600" />
@@ -503,6 +695,36 @@ export default function CreateCardPage() {
                   Download PNG
                 </button>
               </div>
+
+              {/* Founder Feature: WhatsApp Customer Invite Generator */}
+              <div className="pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sampleMsg = `Hi! 😊 Thank you for visiting ${businessName}. Could you please take 10 seconds to share your review on Google? Tap here: ${
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}/r/${businessName.toLowerCase().replace(/[^a-z0-9]/g, "-") || "portal"}`
+                        : ""
+                    }`;
+                    navigator.clipboard.writeText(sampleMsg);
+                    setCopiedWhatsAppMsg(true);
+                    setTimeout(() => setCopiedWhatsAppMsg(false), 2500);
+                  }}
+                  className="w-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition"
+                >
+                  {copiedWhatsAppMsg ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp Invite Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Copy WhatsApp Review Request Template</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -566,6 +788,9 @@ export default function CreateCardPage() {
                     <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
                       {businessName}
                     </h2>
+                    {businessAddress && (
+                      <p className="text-[10px] text-slate-400">{businessAddress}</p>
+                    )}
                     <div className="flex items-center gap-1 mt-0.5">
                       <div className="flex items-center text-amber-400">
                         {[1, 2, 3, 4, 5].map((s) => (
@@ -735,7 +960,7 @@ export default function CreateCardPage() {
         </div>
       </div>
 
-      {/* Claim & Activate Modal (No Password Required!) */}
+      {/* Claim & Activate Modal (With ₹299 & ₹999 from ₹1,999 Offer Badges!) */}
       {claimModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
@@ -792,14 +1017,29 @@ export default function CreateCardPage() {
                   />
                 </div>
 
-                {/* Plan Highlights */}
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs text-slate-600">
-                  <div className="flex items-center justify-between font-bold text-slate-900">
-                    <span>1 Month Pass: ₹299</span>
-                    <span className="text-emerald-600">Lifetime Pass: ₹999</span>
+                {/* Strikethrough Pricing Offer Cards */}
+                <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-800">1 Month Pass:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-400 line-through text-[11px]">₹599</span>
+                      <span className="font-black text-slate-900">₹299</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-400">
-                    ✓ Instant AI Funnel &bull; Negative Review Shield &bull; Stand PDF &bull; Direct UPI
+                  <div className="flex items-center justify-between pt-1 border-t border-indigo-100">
+                    <span className="font-bold text-slate-800 flex items-center gap-1">
+                      <span>1 Year / Lifetime:</span>
+                      <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                        50% OFF
+                      </span>
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-400 line-through text-[11px]">₹1,999</span>
+                      <span className="font-black text-emerald-600 text-sm">₹999</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    ✓ Instant AI Funnel &bull; Negative Review Shield &bull; Stand PDF &bull; Direct UPI (0% Fee)
                   </p>
                 </div>
 

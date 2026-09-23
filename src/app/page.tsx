@@ -301,9 +301,12 @@ export default function HomePage() {
                 </span>
                 <h3 className="text-xl font-bold text-slate-900 mt-4">1 Month Pass</h3>
                 <p className="text-xs text-slate-500 mt-1">Perfect for trying out and boosting local reviews fast</p>
-                <div className="flex items-baseline gap-1 my-6">
+                <div className="flex items-baseline gap-2 my-6">
                   <span className="text-4xl font-black text-slate-900">₹299</span>
-                  <span className="text-xs text-slate-500">/ 30 days access</span>
+                  <span className="text-base text-slate-400 line-through">₹599</span>
+                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                    Save ₹300
+                  </span>
                 </div>
                 <div className="space-y-3 border-t border-slate-200/70 pt-6 text-xs text-slate-700">
                   <div className="flex items-center gap-2">
@@ -339,7 +342,7 @@ export default function HomePage() {
             {/* 1 Year / Lifetime Pass */}
             <div className="bg-indigo-950 text-white rounded-3xl p-8 border border-indigo-700 shadow-xl shadow-indigo-950/20 flex flex-col justify-between relative transform md:-translate-y-2">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 text-[11px] font-black uppercase tracking-wider shadow-md">
-                🔥 Best Value • Most Popular
+                🔥 Limited Launch Offer • Save 50%
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/80 border border-emerald-500/30 px-3 py-1 rounded-full">
@@ -347,9 +350,12 @@ export default function HomePage() {
                 </span>
                 <h3 className="text-xl font-bold text-white mt-4">1 Year / Lifetime Pass</h3>
                 <p className="text-xs text-indigo-200 mt-1">Unlimited reviews with zero monthly renewal hassle</p>
-                <div className="flex items-baseline gap-1 my-6">
+                <div className="flex items-baseline gap-2 my-6">
                   <span className="text-4xl font-black text-white">₹999</span>
-                  <span className="text-xs text-indigo-300">one-time payment</span>
+                  <span className="text-base text-indigo-300 line-through">₹1,999</span>
+                  <span className="text-[10px] font-black text-slate-950 bg-emerald-400 px-2 py-0.5 rounded-full uppercase">
+                    Save ₹1,000!
+                  </span>
                 </div>
                 <div className="space-y-3 border-t border-indigo-800/80 pt-6 text-xs text-indigo-100">
                   <div className="flex items-center gap-2">
@@ -399,8 +405,11 @@ export default function HomePage() {
           <div>
             Built with Next.js 14, Tailwind CSS, Prisma ORM, and Google Gemini AI.
           </div>
-          <div>
-            &copy; {new Date().getFullYear()} ReviewSmart AI. All rights reserved.
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="hover:text-slate-200 transition underline underline-offset-4">
+              Admin &amp; Merchant Login
+            </Link>
+            <span>&copy; {new Date().getFullYear()} ReviewSmart AI</span>
           </div>
         </div>
       </footer>

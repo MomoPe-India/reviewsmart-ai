@@ -118,16 +118,10 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link
-                href="/login"
-                className="text-xs font-semibold px-4 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition"
-              >
-                Sign In
-              </Link>
-              <Link
                 href="/create"
-                className="text-xs font-semibold px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
+                className="text-xs font-bold px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
               >
-                Create Card Free
+                Create Smart Card Free
               </Link>
             </div>
           )}
@@ -198,22 +192,13 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 rounded-xl text-slate-700 font-semibold text-xs border border-slate-200"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/create"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs"
-                >
-                  Create Card Free
-                </Link>
-              </>
+              <Link
+                href="/create"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs"
+              >
+                Create Smart Card Free
+              </Link>
             )}
           </div>
         </div>
