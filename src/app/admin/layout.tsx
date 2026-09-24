@@ -16,6 +16,8 @@ import AdminMobileBottomNav from "@/components/navigation/AdminMobileBottomNav";
 import AdminDesktopNav from "@/components/navigation/AdminDesktopNav";
 import BrandLogo from "@/components/brand/BrandLogo";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {

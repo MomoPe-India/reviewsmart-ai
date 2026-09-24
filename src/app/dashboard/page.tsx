@@ -15,33 +15,38 @@ export default async function DashboardOverviewPage({
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const business = searchParams?.branchId
-    ? await prisma.business.findFirst({
-        where: { id: searchParams.branchId, userId: user.id },
-        include: {
-          feedbacks: {
-            orderBy: { createdAt: "desc" },
-            take: 5,
+  let business: any = null;
+  try {
+    business = searchParams?.branchId
+      ? await prisma.business.findFirst({
+          where: { id: searchParams.branchId, userId: user.id },
+          include: {
+            feedbacks: {
+              orderBy: { createdAt: "desc" },
+              take: 5,
+            },
+            analytics: {
+              orderBy: { createdAt: "desc" },
+              take: 20,
+            },
           },
-          analytics: {
-            orderBy: { createdAt: "desc" },
-            take: 20,
+        })
+      : await prisma.business.findFirst({
+          where: { userId: user.id },
+          include: {
+            feedbacks: {
+              orderBy: { createdAt: "desc" },
+              take: 5,
+            },
+            analytics: {
+              orderBy: { createdAt: "desc" },
+              take: 20,
+            },
           },
-        },
-      })
-    : await prisma.business.findFirst({
-        where: { userId: user.id },
-        include: {
-          feedbacks: {
-            orderBy: { createdAt: "desc" },
-            take: 5,
-          },
-          analytics: {
-            orderBy: { createdAt: "desc" },
-            take: 20,
-          },
-        },
-      });
+        });
+  } catch (err) {
+    console.error("DashboardOverviewPage business fetch error:", err);
+  }
 
   if (!business) {
     return (

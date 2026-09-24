@@ -25,32 +25,61 @@ function formatDate(date: Date): string {
 }
 
 export default async function AdminOverviewPage() {
-  const totalRevenue = await prisma.upiPayment.aggregate({
-    where: { status: "APPROVED" },
-    _sum: { amount: true },
-  });
+  let revenue = 0;
+  let totalDeals = 0;
+  let pendingDeals = 0;
+  let totalMerchants = 0;
+  let totalAgents = 0;
+  let onlineDeals = 0;
+  let offlineDeals = 0;
+  let recentPayments: any[] = [];
 
-  const totalDeals = await prisma.upiPayment.count();
-  const pendingDeals = await prisma.upiPayment.count({ where: { status: "PENDING" } });
-  const totalMerchants = await prisma.user.count({ where: { role: "BUSINESS_OWNER" } });
-  const totalAgents = await prisma.user.count({ where: { role: "MARKETING_AGENT" } });
-  const onlineDeals = await prisma.upiPayment.count({ where: { planType: "ONLINE_DIRECT" } });
-  const offlineDeals = await prisma.upiPayment.count({ where: { planType: "NEGOTIATED_DEAL" } });
-
-  const recentPayments = await prisma.upiPayment.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 8,
-    include: {
-      user: {
-        select: {
-          name: true,
-          businesses: { select: { name: true, slug: true, customerType: true }, take: 1 },
+  try {
+    const [
+      totalRevenueResult,
+      dealsCount,
+      pendingCount,
+      merchantsCount,
+      agentsCount,
+      onlineCount,
+      offlineCount,
+      payments,
+    ] = await Promise.all([
+      prisma.upiPayment.aggregate({
+        where: { status: "APPROVED" },
+        _sum: { amount: true },
+      }),
+      prisma.upiPayment.count(),
+      prisma.upiPayment.count({ where: { status: "PENDING" } }),
+      prisma.user.count({ where: { role: "BUSINESS_OWNER" } }),
+      prisma.user.count({ where: { role: "MARKETING_AGENT" } }),
+      prisma.upiPayment.count({ where: { planType: "ONLINE_DIRECT" } }),
+      prisma.upiPayment.count({ where: { planType: "NEGOTIATED_DEAL" } }),
+      prisma.upiPayment.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: {
+          user: {
+            select: {
+              name: true,
+              businesses: { select: { name: true, slug: true, customerType: true }, take: 1 },
+            },
+          },
         },
-      },
-    },
-  });
+      }),
+    ]);
 
-  const revenue = totalRevenue._sum.amount ?? 0;
+    revenue = totalRevenueResult._sum.amount ?? 0;
+    totalDeals = dealsCount;
+    pendingDeals = pendingCount;
+    totalMerchants = merchantsCount;
+    totalAgents = agentsCount;
+    onlineDeals = onlineCount;
+    offlineDeals = offlineCount;
+    recentPayments = payments;
+  } catch (err) {
+    console.error("AdminOverviewPage data fetch error:", err);
+  }
 
   return (
     <div className="space-y-6">

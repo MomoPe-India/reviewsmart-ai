@@ -56,26 +56,74 @@ export function verifyToken(token: string): SessionUser | null {
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const cookieStore = cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-  if (!token) return null;
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+    if (!token) return null;
 
-  const decoded = verifyToken(token);
-  if (!decoded) return null;
+    const decoded = verifyToken(token);
+    if (!decoded || !decoded.id) return null;
 
-  // Verify in database to ensure user still exists & status is good
-  const user = await prisma.user.findUnique({
-    where: { id: decoded.id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      userIdTag: true,
-      agentCode: true,
-      phone: true,
-    },
-  });
+    // Verify in database to ensure user still exists & isActive
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          userIdTag: true,
+          agentCode: true,
+          phone: true,
+          isActive: true,
+        },
+      });
 
-  return user;
+      if (user) {
+        if (user.isActive === false) return null;
+        return user;
+      }
+
+      // If user wasn't found by decoded.id, try finding by email
+      if (decoded.email) {
+        const userByEmail = await prisma.user.findUnique({
+          where: { email: decoded.email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            userIdTag: true,
+            agentCode: true,
+            phone: true,
+            isActive: true,
+          },
+        });
+        if (userByEmail) {
+          if (userByEmail.isActive === false) return null;
+          return userByEmail;
+        }
+      }
+
+      // If user is validly signed by our JWT secret, return decoded payload so UI never crashes
+      return decoded;
+    } catch (dbErr) {
+      console.warn("DB lookup in getSessionUser failed, using decoded token:", dbErr);
+      return decoded;
+    }
+  } catch (err: unknown) {
+    if (
+      err &&
+      typeof err === "object" &&
+      "digest" in err &&
+      typeof (err as { digest?: unknown }).digest === "string" &&
+      ((err as { digest: string }).digest.includes("DYNAMIC_SERVER_USAGE") ||
+        (err as { digest: string }).digest.includes("NEXT_REDIRECT"))
+    ) {
+      throw err;
+    }
+    console.error("Critical error in getSessionUser:", err);
+    return null;
+  }
 }

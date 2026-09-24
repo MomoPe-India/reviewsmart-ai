@@ -5,14 +5,19 @@ import AdminPlansClient from "@/components/admin/AdminPlansClient";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPlansPage() {
-  const plans = await prisma.subscriptionPlan.findMany({
-    orderBy: { price: "asc" },
-    include: {
-      _count: {
-        select: { subscriptions: true },
+  let plans: any[] = [];
+  try {
+    plans = await prisma.subscriptionPlan.findMany({
+      orderBy: { price: "asc" },
+      include: {
+        _count: {
+          select: { subscriptions: true },
+        },
       },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("AdminPlansPage fetch error:", err);
+  }
 
   return (
     <div className="space-y-6">

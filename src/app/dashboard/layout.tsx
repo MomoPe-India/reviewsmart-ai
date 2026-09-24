@@ -17,6 +17,8 @@ import BranchSwitcher from "@/components/dashboard/BranchSwitcher";
 import DashboardDesktopNav from "@/components/navigation/DashboardDesktopNav";
 import MobileAppBottomNav from "@/components/navigation/MobileAppBottomNav";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -27,20 +29,25 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const businesses = await prisma.business.findMany({
-    where: { userId: user.id },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      logoUrl: true,
-      primaryColor: true,
-      googleAddress: true,
-      customerType: true,
-      isPaid: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  let businesses: any[] = [];
+  try {
+    businesses = await prisma.business.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        logoUrl: true,
+        primaryColor: true,
+        googleAddress: true,
+        customerType: true,
+        isPaid: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+  } catch (err) {
+    console.error("DashboardLayout businesses fetch error:", err);
+  }
 
   const isOffline = businesses[0]?.customerType === "OFFLINE";
 

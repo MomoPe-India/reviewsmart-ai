@@ -5,20 +5,25 @@ import { Store, ArrowUpRight, ShieldCheck, Globe, UserCheck, CheckCircle2, Clock
 export const dynamic = "force-dynamic";
 
 export default async function AdminBusinessesPage() {
-  const businesses = await prisma.business.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: {
-        select: { email: true, name: true, phone: true, userIdTag: true },
+  let businesses: any[] = [];
+  try {
+    businesses = await prisma.business.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: { email: true, name: true, phone: true, userIdTag: true },
+        },
+        feedbacks: {
+          select: { id: true },
+        },
+        analytics: {
+          select: { id: true },
+        },
       },
-      feedbacks: {
-        select: { id: true },
-      },
-      analytics: {
-        select: { id: true },
-      },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("AdminBusinessesPage fetch error:", err);
+  }
 
   return (
     <div className="space-y-6">

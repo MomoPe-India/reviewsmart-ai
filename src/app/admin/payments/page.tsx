@@ -5,24 +5,34 @@ import AdminPaymentsClient from "@/components/admin/AdminPaymentsClient";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPaymentsPage() {
-  const payments = await prisma.upiPayment.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-          businesses: {
-            select: { name: true, slug: true },
+  let payments: any[] = [];
+  let settings: any = null;
+
+  try {
+    const [paymentsData, settingsData] = await Promise.all([
+      prisma.upiPayment.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              businesses: {
+                select: { name: true, slug: true },
+              },
+            },
           },
         },
-      },
-    },
-  });
-
-  const settings = await prisma.platformSetting.findUnique({
-    where: { id: "default" },
-  });
+      }),
+      prisma.platformSetting.findUnique({
+        where: { id: "default" },
+      }),
+    ]);
+    payments = paymentsData;
+    settings = settingsData;
+  } catch (err) {
+    console.error("AdminPaymentsPage fetch error:", err);
+  }
 
   return (
     <div className="space-y-6">
