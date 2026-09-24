@@ -23,11 +23,11 @@ import {
   LogOut,
   UserCheck,
   Star,
-  Camera,
   Award,
   Radio,
-  Upload,
   RefreshCw,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -134,24 +134,7 @@ export default function AgentPosPage() {
       .finally(() => setAuthLoading(false));
   }, [router]);
 
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Please upload an image under 5MB");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (typeof event.target?.result === "string") {
-          setCustomLogoUrl(event.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const [showEarnings, setShowEarnings] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -237,9 +220,6 @@ export default function AgentPosPage() {
     setSearchResults([]);
     setIsDropdownOpen(false);
     setSearchQuery(b.name + (b.branchName ? ` - ${b.branchName}` : ""));
-    if (b.logoUrl) {
-      setCustomLogoUrl(b.logoUrl);
-    }
     handleGeneratePitchReviews(b);
   };
 
@@ -289,7 +269,7 @@ export default function AgentPosPage() {
             (selectedPlace.placeId
               ? `https://search.google.com/local/writereview?placeid=${selectedPlace.placeId}`
               : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name)}`),
-          logoUrl: customLogoUrl || selectedPlace.logoUrl || null,
+          logoUrl: selectedPlace.logoUrl || null,
           whatsapp: whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null,
           instagram: instagram ? `https://instagram.com/${instagram.replace("@", "")}` : null,
           negotiatedPrice,
@@ -363,12 +343,24 @@ export default function AgentPosPage() {
               <span className="text-[9px] font-semibold text-slate-400 block">Deals Closed</span>
               <span className="text-base font-black text-white">{agent.agentStats.dealsClosed}</span>
             </div>
-            <div className="p-2 rounded-xl bg-slate-950/60">
-              <span className="text-[9px] font-semibold text-slate-400 block">40% Earned</span>
-              <span className="text-base font-black text-emerald-400">
-                ₹{agent.agentStats.totalCommission.toLocaleString("en-IN")}
+            <button
+              type="button"
+              onClick={() => setShowEarnings(!showEarnings)}
+              className="p-2 rounded-xl bg-slate-950/60 hover:bg-slate-950 transition text-center relative group"
+              title={showEarnings ? "Hide Earnings (Merchant Pitch Mode)" : "Tap to View Earnings"}
+            >
+              <div className="flex items-center justify-center gap-1">
+                <span className="text-[9px] font-semibold text-slate-400">Earnings</span>
+                {showEarnings ? (
+                  <EyeOff className="w-2.5 h-2.5 text-slate-500 group-hover:text-slate-300" />
+                ) : (
+                  <Eye className="w-2.5 h-2.5 text-slate-500 group-hover:text-slate-300" />
+                )}
+              </div>
+              <span className="text-base font-black text-emerald-400 tracking-wider">
+                {showEarnings ? `₹${agent.agentStats.totalCommission.toLocaleString("en-IN")}` : "••••"}
               </span>
-            </div>
+            </button>
             <div className="p-2 rounded-xl bg-slate-950/60">
               <span className="text-[9px] font-semibold text-slate-400 block">Pending Verify</span>
               <span className="text-base font-black text-amber-400">{agent.agentStats.pendingDeals}</span>
@@ -447,20 +439,6 @@ export default function AgentPosPage() {
               </div>
             </div>
 
-            {/* Agent 40% Commission Highlight */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-600/10 to-transparent border border-emerald-500/30 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
-                  Your 40% Instant Commission
-                </span>
-                <span className="text-xl font-black text-emerald-300">
-                  ₹{createdDeal.agentCommission || Math.round(createdDeal.negotiatedAmount * 0.40)}
-                </span>
-              </div>
-              <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-1 rounded-full border border-amber-500/30">
-                Credited on Admin Verify
-              </span>
-            </div>
 
             {/* Offline Standee Handover Checklist */}
             <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs text-left">
@@ -641,20 +619,20 @@ export default function AgentPosPage() {
                 )}
               </div>
 
-              {/* Selected Business Preview Badge & Logo Uploader */}
+              {/* Selected Business Preview Badge */}
               {selectedPlace && (
                 <div className="space-y-3 pt-2">
                   <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-10 h-10 rounded-xl bg-slate-900 border border-amber-400 flex items-center justify-center font-bold text-white overflow-hidden flex-shrink-0">
-                        {customLogoUrl || selectedPlace.logoUrl ? (
+                        {selectedPlace.logoUrl ? (
                           <img
-                            src={customLogoUrl || selectedPlace.logoUrl || ""}
+                            src={selectedPlace.logoUrl}
                             alt={selectedPlace.name}
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-amber-400">{selectedPlace.name.slice(0, 2).toUpperCase()}</span>
+                          <span className="text-amber-400 font-bold">{selectedPlace.name.slice(0, 2).toUpperCase()}</span>
                         )}
                       </div>
                       <div className="min-w-0">
@@ -668,12 +646,11 @@ export default function AgentPosPage() {
                       </div>
                     </div>
 
-                    {/* Camera / Logo Photo Uploader for Reps */}
-                    <label className="px-2.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition flex-shrink-0 shadow-md">
-                      <Camera className="w-3 h-3" />
-                      <span>{customLogoUrl ? "Change Photo" : "Snap Store Board"}</span>
-                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                    </label>
+                    {/* Verified Status Badge */}
+                    <div className="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold flex items-center gap-1 flex-shrink-0">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Verified</span>
+                    </div>
                   </div>
 
                   {/* LIVE 4"x6" COUNTERTOP ACRYLIC STAND DEMO ON AGENT'S PHONE */}
@@ -687,9 +664,9 @@ export default function AgentPosPage() {
 
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-1.5 overflow-hidden">
-                        {customLogoUrl || selectedPlace.logoUrl ? (
+                        {selectedPlace.logoUrl ? (
                           <img
-                            src={customLogoUrl || selectedPlace.logoUrl || ""}
+                            src={selectedPlace.logoUrl}
                             alt={selectedPlace.name}
                             className="w-full h-full object-contain rounded-full"
                           />
@@ -902,19 +879,19 @@ export default function AgentPosPage() {
                 />
               </div>
 
-              {/* Instant 40% Commission Preview */}
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-600/10 to-transparent border border-emerald-500/30 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
-                    Your 40% Instant Commission
+              {/* Package Summary & Merchant Reassurance */}
+              <div className="p-3 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" /> 1-Year Pro Plan Included
                   </span>
-                  <span className="text-base font-black text-emerald-300">
-                    ₹{Math.round(negotiatedPrice * 0.40).toLocaleString("en-IN")}
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Instant Activation
                   </span>
                 </div>
-                <span className="text-[9px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
-                  Credited on Admin Verify
-                </span>
+                <p className="text-[11px] text-slate-300 leading-snug">
+                  Includes 1x Physical Acrylic Standee, NFC chip, custom QR code, AI review response generator, and negative feedback shield.
+                </p>
               </div>
 
               {/* Optional UTR Reference Number */}
