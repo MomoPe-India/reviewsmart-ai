@@ -252,8 +252,17 @@ export default function SettingsClient({ business }: { business: BusinessData })
   const isOnline = business.customerType === "ONLINE";
   const chipsList = form.tagChips.split(",").map((s) => s.trim()).filter(Boolean);
 
+  const merchantPhone = business.whatsapp || business.phone || "Not specified";
+  const channelBadge =
+    business.customerType === "ONLINE" ? "Online Customer" : "Offline Merchant";
+
   const waSupportText = encodeURIComponent(
-    `Hi MomoPe Team, I have customized my digital review card for "${form.name}" (Slug: ${form.slug}). Please verify my payment and remove the watermark.`
+    `Hi MomoPe Support, I am requesting activation for my SmartReview AI Card.\n\n` +
+      `🏪 Store Name: ${form.name || business.name}\n` +
+      `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
+      `🔗 Review Link: https://reviewsmart.in/r/${form.slug || business.slug}\n` +
+      `💼 Channel: ${channelBadge}\n\n` +
+      `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`
   );
   const waSupportLink = `https://wa.me/918639831132?text=${waSupportText}`;
 

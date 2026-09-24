@@ -57,6 +57,14 @@ export default async function PublicReviewPage({
       keywords: true,
       reviewPromptTone: true,
       isPaid: true,
+      customerType: true,
+      user: {
+        select: {
+          name: true,
+          phone: true,
+          userIdTag: true,
+        },
+      },
     },
   });
 
@@ -68,6 +76,27 @@ export default async function PublicReviewPage({
   const showWatermark =
     business.isPaid === false && business.slug !== "momo-it-technologies";
 
+  const merchantPhone =
+    business.user?.phone ||
+    business.user?.userIdTag ||
+    business.whatsapp ||
+    business.phone ||
+    "Not specified";
+  const merchantOwnerName = business.user?.name || "Business Owner";
+  const channelBadge =
+    business.customerType === "ONLINE" ? "Online Customer" : "Offline Merchant";
+
+  const waActivationText = encodeURIComponent(
+    `Hi MomoPe Support, I am requesting activation for my SmartReview AI Card.\n\n` +
+      `🏪 Store Name: ${business.name}\n` +
+      `👤 Owner: ${merchantOwnerName}\n` +
+      `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
+      `🔗 Review Link: https://reviewsmart.in/r/${business.slug}\n` +
+      `💼 Channel: ${channelBadge}\n\n` +
+      `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`
+  );
+  const waActivationUrl = `https://wa.me/918639831132?text=${waActivationText}`;
+
   return (
     <main className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-0 sm:py-8 sm:px-4 selection:bg-amber-500 selection:text-slate-950 relative">
       {/* Review card — blurred when unpaid */}
@@ -77,12 +106,12 @@ export default async function PublicReviewPage({
 
       {/* Payment Pending Watermark Overlay */}
       {showWatermark && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6">
           {/* Blurred backdrop */}
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-md" />
 
           {/* Overlay card */}
-          <div className="relative z-10 w-full max-w-sm bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/60 text-center flex flex-col items-center gap-4">
+          <div className="relative z-10 w-full max-w-sm bg-slate-900/90 backdrop-blur-2xl border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 text-center flex flex-col items-center gap-4">
             {/* Icon */}
             <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-1">
               <svg
@@ -105,26 +134,42 @@ export default async function PublicReviewPage({
               <h2 className="text-2xl font-black text-white tracking-tight">
                 Payment Pending
               </h2>
-              <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+              <p className="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
                 This review card is not yet active.{" "}
                 <br className="hidden sm:block" />
                 Contact MomoPe support to activate it.
               </p>
             </div>
 
-            {/* WhatsApp CTA */}
+            {/* Merchant Details Pill */}
+            <div className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl p-3 text-left space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="text-slate-500 font-medium">Business:</span>
+                <span className="font-bold text-white truncate max-w-[170px]">{business.name}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="text-slate-500 font-medium">Merchant ID:</span>
+                <span className="font-mono font-bold text-amber-400">{merchantPhone}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="text-slate-500 font-medium">Review Card:</span>
+                <span className="font-mono text-[11px] text-slate-400 truncate max-w-[160px]">/r/{business.slug}</span>
+              </div>
+            </div>
+
+            {/* WhatsApp CTA with complete details */}
             <a
-              href="https://wa.me/918639831132"
+              href={waActivationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-sm shadow-xl shadow-emerald-900/40 transition-all duration-200 mt-1"
+              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-950/50 transition-all duration-200 mt-1 transform active:scale-98"
             >
-              <MessageCircle className="w-4 h-4" />
-              Contact MomoPe on WhatsApp
+              <MessageCircle className="w-4 h-4 shrink-0" />
+              <span>Contact MomoPe on WhatsApp</span>
             </a>
 
             {/* Badge */}
-            <p className="text-[11px] text-slate-600 font-medium mt-1">
+            <p className="text-[11px] text-slate-500 font-medium mt-1">
               Powered by ReviewSmart AI · MomoPe India
             </p>
           </div>

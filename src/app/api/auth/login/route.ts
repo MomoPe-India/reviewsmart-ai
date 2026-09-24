@@ -10,7 +10,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { email, password, userId, pin } = body;
+  const { email, password } = body;
+  const userId = body.userId || body.userIdTag || body.phone;
+  const pin = body.pin;
 
   try {
     let user: any = null;
