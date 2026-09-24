@@ -4,7 +4,11 @@ import { COOKIE_NAME, verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const steps: Record<string, unknown> = {};
+  const steps: Record<string, unknown> = {
+    version: "v2-embedded-db-url",
+    envDbUrlLength: (process.env.DATABASE_URL || "").length,
+    envDirectUrlLength: (process.env.DIRECT_URL || "").length,
+  };
   try {
     const cookieStore = cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
