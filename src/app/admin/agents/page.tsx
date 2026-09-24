@@ -25,6 +25,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { getAppUrl } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -571,7 +572,7 @@ export default function AdminAgentsPage() {
                     {agt.phone && (
                       <a
                         href={`https://wa.me/91${agt.phone}?text=${encodeURIComponent(
-                          `Hi ${agt.name},\n\nYour ReviewSmart AI Marketing Agent PIN has been reset.\n\n👤 Agent Code: ${agt.agentCode}\n🔑 New 4-Digit PIN: ${newPinResult.pin}\n📱 Login: https://reviewsmart-ai-44ep.vercel.app/login\n\nPlease log in and keep your credentials secure.`
+                          `Hi ${agt.name},\n\nYour ReviewSmart AI Marketing Agent PIN has been reset.\n\n👤 Agent Code: ${agt.agentCode}\n🔑 New 4-Digit PIN: ${newPinResult.pin}\n📱 Login: ${getAppUrl()}/login\n\nPlease log in and keep your credentials secure.`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"

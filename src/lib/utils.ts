@@ -27,5 +27,5 @@ export function getAppUrl(): string {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return "https://reviewsmart-ai-44ep.vercel.app";
+  return "https://reviewsmart-ai.vercel.app";
 }
