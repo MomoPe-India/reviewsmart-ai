@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import BranchSwitcher from "@/components/dashboard/BranchSwitcher";
+import DashboardDesktopNav from "@/components/navigation/DashboardDesktopNav";
 import MobileAppBottomNav from "@/components/navigation/MobileAppBottomNav";
 
 export default async function DashboardLayout({
@@ -57,56 +58,11 @@ export default async function DashboardLayout({
               activeBranchId={businesses[0]?.id || ""}
             />
 
-            {/* Desktop Navigation Menu (Hidden on Mobile) */}
-            <nav className="hidden lg:block bg-slate-900 p-2 rounded-2xl border border-slate-800 shadow-sm space-y-1 text-xs font-medium">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                <LayoutDashboard className="w-4 h-4 text-slate-500" />
-                Overview
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                <Settings className="w-4 h-4 text-slate-500" />
-                {isOffline ? "Customise Review Card" : "Card & AI SEO Settings"}
-              </Link>
-              <Link
-                href="/dashboard/studio"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                <Printer className="w-4 h-4 text-slate-500" />
-                {isOffline ? "Standee Studio" : "Standee Studio (Offline Kit)"}
-              </Link>
-              <Link
-                href="/dashboard/assistant"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                AI Reply Assistant
-              </Link>
-              <Link
-                href="/dashboard/feedback"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                <Inbox className="w-4 h-4 text-slate-500" />
-                Feedback Shield Inbox
-              </Link>
-              <Link
-                href="/dashboard/branches"
-                className="flex items-center justify-between px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Store className="w-4 h-4 text-indigo-400" />
-                  <span>My Outlets</span>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-md border border-emerald-500/30">
-                  {businesses.length}
-                </span>
-              </Link>
-            </nav>
+            {/* Desktop Navigation Menu (with live active link highlighting) */}
+            <DashboardDesktopNav
+              isOffline={isOffline}
+              outletCount={businesses.length}
+            />
           </aside>
 
           {/* Main Dashboard Content */}

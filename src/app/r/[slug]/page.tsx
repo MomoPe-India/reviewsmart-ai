@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import ReviewExperience from "@/components/review/ReviewExperience";
 import type { Metadata } from "next";
 import { MessageCircle } from "lucide-react";
+import { getAppUrl } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -86,12 +87,13 @@ export default async function PublicReviewPage({
   const channelBadge =
     business.customerType === "ONLINE" ? "Online Customer" : "Offline Merchant";
 
+  const appUrl = getAppUrl();
   const waActivationText = encodeURIComponent(
     `Hi ReviewSmart AI Support, I am requesting activation for my ReviewSmart AI Card.\n\n` +
       `🏪 Store Name: ${business.name}\n` +
       `👤 Owner: ${merchantOwnerName}\n` +
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
-      `🔗 Review Link: https://reviewsmart.in/r/${business.slug}\n` +
+      `🔗 Review Link: ${appUrl}/r/${business.slug}\n` +
       `💼 Channel: ${channelBadge}\n\n` +
       `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`
   );

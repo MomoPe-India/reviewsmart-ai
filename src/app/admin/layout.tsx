@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import AdminMobileBottomNav from "@/components/navigation/AdminMobileBottomNav";
+import AdminDesktopNav from "@/components/navigation/AdminDesktopNav";
 import BrandLogo from "@/components/brand/BrandLogo";
 
 export default async function AdminLayout({
@@ -45,50 +46,8 @@ export default async function AdminLayout({
               </p>
             </div>
 
-            {/* Navigation */}
-            <nav className="bg-slate-800 p-2 rounded-2xl border border-slate-700 shadow-sm space-y-0.5 text-xs font-medium">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition group"
-              >
-                <LayoutDashboard className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
-                Platform Overview
-              </Link>
-
-              <Link
-                href="/admin/merchants"
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition group"
-              >
-                <Users className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
-                Merchants
-              </Link>
-
-              <Link
-                href="/admin/agents"
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition group"
-              >
-                <UserCheck className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
-                Marketing Agents
-              </Link>
-
-              <Link
-                href="/admin/businesses"
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-700 hover:text-white transition group"
-              >
-                <Building2 className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
-                Businesses
-              </Link>
-
-              <div className="pt-1 mt-1 border-t border-slate-700">
-                <Link
-                  href="/admin/payments"
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 font-bold transition group"
-                >
-                  <IndianRupee className="w-4 h-4" />
-                  Payments &amp; Deals
-                </Link>
-              </div>
-            </nav>
+            {/* Navigation (with live active link highlighting) */}
+            <AdminDesktopNav />
 
             {/* Back to Dashboard */}
             <div>

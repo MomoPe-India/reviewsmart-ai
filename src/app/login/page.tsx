@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Sparkles,
@@ -26,6 +26,72 @@ export default function LoginPage() {
   const [userId, setUserId] = useState("");
   const [pin, setPin] = useState("");
   const [showPin, setShowPin] = useState(false);
+
+  // 4-Box PIN Input Refs
+  const pinInputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
+
+  const handlePinDigitChange = (index: number, val: string) => {
+    const cleaned = val.replace(/\D/g, "");
+    if (!cleaned) {
+      const pinArr = pin.padEnd(4, " ").split("");
+      pinArr[index] = " ";
+      setPin(pinArr.join("").trimEnd());
+      return;
+    }
+
+    if (cleaned.length > 1) {
+      const newPin = cleaned.slice(0, 4);
+      setPin(newPin);
+      const nextIdx = Math.min(newPin.length, 3);
+      pinInputRefs[nextIdx]?.current?.focus();
+      return;
+    }
+
+    const pinArr = pin.padEnd(4, " ").split("");
+    pinArr[index] = cleaned[0];
+    const newPin = pinArr.join("").trimEnd();
+    setPin(newPin);
+
+    if (index < 3 && cleaned[0]) {
+      pinInputRefs[index + 1]?.current?.focus();
+    }
+  };
+
+  const handlePinKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace") {
+      const pinArr = pin.padEnd(4, " ").split("");
+      if (!pinArr[index] || pinArr[index] === " ") {
+        if (index > 0) {
+          pinInputRefs[index - 1]?.current?.focus();
+        }
+      } else {
+        pinArr[index] = " ";
+        setPin(pinArr.join("").trimEnd());
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      pinInputRefs[index - 1]?.current?.focus();
+    } else if (e.key === "ArrowRight" && index < 3) {
+      pinInputRefs[index + 1]?.current?.focus();
+    }
+  };
+
+  const handlePinPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
+    if (pasteData) {
+      setPin(pasteData);
+      const nextIdx = Math.min(pasteData.length - 1, 3);
+      pinInputRefs[nextIdx]?.current?.focus();
+    }
+  };
 
   // Admin Login State (Super Admin)
   const [email, setEmail] = useState("");
@@ -181,38 +247,62 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* PIN Field */}
+              {/* 4-Box PIN Field */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2">
-                  Your 4-Digit PIN
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type={showPin ? "text" : "password"}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={4}
-                    required
-                    value={pin}
-                    onChange={(e) =>
-                      setPin(e.target.value.replace(/\D/g, "").slice(0, 4))
-                    }
-                    placeholder="••••"
-                    className="w-full text-3xl tracking-[0.6em] pl-11 pr-12 py-3 rounded-2xl bg-white/8 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-black transition"
-                  />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-slate-300">
+                    Your 4-Digit Security PIN
+                  </label>
                   <button
                     type="button"
                     onClick={() => setShowPin(!showPin)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
+                    className="text-[11px] text-slate-400 hover:text-indigo-400 transition flex items-center gap-1 font-medium"
                   >
                     {showPin ? (
-                      <EyeOff className="w-4 h-4" />
+                      <>
+                        <EyeOff className="w-3.5 h-3.5" />
+                        <span>Hide PIN</span>
+                      </>
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <>
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Show PIN</span>
+                      </>
                     )}
                   </button>
                 </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  {[0, 1, 2, 3].map((idx) => {
+                    const digit = pin[idx] || "";
+                    return (
+                      <input
+                        key={idx}
+                        ref={pinInputRefs[idx]}
+                        type={showPin ? "text" : "password"}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handlePinDigitChange(idx, e.target.value)}
+                        onKeyDown={(e) => handlePinKeyDown(idx, e)}
+                        onPaste={handlePinPaste}
+                        className={`w-14 h-14 text-center text-xl font-black rounded-2xl bg-white/8 border transition-all duration-150 focus:outline-none focus:scale-105 ${
+                          digit
+                            ? "border-indigo-500 bg-indigo-500/10 text-white shadow-lg shadow-indigo-500/20"
+                            : "border-white/10 text-white placeholder-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40"
+                        }`}
+                        placeholder="•"
+                      />
+                    );
+                  })}
+                </div>
+                <input
+                  type="hidden"
+                  name="pin"
+                  value={pin}
+                  required
+                />
               </div>
 
               {/* Sign In Button */}

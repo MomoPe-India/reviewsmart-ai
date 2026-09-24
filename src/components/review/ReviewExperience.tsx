@@ -183,13 +183,17 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     setReviewOptions(updated);
   };
 
-  // Optional AI regeneration from server
+  // Optional AI regeneration from server with 7s timeout fallback
   const triggerAiGeneration = async () => {
     setIsGenerating(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+
     try {
       const res = await fetch("/api/ai/generate-review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           businessName: business.name,
           category: business.category || industry.label,
@@ -202,6 +206,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
         }),
       });
 
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (res.ok && data.reviews && data.reviews.length > 0) {
         setReviewOptions(data.reviews);
@@ -212,9 +217,11 @@ export default function ReviewExperience({ business }: { business: BusinessData 
         setReviewOptions(fallback);
       }
     } catch {
+      clearTimeout(timeoutId);
       const fallback = buildInstantDrafts(selectedTags, customNote);
       setReviewOptions(fallback);
     } finally {
+      clearTimeout(timeoutId);
       setIsGenerating(false);
     }
   };
