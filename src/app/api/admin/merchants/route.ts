@@ -206,25 +206,41 @@ export async function PUT(req: NextRequest) {
       }
     }
 
+    // Prepare merchant user update
+    const updateUserData: Record<string, unknown> = {
+      ...(name !== undefined && { name: name.trim() }),
+      ...(cleanPhone !== undefined && {
+        phone: cleanPhone,
+        userIdTag: cleanPhone,
+        email: `${cleanPhone}@merchant.reviewsmart.local`,
+      }),
+      ...(customerType !== undefined && { customerType }),
+      ...(isActive !== undefined && { isActive }),
+    };
+
+    if (body.pin && String(body.pin).trim().length === 4) {
+      const cleanPin = String(body.pin).trim().replace(/[^0-9]/g, "");
+      if (cleanPin.length === 4) {
+        const hp = await hashPin(cleanPin);
+        updateUserData.pinCode = hp;
+        updateUserData.password = hp;
+      }
+    }
+
     // Update merchant user
     const updatedUser = await prisma.user.update({
       where: { id: merchantId },
-      data: {
-        ...(name !== undefined && { name: name.trim() }),
-        ...(cleanPhone !== undefined && {
-          phone: cleanPhone,
-          userIdTag: cleanPhone,
-          email: `${cleanPhone}@merchant.reviewsmart.local`,
-        }),
-        ...(customerType !== undefined && { customerType }),
-        ...(isActive !== undefined && { isActive }),
-      },
+      data: updateUserData,
     });
 
-    // Update or create associated business
-    if (businessId) {
+    // Find and update associated business
+    const targetBusinessId =
+      businessId ||
+      (await prisma.business.findFirst({ where: { userId: merchantId }, select: { id: true } }))?.id;
+
+    if (targetBusinessId) {
       await prisma.business.update({
-        where: { id: businessId },
+        where: { id: targetBusinessId },
         data: {
           ...(businessName !== undefined && { name: businessName.trim() }),
           ...(slug !== undefined && { slug: slugify(slug) }),
@@ -232,7 +248,8 @@ export async function PUT(req: NextRequest) {
           ...(tagline !== undefined && { tagline }),
           ...(googleReviewUrl !== undefined && { googleReviewUrl }),
           ...(googleAddress !== undefined && { googleAddress }),
-          ...(whatsapp !== undefined && { whatsapp }),
+          ...(cleanPhone !== undefined && { phone: cleanPhone }),
+          ...(whatsapp !== undefined ? { whatsapp } : cleanPhone !== undefined ? { whatsapp: cleanPhone } : {}),
           ...(website !== undefined && { website }),
           ...(minRatingForGoogle !== undefined && { minRatingForGoogle: Number(minRatingForGoogle) }),
           ...(isPaid !== undefined && { isPaid }),

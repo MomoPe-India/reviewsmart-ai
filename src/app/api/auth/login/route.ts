@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
 
     // ─── FLOW 1: User ID + PIN (Merchants & Marketing Agents) ────────────────
     if (userId && pin) {
-      const cleanId = String(userId).trim();
+      const rawId = String(userId).trim();
+      const cleanDigits = rawId.replace(/[^0-9]/g, "").slice(-10);
+      const cleanCode = rawId.toUpperCase();
       const cleanPin = String(pin).trim();
 
       // Must be exactly 4 digits for merchants/agents
@@ -33,9 +35,17 @@ export async function POST(req: NextRequest) {
       user = await prisma.user.findFirst({
         where: {
           OR: [
-            { userIdTag: cleanId },
-            { phone: cleanId },
-            { agentCode: cleanId.toUpperCase() },
+            { userIdTag: rawId },
+            { userIdTag: cleanCode },
+            { agentCode: cleanCode },
+            { phone: rawId },
+            ...(cleanDigits.length === 10
+              ? [
+                  { phone: cleanDigits },
+                  { userIdTag: cleanDigits },
+                  { email: `${cleanDigits}@merchant.reviewsmart.local` },
+                ]
+              : []),
           ],
         },
       });

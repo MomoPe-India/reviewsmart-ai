@@ -225,23 +225,20 @@ export default function LoginPage() {
           {/* ── TAB 1: User ID & PIN ── */}
           {authMode === "pin" && (
             <form onSubmit={handlePinSubmit} className="space-y-5">
-              {/* Mobile Number Field */}
+              {/* Mobile Number or Agent Code Field */}
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-2">
-                  Your Mobile Number
+                  Your Mobile Number or Agent Code
                 </label>
                 <div className="relative">
                   <Smartphone className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
-                    type="tel"
-                    inputMode="numeric"
+                    type="text"
                     required
-                    maxLength={10}
+                    maxLength={16}
                     value={userId}
-                    onChange={(e) =>
-                      setUserId(e.target.value.replace(/\D/g, "").slice(0, 10))
-                    }
-                    placeholder="10-digit mobile number"
+                    onChange={(e) => setUserId(e.target.value)}
+                    placeholder="e.g. 8639831132 or MKT-01"
                     className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-white/8 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium transition"
                   />
                 </div>

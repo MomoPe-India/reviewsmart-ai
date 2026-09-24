@@ -219,14 +219,29 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
+      const updateData: Record<string, unknown> = {
+        name: name ? String(name).trim() : agent.name,
+        phone: cleanPhone,
+        agentCode: cleanCode,
+        userIdTag: cleanCode,
+      };
+
+      if (cleanCode) {
+        updateData.email = `${cleanCode.toLowerCase()}@agent.reviewsmart.local`;
+      }
+
+      if (body.pin && String(body.pin).trim().length === 4) {
+        const cleanPin = String(body.pin).trim().replace(/[^0-9]/g, "");
+        if (cleanPin.length === 4) {
+          const hp = await hashPin(cleanPin);
+          updateData.pinCode = hp;
+          updateData.password = hp;
+        }
+      }
+
       const updated = await prisma.user.update({
         where: { id: agentId },
-        data: {
-          name: name ? String(name).trim() : agent.name,
-          phone: cleanPhone,
-          agentCode: cleanCode,
-          userIdTag: cleanCode,
-        },
+        data: updateData,
         select: {
           id: true,
           name: true,
@@ -238,10 +253,18 @@ export async function PATCH(req: NextRequest) {
         },
       });
 
+      // Synchronize all historical payments to reflect the new agent code
+      if (cleanCode && cleanCode !== agent.agentCode) {
+        await prisma.upiPayment.updateMany({
+          where: { agentId },
+          data: { agentCode: cleanCode },
+        });
+      }
+
       return NextResponse.json({
         success: true,
         agent: updated,
-        message: `Agent ${updated.name} updated successfully.`,
+        message: `Agent ${updated.name} updated successfully and deals synchronized.`,
       });
     }
 
