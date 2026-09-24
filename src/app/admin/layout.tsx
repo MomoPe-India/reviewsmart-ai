@@ -22,7 +22,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await getSessionUser();
-  if (!user || user.role !== "SUPER_ADMIN") {
+  if (!user) {
+    redirect("/login");
+  }
+  if (user.role !== "SUPER_ADMIN") {
     redirect("/dashboard");
   }
 
