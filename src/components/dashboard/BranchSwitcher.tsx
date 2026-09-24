@@ -161,17 +161,17 @@ export default function BranchSwitcher({
   return (
     <div className="relative">
       {/* Current Branch Selector Trigger */}
-      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-all">
+      <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all">
         <div className="flex items-center justify-between gap-2 mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 flex items-center gap-1">
-            <Store className="w-3 h-3 text-indigo-600" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-md border border-indigo-500/20 flex items-center gap-1">
+            <Store className="w-3 h-3 text-indigo-400" />
             Branch {branches.findIndex((b) => b.id === activeBranch?.id) + 1} of{" "}
             {branches.length}
           </span>
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1 transition"
+            className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1 transition"
           >
             <Plus className="w-3 h-3" />
             Add (₹99)
@@ -181,10 +181,10 @@ export default function BranchSwitcher({
         <button
           type="button"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="w-full flex items-center justify-between text-left p-1 rounded-xl hover:bg-slate-50 transition"
+          className="w-full flex items-center justify-between text-left p-1 rounded-xl hover:bg-slate-800 transition"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold overflow-hidden flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-300 font-bold overflow-hidden flex-shrink-0">
               {activeBranch?.logoUrl ? (
                 <img
                   src={activeBranch.logoUrl}
@@ -198,25 +198,25 @@ export default function BranchSwitcher({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-xs font-bold text-slate-900 truncate">
+              <h3 className="text-xs font-bold text-white truncate">
                 {activeBranch?.name || "My Business"}
               </h3>
-              <p className="text-[10px] text-slate-400 truncate">
+              <p className="text-[10px] text-slate-500 truncate">
                 {activeBranch?.googleAddress || `/${activeBranch?.slug}`}
               </p>
             </div>
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${
-              dropdownOpen ? "rotate-180 text-indigo-600" : ""
+            className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${
+              dropdownOpen ? "rotate-180 text-indigo-400" : ""
             }`}
           />
         </button>
 
         {/* Dropdown Menu */}
         {dropdownOpen && (
-          <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-2 space-y-1 animate-fadeIn">
-            <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-slate-900 rounded-2xl shadow-2xl shadow-black/50 border border-slate-800 p-2 space-y-1 animate-fadeIn">
+            <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Your Managed Outlets &bull; No Limit
             </div>
 
@@ -228,29 +228,29 @@ export default function BranchSwitcher({
                   onClick={() => handleSwitchBranch(b.id)}
                   className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition ${
                     b.id === activeBranch?.id
-                      ? "bg-indigo-50/80 text-indigo-900 font-bold border border-indigo-100"
-                      : "hover:bg-slate-50 text-slate-700"
+                      ? "bg-indigo-500/15 text-white font-bold border border-indigo-500/20"
+                      : "hover:bg-slate-800 text-slate-300"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                    <span className="w-5 h-5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
                       {idx + 1}
                     </span>
                     <div className="truncate">
                       <div className="text-xs font-semibold truncate">{b.name}</div>
-                      <div className="text-[10px] text-slate-400 truncate">
+                      <div className="text-[10px] text-slate-500 truncate">
                         {b.googleAddress || `/${b.slug}`}
                       </div>
                     </div>
                   </div>
                   {b.id === activeBranch?.id && (
-                    <Check className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0 ml-1" />
+                    <Check className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 ml-1" />
                   )}
                 </button>
               ))}
             </div>
 
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-slate-800">
               <button
                 type="button"
                 onClick={() => {
@@ -259,8 +259,8 @@ export default function BranchSwitcher({
                 }}
                 className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition ${
                   branches.length >= 2
-                    ? "bg-slate-800 hover:bg-slate-900 text-white"
-                    : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                    ? "bg-slate-700 hover:bg-slate-600 text-white"
+                    : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white"
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -272,6 +272,7 @@ export default function BranchSwitcher({
       </div>
 
       {/* Add New Branch Modal */}
+
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">

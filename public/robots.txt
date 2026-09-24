@@ -1,0 +1,21 @@
+# ReviewSmart AI - robots.txt
+
+User-agent: *
+
+# Allow public pages
+Allow: /
+Allow: /r/
+Allow: /#features
+Allow: /#how-it-works
+
+# Block all authenticated/internal areas
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /agent/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /create
+
+# Sitemap
+Sitemap: https://reviewsmart.in/sitemap.xml
