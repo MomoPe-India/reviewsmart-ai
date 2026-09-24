@@ -4,7 +4,11 @@ import AdminPaymentsClient from "@/components/admin/AdminPaymentsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPaymentsPage() {
+export default async function AdminPaymentsPage({
+  searchParams,
+}: {
+  searchParams?: { status?: string; channel?: string };
+}) {
   let payments: any[] = [];
   let settings: any = null;
 
@@ -45,7 +49,12 @@ export default async function AdminPaymentsPage() {
         </p>
       </div>
 
-      <AdminPaymentsClient initialPayments={payments} initialSettings={settings} />
+      <AdminPaymentsClient
+        initialPayments={payments}
+        initialSettings={settings}
+        initialStatus={searchParams?.status}
+        initialChannel={searchParams?.channel}
+      />
     </div>
   );
 }

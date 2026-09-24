@@ -103,6 +103,13 @@ export default function AdminAgentsPage() {
 
   useEffect(() => {
     fetchAgents();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const search = params.get("search") || params.get("code");
+      if (search) {
+        setSearchQuery(search);
+      }
+    }
   }, [fetchAgents]);
 
   // ── Create Agent ────────────────────────────────────────────────────────────

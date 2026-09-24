@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Check,
   X,
@@ -19,11 +19,15 @@ import {
 interface AdminPaymentsProps {
   initialPayments: any[];
   initialSettings: any;
+  initialStatus?: string;
+  initialChannel?: string;
 }
 
 export default function AdminPaymentsClient({
   initialPayments,
   initialSettings,
+  initialStatus,
+  initialChannel,
 }: AdminPaymentsProps) {
   const [payments, setPayments] = useState(initialPayments);
   const [settings, setSettings] = useState(
@@ -91,7 +95,42 @@ export default function AdminPaymentsClient({
     }
   };
 
+  const [activeTab, setActiveTab] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED" | "OFFLINE" | "ONLINE">(() => {
+    if (initialStatus?.toUpperCase() === "PENDING") return "PENDING";
+    if (initialStatus?.toUpperCase() === "APPROVED") return "APPROVED";
+    if (initialStatus?.toUpperCase() === "REJECTED") return "REJECTED";
+    if (initialChannel?.toUpperCase() === "OFFLINE" || initialChannel === "NEGOTIATED_DEAL") return "OFFLINE";
+    if (initialChannel?.toUpperCase() === "ONLINE" || initialChannel === "ONLINE_DIRECT") return "ONLINE";
+    return "ALL";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get("status")?.toUpperCase();
+      const c = params.get("channel")?.toUpperCase();
+      if (s === "PENDING") setActiveTab("PENDING");
+      else if (s === "APPROVED") setActiveTab("APPROVED");
+      else if (s === "REJECTED") setActiveTab("REJECTED");
+      else if (c === "OFFLINE" || c === "NEGOTIATED_DEAL") setActiveTab("OFFLINE");
+      else if (c === "ONLINE" || c === "ONLINE_DIRECT") setActiveTab("ONLINE");
+    }
+  }, [initialStatus, initialChannel]);
+
   const pendingCount = payments.filter((p) => p.status === "PENDING").length;
+  const approvedCount = payments.filter((p) => p.status === "APPROVED").length;
+  const rejectedCount = payments.filter((p) => p.status === "REJECTED").length;
+  const offlineCount = payments.filter((p) => p.planType === "NEGOTIATED_DEAL").length;
+  const onlineCount = payments.filter((p) => p.planType === "ONLINE_DIRECT").length;
+
+  const filteredPayments = payments.filter((p) => {
+    if (activeTab === "PENDING") return p.status === "PENDING";
+    if (activeTab === "APPROVED") return p.status === "APPROVED";
+    if (activeTab === "REJECTED") return p.status === "REJECTED";
+    if (activeTab === "OFFLINE") return p.planType === "NEGOTIATED_DEAL";
+    if (activeTab === "ONLINE") return p.planType === "ONLINE_DIRECT";
+    return true;
+  });
 
   return (
     <div className="space-y-8">
@@ -175,20 +214,70 @@ export default function AdminPaymentsClient({
 
       {/* 2. Payments table */}
       <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-slate-700 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Clock className="w-4 h-4 text-indigo-400" />
-            Payment Verifications
-          </h2>
-          {pendingCount > 0 && (
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-              {pendingCount} pending
-            </span>
-          )}
+        <div className="p-5 border-b border-slate-700 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <Clock className="w-4 h-4 text-indigo-400" />
+              Payment Verifications &amp; Deals
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Review and approve merchant UTR submissions to instantly activate accounts.
+            </p>
+          </div>
+
+          {/* Interactive Filter Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0 scrollbar-none">
+            {[
+              { id: "ALL", label: "All Deals", count: payments.length },
+              { id: "PENDING", label: "Pending", count: pendingCount, highlight: "amber" },
+              { id: "APPROVED", label: "Approved", count: approvedCount, highlight: "emerald" },
+              { id: "OFFLINE", label: "Offline Deals", count: offlineCount },
+              { id: "ONLINE", label: "Online Direct", count: onlineCount },
+              { id: "REJECTED", label: "Rejected", count: rejectedCount, highlight: "red" },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+                    isActive
+                      ? "bg-slate-700 text-white shadow-sm border border-slate-600"
+                      : "text-slate-400 hover:text-white hover:bg-slate-700/40"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      tab.highlight === "amber" && tab.count > 0
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                        : tab.highlight === "emerald" && tab.count > 0
+                        ? "bg-emerald-500/20 text-emerald-300"
+                        : "bg-slate-900 text-slate-400"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {payments.length === 0 ? (
-          <p className="text-xs text-slate-400 py-12 text-center">No payment submissions yet.</p>
+        {filteredPayments.length === 0 ? (
+          <div className="py-12 text-center space-y-2">
+            <p className="text-xs text-slate-400">
+              No {activeTab === "ALL" ? "" : activeTab.toLowerCase()} payments found.
+            </p>
+            {activeTab !== "ALL" && (
+              <button
+                onClick={() => setActiveTab("ALL")}
+                className="text-xs text-emerald-400 hover:underline font-semibold"
+              >
+                Clear filter to view all
+              </button>
+            )}
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -204,7 +293,7 @@ export default function AdminPaymentsClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/60">
-                {payments.map((p) => {
+                {filteredPayments.map((p) => {
                   const isPending = p.status === "PENDING";
                   const isApproved = p.status === "APPROVED";
                   const storeName = p.user?.businesses?.[0]?.name || "Unassigned";

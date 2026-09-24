@@ -135,6 +135,13 @@ export default function AdminMerchantsPage() {
 
   useEffect(() => {
     fetchMerchants();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const filter = params.get("filter") || params.get("type");
+      if (filter && (filter === "ONLINE" || filter === "OFFLINE" || filter === "ALL")) {
+        setFilterType(filter as any);
+      }
+    }
   }, [fetchMerchants]);
 
   // Create Merchant
