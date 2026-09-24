@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret_key_change_me";
+const JWT_SECRET = process.env.JWT_SECRET || "reviewsmart_super_secret_jwt_key_2026_change_in_prod";
 export const COOKIE_NAME = "review_ai_token";
 
 export interface SessionUser {
