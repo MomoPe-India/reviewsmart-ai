@@ -95,7 +95,7 @@ export default async function DashboardOverviewPage({
     business.customerType === "ONLINE" ? "Online Customer" : "Offline Merchant";
 
   const waActivationText = encodeURIComponent(
-    `Hi MomoPe Support, I am requesting activation for my SmartReview AI Card.\n\n` +
+    `Hi ReviewSmart AI Support, I am requesting activation for my ReviewSmart AI Card.\n\n` +
       `🏪 Store Name: ${business.name}\n` +
       `👤 Owner: ${merchantOwnerName}\n` +
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +

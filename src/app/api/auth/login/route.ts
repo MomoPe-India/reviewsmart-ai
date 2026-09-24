@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       // Check account is active
       if (user.isActive === false) {
         return NextResponse.json(
-          { error: "Your account has been suspended. Please contact MomoPe support." },
+          { error: "Your account has been suspended. Please contact ReviewSmart AI support." },
           { status: 403 }
         );
       }

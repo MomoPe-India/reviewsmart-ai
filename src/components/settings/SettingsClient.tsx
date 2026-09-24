@@ -260,7 +260,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
     business.customerType === "ONLINE" ? "Online Customer" : "Offline Merchant";
 
   const waSupportText = encodeURIComponent(
-    `Hi MomoPe Support, I am requesting activation for my SmartReview AI Card.\n\n` +
+    `Hi ReviewSmart AI Support, I am requesting activation for my ReviewSmart AI Card.\n\n` +
       `🏪 Store Name: ${form.name || business.name}\n` +
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
       `🔗 Review Link: https://reviewsmart.in/r/${form.slug || business.slug}\n` +
@@ -292,10 +292,10 @@ export default function SettingsClient({ business }: { business: BusinessData })
                   </span>
                 </div>
                 <h2 className="text-sm sm:text-base font-black text-slate-900 leading-snug">
-                  Activate Your SmartReview AI Card — Watermark Removed Upon Payment
+                  Activate Your ReviewSmart AI Card — Watermark Removed Upon Payment
                 </h2>
                 <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed max-w-2xl">
-                  Your review card is fully customizable below. In preview mode, your card link displays a demo watermark. Once your negotiated payment is verified by MomoPe Admin, the watermark is immediately removed and your card goes live for real customer reviews.
+                  Your review card is fully customizable below. In preview mode, your card link displays a demo watermark. Once your negotiated payment is verified by ReviewSmart AI Admin, the watermark is immediately removed and your card goes live for real customer reviews.
                 </p>
 
                 {/* Pre-filled Account Verification Metadata */}
@@ -325,7 +325,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
                 <span>Verify &amp; Activate on WhatsApp</span>
               </a>
               <span className="text-[10px] text-center text-slate-500 font-medium">
-                Instant verification by MomoPe Support
+                Instant verification by ReviewSmart AI Support
               </span>
             </div>
           </div>
@@ -881,7 +881,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
                   name="website"
                   value={form.website}
                   onChange={handleChange}
-                  placeholder="https://momope.com"
+                  placeholder="https://yourwebsite.com"
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </div>
@@ -951,7 +951,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
                     Preview Mode (Watermark Active)
                   </span>
                   <p className="text-[10px] text-amber-800 leading-snug">
-                    Watermark will be automatically removed once your payment is verified by MomoPe.
+                    Watermark will be automatically removed once your payment is verified by ReviewSmart AI.
                   </p>
                 </div>
               </div>
@@ -990,7 +990,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
                       SAMPLE PREVIEW • WATERMARK ACTIVE
                     </span>
                     <span className="text-[10px] text-amber-400/25 font-bold uppercase tracking-wider block mt-1">
-                      Removed After MomoPe Approval
+                      Removed After ReviewSmart AI Approval
                     </span>
                   </div>
                 </div>

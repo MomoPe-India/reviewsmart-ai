@@ -171,7 +171,7 @@ export default function HomePage() {
 
           <div className="flex items-center gap-2">
             <a
-              href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+              href="https://wa.me/918639831132?text=Hi%20ReviewSmart%20AI%2C%20I%20am%20interested%20in%20ReviewSmart%20AI%20for%20my%20business."
               target="_blank"
               rel="noreferrer"
               className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/5"
@@ -215,7 +215,7 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
-              href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+              href="https://wa.me/918639831132?text=Hi%20ReviewSmart%20AI%2C%20I%20am%20interested%20in%20ReviewSmart%20AI%20for%20my%20business."
               target="_blank"
               rel="noreferrer"
               className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-indigo-500/30 transition"
@@ -273,8 +273,12 @@ export default function HomePage() {
 
                 {/* Business logo/name */}
                 <div className="flex flex-col items-center text-center mb-5">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg mb-2">
-                    <Store className="w-7 h-7 text-white" />
+                  <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-emerald-500/40 flex items-center justify-center shadow-lg mb-2 p-1 overflow-hidden">
+                    <img
+                      src="/images/momo-it-logo.png"
+                      alt="Momo IT Technologies"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <h3 className="font-black text-white text-sm">Momo IT Technologies</h3>
                   <p className="text-[10px] text-slate-400 mt-0.5">Kadapa, Andhra Pradesh</p>
@@ -483,7 +487,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+              href="https://wa.me/918639831132?text=Hi%20ReviewSmart%20AI%2C%20I%20am%20interested%20in%20ReviewSmart%20AI%20for%20my%20business."
               target="_blank"
               rel="noreferrer"
               className="px-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-indigo-500/20 transition"

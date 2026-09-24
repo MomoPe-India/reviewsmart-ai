@@ -87,7 +87,7 @@ export default async function PublicReviewPage({
     business.customerType === "ONLINE" ? "Online Customer" : "Offline Merchant";
 
   const waActivationText = encodeURIComponent(
-    `Hi MomoPe Support, I am requesting activation for my SmartReview AI Card.\n\n` +
+    `Hi ReviewSmart AI Support, I am requesting activation for my ReviewSmart AI Card.\n\n` +
       `🏪 Store Name: ${business.name}\n` +
       `👤 Owner: ${merchantOwnerName}\n` +
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
@@ -137,7 +137,7 @@ export default async function PublicReviewPage({
               <p className="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
                 This review card is not yet active.{" "}
                 <br className="hidden sm:block" />
-                Contact MomoPe support to activate it.
+                Contact ReviewSmart AI support to activate it.
               </p>
             </div>
 
@@ -165,12 +165,12 @@ export default async function PublicReviewPage({
               className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-950/50 transition-all duration-200 mt-1 transform active:scale-98"
             >
               <MessageCircle className="w-4 h-4 shrink-0" />
-              <span>Contact MomoPe on WhatsApp</span>
+              <span>Contact ReviewSmart AI on WhatsApp</span>
             </a>
 
             {/* Badge */}
             <p className="text-[11px] text-slate-500 font-medium mt-1">
-              Powered by ReviewSmart AI · MomoPe India
+              Powered by ReviewSmart AI
             </p>
           </div>
         </div>

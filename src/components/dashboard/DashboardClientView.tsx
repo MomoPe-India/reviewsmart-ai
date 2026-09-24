@@ -203,7 +203,7 @@ export default function DashboardClientView({
                   Payment Pending
                 </h4>
                 <p className="text-xs text-slate-200 leading-snug">
-                  This review card is not yet active. Contact MomoPe support to activate it.
+                  This review card is not yet active. Contact ReviewSmart AI support to activate it.
                 </p>
                 <p className="text-[10px] text-amber-200/70 font-mono pt-0.5">
                   Merchant ID: {merchantId} • Card: /{business.slug}
@@ -218,7 +218,7 @@ export default function DashboardClientView({
               className="self-start sm:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-black text-xs shadow-lg shadow-emerald-950/40 transition shrink-0 transform active:scale-95"
             >
               <MessageCircle className="w-4 h-4 shrink-0" />
-              <span>Contact MomoPe on WhatsApp</span>
+              <span>Contact ReviewSmart AI on WhatsApp</span>
             </a>
           </div>
         )}

@@ -341,7 +341,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
           </div>
 
           {/* Logo / Brand Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-white border-2 border-slate-700/80 flex items-center justify-center p-2 shadow-xl mx-auto mb-3 overflow-hidden">
+          <div className="w-20 h-20 rounded-2xl bg-slate-900 border-2 border-slate-700/80 flex items-center justify-center p-1.5 shadow-xl mx-auto mb-3 overflow-hidden">
             {business.logoUrl ? (
               <img
                 src={business.logoUrl}

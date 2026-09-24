@@ -44,7 +44,7 @@ export default async function StudioPage({
   // If customer is an ONLINE digital card user, show the Physical Standee Upgrade Showcase
   if (isOnlineCustomer) {
     const waText = encodeURIComponent(
-      `Hi MomoPe, I am using the Digital SmartReview Card for "${business.name}" (Slug: ${business.slug}). I want to upgrade and order a physical 4"x6" acrylic countertop standee & NFC kit for my counter.`
+      `Hi ReviewSmart AI, I am using the Digital ReviewSmart AI Card for "${business.name}" (Slug: ${business.slug}). I want to upgrade and order a physical 4"x6" acrylic countertop standee & NFC kit for my counter.`
     );
     const waOrderLink = `https://wa.me/918639831132?text=${waText}`;
 

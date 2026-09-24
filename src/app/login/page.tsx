@@ -273,7 +273,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@momope.in"
+                    placeholder="admin@reviewsmart.ai"
                     className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-white/8 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent font-medium transition"
                   />
                 </div>
@@ -318,7 +318,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-slate-600 text-[11px] mt-6 font-medium">
-          &copy; {new Date().getFullYear()} MomoPe India · Invite-only platform
+          &copy; {new Date().getFullYear()} ReviewSmart AI · Invite-only platform
         </p>
       </div>
     </div>

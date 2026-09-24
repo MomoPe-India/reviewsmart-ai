@@ -119,7 +119,7 @@ export default function Navbar() {
                 Sign In
               </Link>
               <a
-                href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+                href="https://wa.me/918639831132?text=Hi%20ReviewSmart%20AI%2C%20I%20am%20interested%20in%20ReviewSmart%20AI%20for%20my%20business."
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-bold px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
@@ -208,7 +208,7 @@ export default function Navbar() {
                   Sign In (User ID &amp; PIN)
                 </Link>
                 <a
-                  href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+                  href="https://wa.me/918639831132?text=Hi%20ReviewSmart%20AI%2C%20I%20am%20interested%20in%20ReviewSmart%20AI%20for%20my%20business."
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => setMobileMenuOpen(false)}

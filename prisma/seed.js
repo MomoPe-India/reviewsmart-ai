@@ -165,7 +165,7 @@ async function main() {
     },
     create: {
       email: "momopedeals@gmail.com",
-      name: "MomoPe Owner",
+      name: "ReviewSmart AI Admin",
       password: adminPassword,
       pinCode: adminPin,
       userIdTag: "momopedeals",

@@ -123,7 +123,7 @@ Respond strictly in pure JSON without markdown quotes:
       ],
       rating: 4.9,
       reviewCount: "120+ reviews",
-      logoUrl: "/images/momo-it-logo.svg",
+      logoUrl: "/images/momo-it-logo.png",
       website: "https://www.momoittechnologies.com/",
     };
     return NextResponse.json({
