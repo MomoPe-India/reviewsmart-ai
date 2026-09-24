@@ -324,7 +324,16 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { merchantId } = await req.json();
+    let merchantId: string | null = null;
+    try {
+      const body = await req.json();
+      merchantId = body?.merchantId || body?.id || null;
+    } catch {
+      // Body might be empty, fallback to searchParams
+    }
+    if (!merchantId) {
+      merchantId = req.nextUrl.searchParams.get("merchantId") || req.nextUrl.searchParams.get("id");
+    }
     if (!merchantId) return NextResponse.json({ error: "merchantId is required." }, { status: 400 });
 
     const merchant = await prisma.user.findUnique({

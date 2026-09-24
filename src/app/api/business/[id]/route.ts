@@ -54,6 +54,7 @@ export async function PUT(
         primaryColor: body.primaryColor || business.primaryColor,
         googlePlaceId: body.googlePlaceId !== undefined ? body.googlePlaceId : business.googlePlaceId,
         googleReviewUrl: body.googleReviewUrl !== undefined ? body.googleReviewUrl : business.googleReviewUrl,
+        category: body.category !== undefined ? body.category : business.category,
         googleAddress: body.googleAddress !== undefined ? body.googleAddress : business.googleAddress,
         phone: body.phone !== undefined ? body.phone : business.phone,
         whatsapp: body.whatsapp !== undefined ? body.whatsapp : business.whatsapp,
