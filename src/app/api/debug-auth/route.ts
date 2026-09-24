@@ -26,6 +26,10 @@ export async function GET() {
     try {
       const userCount = await prisma.user.count();
       steps.userCount = userCount;
+      const allUsers = await prisma.user.findMany({
+        select: { id: true, email: true, name: true, role: true, userIdTag: true, phone: true },
+      });
+      steps.users = allUsers;
     } catch (err: unknown) {
       steps.dbCountError = err instanceof Error ? { message: err.message, stack: err.stack } : String(err);
     }
