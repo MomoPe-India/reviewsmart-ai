@@ -144,23 +144,40 @@ export default function HomePage() {
       {/* ─── NAVBAR ───────────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-lg border-b border-white/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-black text-lg text-white tracking-tight">
-              Review<span className="text-indigo-400">Smart</span>{" "}
-              <span className="text-xs font-bold bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-full border border-indigo-500/30">AI</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-2">
+          <BrandLogo href="/" size="md" theme="dark" />
+
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-6">
+            <a
+              href="#features"
+              className="text-xs font-semibold text-slate-400 hover:text-white transition"
+            >
+              Features
+            </a>
+            <a
+              href="#how-it-works"
+              className="text-xs font-semibold text-slate-400 hover:text-white transition"
+            >
+              How it Works
+            </a>
             <Link
               href="/r/momo-it-technologies"
               target="_blank"
-              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/5"
+              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full transition"
             >
-              <Play className="w-3.5 h-3.5" /> Live Demo
+              <Play className="w-3 h-3" /> Live Demo (Momo IT)
             </Link>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/5"
+            >
+              <MessageCircle className="w-3.5 h-3.5" /> Get Started
+            </a>
             <Link
               href="/login"
               className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-500/20"
@@ -309,8 +326,16 @@ export default function HomePage() {
                     <p className="text-[11px] text-white leading-relaxed">
                       "Excellent IT solutions and prompt support! The team at Momo IT Technologies is highly professional and delivers quality software on time."
                     </p>
-                    <button className="mt-2 w-full py-1.5 rounded-xl bg-white/10 text-[10px] text-white font-semibold">
-                      Copy & Open Google →
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(
+                          "Excellent IT solutions and prompt support! The team at Momo IT Technologies is highly professional and delivers quality software on time."
+                        );
+                        window.open("/r/momo-it-technologies", "_blank");
+                      }}
+                      className="mt-2 w-full py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-[10px] text-white font-semibold flex items-center justify-center gap-1"
+                    >
+                      <span>Copy &amp; Open Live Demo &rarr;</span>
                     </button>
                   </div>
                 )}
@@ -373,7 +398,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section className="py-16 px-4 sm:px-6 bg-white/2 border-y border-white/5">
+      <section id="how-it-works" className="py-16 px-4 sm:px-6 bg-white/2 border-y border-white/5 scroll-mt-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">How It Works</h2>
@@ -395,7 +420,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── FEATURES GRID ────────────────────────────────────────────────── */}
-      <section className="py-16 px-4 sm:px-6">
+      <section id="features" className="py-16 px-4 sm:px-6 scroll-mt-16">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Everything You Need</h2>
@@ -481,11 +506,8 @@ export default function HomePage() {
       <footer className="border-t border-white/5 py-8 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <BrandLogo href="/" size="sm" theme="dark" />
-          <p className="text-xs text-slate-600 text-center">
-            Built by MomoPe Technologies · Kadapa, Andhra Pradesh ·{" "}
-            <a href="https://momope.com" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition">
-              momope.com
-            </a>
+          <p className="text-xs text-slate-500 text-center">
+            &copy; {new Date().getFullYear()} ReviewSmart AI. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a
