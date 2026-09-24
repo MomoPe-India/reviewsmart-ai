@@ -45,6 +45,7 @@ export default async function PublicReviewPage({
       primaryColor: true,
       googleReviewUrl: true,
       googlePlaceId: true,
+      googleAddress: true,
       phone: true,
       whatsapp: true,
       instagram: true,

@@ -98,15 +98,23 @@ export default async function AdminBusinessesPage() {
                     {new Date(b.createdAt).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <a
-                      href={`/r/${b.slug}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-xs font-semibold transition border border-indigo-500/30"
-                    >
-                      Visit Card
-                      <ArrowUpRight className="w-3 h-3" />
-                    </a>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <a
+                        href={`/r/${b.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-xs font-semibold transition border border-indigo-500/30"
+                      >
+                        Visit Card
+                        <ArrowUpRight className="w-3 h-3" />
+                      </a>
+                      <a
+                        href="/admin/merchants"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold transition"
+                      >
+                        Manage
+                      </a>
+                    </div>
                   </td>
                 </tr>
               ))}

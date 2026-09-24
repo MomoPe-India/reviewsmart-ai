@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/utils";
 
-// ─── GET: List all merchants ──────────────────────────────────────────────────
+// ─── GET: List all merchants with complete details ────────────────────────────
 export async function GET() {
   try {
     const session = await getSessionUser();
@@ -28,14 +29,27 @@ export async function GET() {
             id: true,
             name: true,
             slug: true,
+            tagline: true,
+            category: true,
+            logoUrl: true,
+            primaryColor: true,
+            googleReviewUrl: true,
+            googlePlaceId: true,
+            googleAddress: true,
+            phone: true,
+            whatsapp: true,
+            instagram: true,
+            website: true,
+            minRatingForGoogle: true,
+            tagChips: true,
+            keywords: true,
             isPaid: true,
             customerType: true,
-            googleAddress: true,
             createdAt: true,
           },
         },
         upiPayments: {
-          select: { amount: true, status: true, agentCode: true, createdAt: true },
+          select: { amount: true, status: true, agentCode: true, commission: true, createdAt: true },
           orderBy: { createdAt: "desc" },
           take: 5,
         },
@@ -64,7 +78,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { name, phone, customerType = "ONLINE" } = await req.json();
+    const body = await req.json();
+    const { name, phone, customerType = "ONLINE", businessName, category, googleReviewUrl } = body;
 
     if (!name || !phone) {
       return NextResponse.json({ error: "Name and phone number are required." }, { status: 400 });
@@ -78,7 +93,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check duplicate
+    // Check duplicate phone or userIdTag
     const existing = await prisma.user.findFirst({
       where: { OR: [{ userIdTag: cleanPhone }, { phone: cleanPhone }] },
     });
@@ -89,11 +104,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate cryptographically random 4-digit PIN
+    // Generate random 4-digit PIN
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
     const hashedPin = await hashPin(randomPin);
     const hashedPassword = await hashPassword(randomPin);
 
+    // Create user and initial business
     const merchant = await prisma.user.create({
       data: {
         email: `${cleanPhone}@merchant.reviewsmart.local`,
@@ -105,22 +121,34 @@ export async function POST(req: NextRequest) {
         role: "BUSINESS_OWNER",
         customerType: customerType || "ONLINE",
         isActive: true,
+        businesses: {
+          create: {
+            name: (businessName || name).trim(),
+            slug: slugify((businessName || name).trim()) + "-" + cleanPhone.slice(-4),
+            category: category || "Local Business & Services",
+            tagline: "Thank you for visiting! Share your review.",
+            customerType: customerType || "ONLINE",
+            isPaid: false,
+            phone: cleanPhone,
+            whatsapp: cleanPhone,
+            googleReviewUrl: googleReviewUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((businessName || name).trim())}`,
+          },
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        userIdTag: true,
-        customerType: true,
-        isActive: true,
-        createdAt: true,
+      include: {
+        businesses: true,
       },
     });
+
+    const business = merchant.businesses[0];
 
     return NextResponse.json({
       success: true,
       merchant,
-      pin: randomPin, // Shown ONCE — admin must share with merchant
+      pin: randomPin,
+      slug: business?.slug,
+      phone: cleanPhone,
+      businessName: business?.name,
     });
   } catch (error) {
     console.error("Create merchant error:", error);
@@ -128,7 +156,103 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ─── PATCH: Enable/Disable or Reset PIN ──────────────────────────────────────
+// ─── PUT: Edit existing merchant & their business ─────────────────────────────
+export async function PUT(req: NextRequest) {
+  try {
+    const session = await getSessionUser();
+    if (!session || session.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const {
+      merchantId,
+      name,
+      phone,
+      customerType,
+      isActive,
+      businessId,
+      businessName,
+      slug,
+      category,
+      tagline,
+      googleReviewUrl,
+      googleAddress,
+      whatsapp,
+      website,
+      minRatingForGoogle,
+      isPaid,
+    } = body;
+
+    if (!merchantId) {
+      return NextResponse.json({ error: "merchantId is required." }, { status: 400 });
+    }
+
+    const cleanPhone = phone ? String(phone).replace(/[^0-9]/g, "") : undefined;
+
+    // Check if new phone conflicts with another merchant
+    if (cleanPhone) {
+      const conflict = await prisma.user.findFirst({
+        where: {
+          id: { not: merchantId },
+          OR: [{ phone: cleanPhone }, { userIdTag: cleanPhone }],
+        },
+      });
+      if (conflict) {
+        return NextResponse.json(
+          { error: `Phone number ${cleanPhone} is already in use by another user.` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update merchant user
+    const updatedUser = await prisma.user.update({
+      where: { id: merchantId },
+      data: {
+        ...(name !== undefined && { name: name.trim() }),
+        ...(cleanPhone !== undefined && {
+          phone: cleanPhone,
+          userIdTag: cleanPhone,
+          email: `${cleanPhone}@merchant.reviewsmart.local`,
+        }),
+        ...(customerType !== undefined && { customerType }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    });
+
+    // Update or create associated business
+    if (businessId) {
+      await prisma.business.update({
+        where: { id: businessId },
+        data: {
+          ...(businessName !== undefined && { name: businessName.trim() }),
+          ...(slug !== undefined && { slug: slugify(slug) }),
+          ...(category !== undefined && { category }),
+          ...(tagline !== undefined && { tagline }),
+          ...(googleReviewUrl !== undefined && { googleReviewUrl }),
+          ...(googleAddress !== undefined && { googleAddress }),
+          ...(whatsapp !== undefined && { whatsapp }),
+          ...(website !== undefined && { website }),
+          ...(minRatingForGoogle !== undefined && { minRatingForGoogle: Number(minRatingForGoogle) }),
+          ...(isPaid !== undefined && { isPaid }),
+          ...(customerType !== undefined && { customerType }),
+        },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Merchant updated successfully.",
+      merchant: updatedUser,
+    });
+  } catch (error) {
+    console.error("Edit merchant error:", error);
+    return NextResponse.json({ error: "Failed to update merchant." }, { status: 500 });
+  }
+}
+
+// ─── PATCH: Suspend/Activate or Reset PIN ─────────────────────────────────────
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getSessionUser();
@@ -160,6 +284,12 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "reset_pin") {
+      const merchant = await prisma.user.findUnique({
+        where: { id: merchantId },
+        include: { businesses: { select: { slug: true, name: true }, take: 1 } },
+      });
+      if (!merchant) return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
+
       const newPin = Math.floor(1000 + Math.random() * 9000).toString();
       const hashedPin = await hashPin(newPin);
       const hashedPassword = await hashPassword(newPin);
@@ -171,7 +301,10 @@ export async function PATCH(req: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        newPin, // Shown ONCE — admin must share with merchant
+        newPin,
+        phone: merchant.phone,
+        name: merchant.name,
+        slug: merchant.businesses[0]?.slug,
         message: "PIN has been reset successfully.",
       });
     }
@@ -183,7 +316,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// ─── DELETE: Remove merchant ──────────────────────────────────────────────────
+// ─── DELETE: Delete merchant & cascade associated data ────────────────────────
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getSessionUser();
@@ -194,9 +327,18 @@ export async function DELETE(req: NextRequest) {
     const { merchantId } = await req.json();
     if (!merchantId) return NextResponse.json({ error: "merchantId is required." }, { status: 400 });
 
+    const merchant = await prisma.user.findUnique({
+      where: { id: merchantId },
+      select: { id: true, name: true },
+    });
+    if (!merchant) return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
+
     await prisma.user.delete({ where: { id: merchantId } });
 
-    return NextResponse.json({ success: true, message: "Merchant deleted." });
+    return NextResponse.json({
+      success: true,
+      message: `${merchant.name || "Merchant"} and all associated data have been permanently deleted.`,
+    });
   } catch (error) {
     console.error("Delete merchant error:", error);
     return NextResponse.json({ error: "Failed to delete merchant." }, { status: 500 });

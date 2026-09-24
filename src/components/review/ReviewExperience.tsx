@@ -17,8 +17,10 @@ import {
   Loader2,
   X,
   Award,
-  ChevronRight,
-  Share2,
+  Phone,
+  MapPin,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { detectIndustry } from "@/lib/industry";
 
@@ -31,6 +33,7 @@ interface BusinessData {
   primaryColor: string;
   googleReviewUrl: string | null;
   googlePlaceId: string | null;
+  googleAddress?: string | null;
   phone: string | null;
   whatsapp: string | null;
   instagram: string | null;
@@ -54,7 +57,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
 
-  // Negative shield state
+  // Negative review shield state
   const [customerName, setCustomerName] = useState("");
   const [customerContact, setCustomerContact] = useState("");
   const [feedbackComments, setFeedbackComments] = useState("");
@@ -69,7 +72,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const [selectedOptionId, setSelectedOptionId] = useState<number>(1);
   const [copied, setCopied] = useState(false);
 
-  // Wow Pop-up Modal state
+  // Celebration Modal state
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [modalCopiedText, setModalCopiedText] = useState("");
   const [modalReCopied, setModalReCopied] = useState(false);
@@ -77,7 +80,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   // Detect Industry Intelligence
   const industry = detectIndustry(business.name, business.category || "", business.tagline || "");
 
-  // Parse tag chips with industry intelligence
+  // Parse tag chips
   const rawTags = (business.tagChips || "")
     .split(",")
     .map((t) => t.trim())
@@ -113,7 +116,33 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     }).catch(() => {});
   }, [business.id, business.slug]);
 
-  const handleRatingClick = async (star: number) => {
+  // Helper to build instant local drafts without waiting
+  const buildInstantDrafts = (tags: string[] = selectedTags, note: string = customNote): ReviewOption[] => {
+    const joinedTags = tags.length > 0 ? tags.join(", ") : "";
+    const drafts = industry.reviewDrafts;
+    return [
+      {
+        id: 1,
+        headline: drafts.direct.headline,
+        text: drafts.direct.text(business.name, joinedTags, note),
+        tone: "Direct & Clear",
+      },
+      {
+        id: 2,
+        headline: drafts.detailed.headline,
+        text: drafts.detailed.text(business.name, joinedTags, note),
+        tone: "Detailed & Helpful",
+      },
+      {
+        id: 3,
+        headline: drafts.enthusiastic.headline,
+        text: drafts.enthusiastic.text(business.name, joinedTags, note),
+        tone: "Enthusiastic & Warm",
+      },
+    ];
+  };
+
+  const handleRatingClick = (star: number) => {
     setRating(star);
 
     // Track rating selection
@@ -128,9 +157,13 @@ export default function ReviewExperience({ business }: { business: BusinessData 
       }),
     }).catch(() => {});
 
-    // If 4 or 5 stars, auto-generate initial suggestions if none exist
-    if (star >= business.minRatingForGoogle && reviewOptions.length === 0) {
-      triggerAiGeneration([]);
+    // For 4 or 5 stars, instantly show industry-tailored 5-star drafts
+    if (star >= business.minRatingForGoogle) {
+      if (reviewOptions.length === 0) {
+        const instant = buildInstantDrafts([]);
+        setReviewOptions(instant);
+        setSelectedOptionId(1);
+      }
     }
   };
 
@@ -139,36 +172,54 @@ export default function ReviewExperience({ business }: { business: BusinessData 
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
     setSelectedTags(next);
-    triggerAiGeneration(next);
+    // Instantly update drafts with new tags
+    const updated = buildInstantDrafts(next, customNote);
+    setReviewOptions(updated);
   };
 
-  const triggerAiGeneration = async (tagsToUse: string[] = selectedTags) => {
+  const handleNoteChange = (note: string) => {
+    setCustomNote(note);
+    const updated = buildInstantDrafts(selectedTags, note);
+    setReviewOptions(updated);
+  };
+
+  // Optional AI regeneration from server
+  const triggerAiGeneration = async () => {
     setIsGenerating(true);
     try {
       const res = await fetch("/api/ai/generate-review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          businessId: business.id,
-          slug: business.slug,
           businessName: business.name,
           category: business.category || industry.label,
-          selectedTags: tagsToUse,
+          tagline: business.tagline,
+          keywords: business.keywords,
+          selectedTags,
           customNote,
+          rating,
+          tone: business.reviewPromptTone || "friendly",
         }),
       });
+
       const data = await res.json();
-      if (data.reviews && data.reviews.length > 0) {
+      if (res.ok && data.reviews && data.reviews.length > 0) {
         setReviewOptions(data.reviews);
-        setSelectedOptionId(data.reviews[0].id);
+        setSelectedOptionId(data.reviews[0].id || 1);
+      } else {
+        // Fallback to fresh local variations
+        const fallback = buildInstantDrafts(selectedTags, customNote);
+        setReviewOptions(fallback);
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      const fallback = buildInstantDrafts(selectedTags, customNote);
+      setReviewOptions(fallback);
     } finally {
       setIsGenerating(false);
     }
   };
 
+  // Submit Private Feedback Shield
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!feedbackComments.trim()) return;
@@ -180,20 +231,20 @@ export default function ReviewExperience({ business }: { business: BusinessData 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           businessId: business.id,
-          slug: business.slug,
           rating,
-          customerName,
-          customerEmail: customerContact.includes("@") ? customerContact : undefined,
-          customerPhone: !customerContact.includes("@") ? customerContact : undefined,
           comments: feedbackComments,
+          customerName: customerName || null,
+          customerContact: customerContact || null,
         }),
       });
 
       if (res.ok) {
         setFeedbackSubmitted(true);
+      } else {
+        alert("Failed to submit feedback. Please try again.");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      alert("A network error occurred. Please try again.");
     } finally {
       setFeedbackSubmitting(false);
     }
@@ -216,13 +267,13 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     setModalCopiedText(textToCopy);
     setShowCopyModal(true);
 
-    // Celebratory Confetti!
+    // Celebratory Confetti
     try {
       confetti({
-        particleCount: 90,
-        spread: 80,
+        particleCount: 100,
+        spread: 70,
         origin: { y: 0.6 },
-        colors: ["#f59e0b", "#4f46e5", "#10b981", "#ef4444", "#3b82f6"],
+        colors: ["#f59e0b", "#4f46e5", "#10b981", "#3b82f6", "#ec4899"],
       });
     } catch {}
   };
@@ -240,146 +291,160 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const isPositive = rating >= business.minRatingForGoogle;
   const isNegative = rating > 0 && rating < business.minRatingForGoogle;
 
+  // Format WhatsApp Link
+  const getWhatsAppUrl = () => {
+    if (!business.whatsapp) return null;
+    const digits = business.whatsapp.replace(/\D/g, "");
+    if (!digits) return null;
+    const fullNumber = digits.length === 10 ? `91${digits}` : digits;
+    return `https://wa.me/${fullNumber}?text=${encodeURIComponent(`Hi ${business.name}, I visited your store today!`)}`;
+  };
+
+  // Format Phone Link
+  const getPhoneUrl = () => {
+    if (!business.phone) return null;
+    const clean = business.phone.replace(/[^0-9+]/g, "");
+    return clean ? `tel:${clean}` : null;
+  };
+
+  const whatsappUrl = getWhatsAppUrl();
+  const phoneUrl = getPhoneUrl();
+
   return (
-    <div className="w-full max-w-md mx-auto min-h-screen sm:min-h-0 bg-slate-900 text-slate-100 flex flex-col justify-between p-4 sm:p-6 pb-12 sm:rounded-3xl sm:border sm:border-slate-800 sm:shadow-2xl transition-all relative overflow-hidden">
-      {/* Ambient Brand Background Glow */}
+    <div className="w-full max-w-lg mx-auto min-h-screen sm:min-h-0 text-slate-100 flex flex-col justify-between p-3.5 sm:p-6 pb-16 transition-all relative">
+      {/* Ambient Top Glow */}
       <div
-        className="absolute -top-32 -left-32 w-80 h-80 rounded-full blur-3xl opacity-30 pointer-events-none"
-        style={{ backgroundColor: business.primaryColor || "#f59e0b" }}
+        className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none"
+        style={{ backgroundColor: business.primaryColor || "#4f46e5" }}
       />
-      <div className="absolute top-1/2 -right-32 w-72 h-72 rounded-full blur-3xl opacity-20 bg-amber-500 pointer-events-none" />
 
-      {/* Business Header Card */}
-      <div className="bg-slate-800/90 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-slate-700/80 flex flex-col items-center text-center relative overflow-hidden z-10">
-        {/* Top Gold Accent Bar */}
-        <div
-          className="absolute top-0 left-0 right-0 h-1.5"
-          style={{ backgroundColor: business.primaryColor || "#f59e0b" }}
-        />
+      <div className="space-y-4 relative z-10">
+        {/* ─── BUSINESS PROFILE CARD ────────────────────────────────────────── */}
+        <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-2xl relative overflow-hidden text-center">
+          {/* Top Brand Accent Bar */}
+          <div
+            className="absolute top-0 left-0 right-0 h-1.5"
+            style={{ backgroundColor: business.primaryColor || "#4f46e5" }}
+          />
 
-        {/* Verified Google Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-bold tracking-wider uppercase mb-3">
-          <Award className="w-3.5 h-3.5 text-amber-400" />
-          <span>Verified Google Partner Merchant</span>
-        </div>
+          {/* Verified Google Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/90 border border-amber-400/30 text-amber-400 text-[11px] font-bold tracking-wide mb-3.5 shadow-sm">
+            {/* Google G Icon */}
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+              <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+            </svg>
+            <span>Google Verified Business</span>
+            <span className="text-amber-300 font-extrabold">&bull; ★ 5.0</span>
+          </div>
 
-        {/* Logo */}
-        <div className="w-20 h-20 rounded-2xl bg-slate-900 border-2 border-amber-400/40 flex items-center justify-center p-2 shadow-xl mb-3 overflow-hidden">
-          {business.logoUrl ? (
-            <img
-              src={business.logoUrl}
-              alt={business.name}
-              className="w-full h-full object-cover rounded-xl"
-            />
-          ) : (
-            <span className="text-2xl font-black text-amber-400">
-              {business.name.slice(0, 2).toUpperCase()}
+          {/* Logo / Brand Avatar */}
+          <div className="w-20 h-20 rounded-2xl bg-white border-2 border-slate-700/80 flex items-center justify-center p-2 shadow-xl mx-auto mb-3 overflow-hidden">
+            {business.logoUrl ? (
+              <img
+                src={business.logoUrl}
+                alt={business.name}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <span
+                className="text-2xl font-black"
+                style={{ color: business.primaryColor || "#4f46e5" }}
+              >
+                {business.name.slice(0, 2).toUpperCase()}
+              </span>
+            )}
+          </div>
+
+          {/* Title & Checkmark */}
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center justify-center gap-1.5">
+            <span>{business.name}</span>
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-[11px] font-black">
+              ✓
             </span>
-          )}
-        </div>
+          </h1>
 
-        {/* Name & Tagline */}
-        <div className="flex items-center gap-1.5 justify-center">
-          <h1 className="text-xl font-black text-white tracking-tight">{business.name}</h1>
-          <ShieldCheck className="w-5 h-5 text-amber-400 fill-amber-400/20" />
-        </div>
-        <p className="text-xs text-slate-300 mt-1 max-w-xs font-medium">
-          {business.tagline || "Thank you for visiting! We value your feedback."}
-        </p>
+          {/* Tagline */}
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-sm mx-auto font-medium leading-relaxed">
+            {business.tagline || "Review our service & share your honest experience!"}
+          </p>
 
-        {/* Social / Direct Links */}
-        {(() => {
-          let formattedWhatsApp: string | null = null;
-          if (business.whatsapp && business.whatsapp.trim()) {
-            const val = business.whatsapp.trim();
-            if (val.startsWith("http://") || val.startsWith("https://")) {
-              formattedWhatsApp = val;
-            } else {
-              const digits = val.replace(/\D/g, "");
-              if (digits) {
-                const waNum = digits.length === 10 ? `91${digits}` : digits;
-                formattedWhatsApp = `https://wa.me/${waNum}`;
-              }
-            }
-          }
+          {/* Address & Category Pill */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2.5">
+            {business.category && (
+              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                {business.category}
+              </span>
+            )}
+            {business.googleAddress && (
+              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+                <span className="truncate max-w-[200px]">{business.googleAddress}</span>
+              </span>
+            )}
+          </div>
 
-          let formattedInstagram: string | null = null;
-          if (business.instagram && business.instagram.trim()) {
-            const val = business.instagram.trim();
-            if (val.startsWith("http://") || val.startsWith("https://")) {
-              formattedInstagram = val;
-            } else {
-              const handle = val.replace(/^@/, "").trim();
-              if (handle) {
-                formattedInstagram = `https://instagram.com/${handle}`;
-              }
-            }
-          }
-
-          let formattedWebsite: string | null = null;
-          if (business.website && business.website.trim()) {
-            const val = business.website.trim();
-            formattedWebsite = val.startsWith("http://") || val.startsWith("https://") ? val : `https://${val}`;
-          }
-
-          const hasSocial = Boolean(formattedWhatsApp || formattedInstagram || formattedWebsite);
-          if (!hasSocial) return null;
-
-          return (
-            <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-slate-700/60 w-full">
-              {formattedWhatsApp && (
+          {/* Quick Contact Buttons */}
+          {(whatsappUrl || phoneUrl || business.website || business.instagram) && (
+            <div className="flex items-center justify-center gap-2 mt-4 pt-3.5 border-t border-slate-800">
+              {whatsappUrl && (
                 <a
-                  href={formattedWhatsApp}
+                  href={whatsappUrl}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Chat on WhatsApp"
-                  title="Chat on WhatsApp"
-                  className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-lg shadow-emerald-950/50 hover:scale-110 active:scale-95 transition-all"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
                 >
-                  <MessageSquare className="w-4 h-4 fill-white/20" />
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>WhatsApp</span>
                 </a>
               )}
-              {formattedInstagram && (
+              {phoneUrl && (
                 <a
-                  href={formattedInstagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Follow on Instagram"
-                  title="Follow on Instagram"
-                  className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center shadow-lg shadow-pink-950/50 hover:scale-110 active:scale-95 transition-all"
+                  href={phoneUrl}
+                  className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
                 >
-                  <Instagram className="w-4 h-4" />
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Store</span>
                 </a>
               )}
-              {formattedWebsite && (
+              {business.website && (
                 <a
-                  href={formattedWebsite}
+                  href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Visit Website"
-                  title="Visit Website"
-                  className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-950/50 hover:scale-110 active:scale-95 transition-all"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
                 >
-                  <Globe className="w-4 h-4" />
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Website</span>
+                </a>
+              )}
+              {business.instagram && (
+                <a
+                  href={`https://instagram.com/${business.instagram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                >
+                  <Instagram className="w-3.5 h-3.5" />
+                  <span>Instagram</span>
                 </a>
               )}
             </div>
-          );
-        })()}
-      </div>
+          )}
+        </div>
 
-      {/* Main Experience Flow */}
-      <div className="mt-4 flex-1 flex flex-col justify-start z-10">
-        {/* Star Rating Section */}
-        <div className="bg-slate-800/90 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-slate-700/80 text-center">
-          <h2 className="text-base font-bold text-white tracking-tight">
+        {/* ─── STAR RATING SECTION ──────────────────────────────────────────── */}
+        <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl text-center space-y-3">
+          <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
             How was your visit today?
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Tap a star to rate your experience
+          <p className="text-xs text-slate-400">
+            Tap the stars to rate your experience
           </p>
 
-          <div className="flex items-center justify-center gap-2.5 mt-4">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 py-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
@@ -387,71 +452,95 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 onClick={() => handleRatingClick(star)}
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
-                className="p-1 focus:outline-none transform transition active:scale-90 hover:scale-125"
+                className="p-1 focus:outline-none transform transition-transform active:scale-90 hover:scale-125"
+                aria-label={`Rate ${star} stars`}
               >
                 <Star
-                  className={`w-10 h-10 transition-all ${
+                  className={`w-10 h-10 sm:w-11 sm:h-11 transition-all ${
                     (hoverRating || rating) >= star
-                      ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]"
-                      : "text-slate-600"
+                      ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_14px_rgba(251,191,36,0.7)] scale-105"
+                      : "text-slate-700 hover:text-slate-500"
                   }`}
                 />
               </button>
             ))}
           </div>
+
           {rating > 0 && (
-            <div className="mt-3 text-xs font-bold text-amber-300 animate-fadeIn">
-              {rating === 5 && "🌟 Exceptional! Thank you for the 5-star love!"}
-              {rating === 4 && "⭐ Great visit! Glad you enjoyed your time with us."}
-              {rating === 3 && "Average. Tell our manager how we can improve."}
-              {rating === 2 && "Disappointing. Please let our store manager make it right."}
-              {rating === 1 && "Very poor. Management is ready to hear your complaint."}
+            <div className="pt-1 text-xs font-bold animate-fadeIn">
+              {rating === 5 && (
+                <span className="text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                  🌟 Exceptional! Tap below to post on Google in 1 click
+                </span>
+              )}
+              {rating === 4 && (
+                <span className="text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                  ⭐ Great experience! Help us spread the word on Google
+                </span>
+              )}
+              {rating <= 3 && (
+                <span className="text-rose-300 bg-rose-500/15 px-3 py-1 rounded-full border border-rose-500/30">
+                  🛡️ Tell our store manager how we can make this right
+                </span>
+              )}
             </div>
           )}
         </div>
 
-        {/* 1-3 Stars: Negative Review Shield */}
+        {/* ─── 1-3 STARS: NEGATIVE REVIEW SHIELD ────────────────────────────── */}
         {isNegative && (
-          <div className="mt-4 bg-slate-800/90 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-amber-500/30 transition-all">
+          <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-rose-500/30 shadow-2xl animate-fadeIn space-y-4">
             {feedbackSubmitted ? (
-              <div className="text-center py-6">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-3 border border-emerald-500/40">
-                  <Check className="w-6 h-6" />
+              <div className="text-center py-6 space-y-2">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-2 border border-emerald-500/40">
+                  <Check className="w-7 h-7 stroke-[3]" />
                 </div>
                 <h3 className="text-base font-bold text-white">
-                  Message Sent to Store Manager
+                  Message Delivered Directly to Store Management
                 </h3>
-                <p className="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
-                  Thank you for letting us know. Your note has been delivered privately
-                  to our store manager so we can fix this immediately.
+                <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
+                  Thank you for your honesty. Your note has been securely forwarded to our manager so we can resolve this matter directly with you.
                 </p>
+                {whatsappUrl && (
+                  <div className="pt-3">
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Chat with Manager on WhatsApp
+                    </a>
+                  </div>
+                )}
               </div>
             ) : (
               <form onSubmit={handleFeedbackSubmit} className="space-y-4">
                 <div className="text-center">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30 text-xs font-bold mb-1">
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    Private Resolution Shield
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-bold mb-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
+                    Private Feedback Resolution
                   </div>
                   <h3 className="text-sm font-bold text-white">
                     What can we do to make this right?
                   </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Your note goes directly to our management, not to public Google.
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Your note is sent privately to our management team, not published on Google.
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    What went wrong? *
+                    Please describe the issue *
                   </label>
                   <textarea
                     required
                     rows={3}
                     value={feedbackComments}
                     onChange={(e) => setFeedbackComments(e.target.value)}
-                    placeholder="Tell us about the issue so our manager can assist you..."
-                    className="w-full text-xs p-3 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    placeholder="Tell our store manager what happened so we can assist you..."
+                    className="w-full text-xs p-3 rounded-2xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-400"
                   />
                 </div>
 
@@ -464,8 +553,8 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="Alex"
-                      className="w-full text-xs p-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      placeholder="e.g. Rahul"
+                      className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-400"
                     />
                   </div>
                   <div>
@@ -476,8 +565,8 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                       type="text"
                       value={customerContact}
                       onChange={(e) => setCustomerContact(e.target.value)}
-                      placeholder="To follow up with you"
-                      className="w-full text-xs p-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      placeholder="For callback"
+                      className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-400"
                     />
                   </div>
                 </div>
@@ -485,14 +574,14 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 <button
                   type="submit"
                   disabled={feedbackSubmitting || !feedbackComments.trim()}
-                  className="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-950/50 transition disabled:opacity-50"
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition disabled:opacity-50"
                 >
                   {feedbackSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
                       <Send className="w-3.5 h-3.5" />
-                      Send Private Note to Manager
+                      Send Private Note to Store Management
                     </>
                   )}
                 </button>
@@ -501,20 +590,40 @@ export default function ReviewExperience({ business }: { business: BusinessData 
           </div>
         )}
 
-        {/* 4-5 Stars: AI Review Assistant Flow */}
+        {/* ─── 4-5 STARS: AI REVIEW FLOW ───────────────────────────────────── */}
         {isPositive && (
-          <div className="mt-4 bg-slate-800/90 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-amber-400/20 space-y-4">
-            {/* Tag chips */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  What did you love? (Tap to include)
-                </span>
-                <span className="text-[11px] text-amber-400 font-bold">
-                  {selectedTags.length} selected
-                </span>
+          <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-amber-400/30 shadow-2xl animate-fadeIn space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-sm font-bold text-white">
+                    Smart AI Review Generator
+                  </h3>
+                  <p className="text-[10px] text-slate-400">
+                    Pick compliments below to customize your review
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={triggerAiGeneration}
+                disabled={isGenerating}
+                className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition disabled:opacity-50"
+              >
+                {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                <span>Regenerate</span>
+              </button>
+            </div>
+
+            {/* Compliment Tags */}
+            <div>
+              <span className="text-[11px] font-bold text-slate-300 block mb-2">
+                What did you like most? (Tap chips to refine review)
+              </span>
               <div className="flex flex-wrap gap-1.5">
                 {tagsList.map((tag) => {
                   const active = selectedTags.includes(tag);
@@ -523,59 +632,42 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      className={`text-xs px-3 py-1.5 rounded-full transition-all font-semibold ${
+                      className={`text-xs px-3 py-1.5 rounded-full transition-all font-semibold flex items-center gap-1 ${
                         active
                           ? "bg-amber-400 text-slate-950 shadow-md scale-105"
-                          : "bg-slate-700/70 text-slate-300 hover:bg-slate-700 border border-slate-600"
+                          : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
                       }`}
                     >
-                      {active ? "✓ " : "+ "}
-                      {tag}
+                      <span>{active ? "✓" : "+"}</span>
+                      <span>{tag}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Optional Note */}
+            {/* Optional Specific Note */}
             <div>
               <input
                 type="text"
                 value={customNote}
-                onChange={(e) => setCustomNote(e.target.value)}
+                onChange={(e) => handleNoteChange(e.target.value)}
                 placeholder={industry.placeholder}
-                className="w-full text-xs p-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
 
-            {/* Regenerate Trigger */}
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => triggerAiGeneration()}
-                disabled={isGenerating}
-                className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition"
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Sparkles className="w-3.5 h-3.5" />
-                )}
-                Generate fresh drafts ✨
-              </button>
-            </div>
-
-            {/* AI Generated Review Cards */}
-            <div className="space-y-2.5">
-              <span className="text-xs font-bold text-slate-200 block">
-                Select your preferred 5-star review:
+            {/* Review Draft Cards */}
+            <div className="space-y-3 pt-1">
+              <span className="text-[11px] font-bold text-slate-300 block">
+                Choose your draft to post on Google:
               </span>
 
               {isGenerating ? (
-                <div className="p-6 text-center space-y-2 bg-slate-900/80 rounded-2xl border border-slate-700">
+                <div className="p-8 text-center space-y-2 bg-slate-800/80 rounded-2xl border border-slate-700">
                   <Loader2 className="w-6 h-6 text-amber-400 animate-spin mx-auto" />
                   <p className="text-xs text-slate-300 font-medium">
-                    AI is writing personalized 5-star drafts...
+                    AI is crafting fresh 5-star reviews...
                   </p>
                 </div>
               ) : (
@@ -585,19 +677,19 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                     <div
                       key={opt.id}
                       onClick={() => setSelectedOptionId(opt.id)}
-                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                         isSelected
                           ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-950/40 ring-1 ring-amber-400"
-                          : "border-slate-700 bg-slate-900/70 hover:border-slate-600 text-slate-300"
+                          : "border-slate-800 bg-slate-800/60 hover:border-slate-700 text-slate-300"
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div
                             className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                               isSelected
                                 ? "border-amber-400 bg-amber-400 text-slate-950"
-                                : "border-slate-500 bg-slate-800"
+                                : "border-slate-600 bg-slate-800"
                             }`}
                           >
                             {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -606,13 +698,38 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                             {opt.headline}
                           </span>
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
                           {opt.tone}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-300 pl-6 leading-relaxed font-normal">
-                        "{opt.text}"
+
+                      {/* 5 Stars Rating Pill */}
+                      <div className="flex items-center gap-1 mb-1.5 pl-6">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        ))}
+                      </div>
+
+                      <p className="text-xs text-slate-200 pl-6 leading-relaxed italic">
+                        &ldquo;{opt.text}&rdquo;
                       </p>
+
+                      {/* 1-Tap Quick Action on Each Card */}
+                      <div className="pl-6 mt-3 pt-2.5 border-t border-slate-700/50 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOptionId(opt.id);
+                            handleOpenCopyModal(opt.text);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow transition active:scale-95"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy &amp; Open Google</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })
@@ -620,33 +737,34 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             </div>
 
             {/* Primary Action Button */}
-            <button
-              type="button"
-              onClick={() => handleOpenCopyModal()}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-amber-950/60 transition transform active:scale-98"
-            >
-              <Copy className="w-4 h-4" />
-              <span>Copy &amp; Post on Google Reviews</span>
-              <ExternalLink className="w-4 h-4" />
-            </button>
-
-            <p className="text-[11px] text-center text-slate-400 font-medium">
-              ⚡ Copies your chosen review and opens Google in 1 tap!
-            </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => handleOpenCopyModal()}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-amber-950/60 transition transform active:scale-98"
+              >
+                <Copy className="w-4 h-4" />
+                <span>Copy Selected Review &amp; Post on Google</span>
+                <ExternalLink className="w-4 h-4" />
+              </button>
+              <p className="text-[11px] text-center text-slate-400 font-medium mt-2">
+                ⚡ 1 Tap copies review and opens Google Maps write-review dialog!
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Footer Branding */}
-      <div className="mt-8 text-center text-[11px] text-slate-500 flex items-center justify-center gap-1 z-10">
+      {/* ─── FOOTER BRANDING ──────────────────────────────────────────────── */}
+      <div className="mt-8 text-center text-xs text-slate-500 flex items-center justify-center gap-1 relative z-10">
         Powered by <span className="font-bold text-slate-300">ReviewSmart AI</span>
-        <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+        <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
       </div>
 
-      {/* WOW POP-UP MODAL: Review Copied & Open Google */}
+      {/* ─── CELEBRATION MODAL ────────────────────────────────────────────── */}
       {showCopyModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border-2 border-amber-400/60 rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl relative text-center">
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-slate-900 border-2 border-amber-400/70 rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl relative text-center">
             {/* Close Button */}
             <button
               type="button"
@@ -657,19 +775,19 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             </button>
 
             {/* Celebration Icon */}
-            <div className="w-16 h-16 rounded-full bg-amber-400/10 border-2 border-amber-400 text-amber-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-amber-400/20">
+            <div className="w-16 h-16 rounded-full bg-amber-400/15 border-2 border-amber-400 text-amber-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-amber-400/20">
               <Sparkles className="w-8 h-8 animate-bounce" />
             </div>
 
             <h3 className="text-xl font-black text-white tracking-tight">
               Review Copied! 🎉
             </h3>
-            <p className="text-xs text-amber-300 font-semibold mt-1">
+            <p className="text-xs text-amber-300 font-semibold mt-0.5">
               Step 1 of 2 Complete!
             </p>
 
-            {/* Copied Quote Box */}
-            <div className="my-4 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-700 text-left relative">
+            {/* Copied Review Snippet Box */}
+            <div className="my-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-700 text-left relative">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
                   ★★★★★ 5-Star Draft
@@ -692,32 +810,32 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-200 leading-relaxed italic">
-                "{modalCopiedText}"
+              <p className="text-xs text-slate-200 leading-relaxed italic max-h-32 overflow-y-auto">
+                &ldquo;{modalCopiedText}&rdquo;
               </p>
             </div>
 
-            {/* 2-Step Action Instructions */}
-            <div className="space-y-2 text-left bg-slate-800/60 p-3 rounded-2xl border border-slate-700/60 mb-5">
-              <div className="flex items-start gap-2 text-xs">
-                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px] border border-emerald-500/30">
+            {/* 2-Step Action Instructions (Clean symbols, NO LaTeX bugs) */}
+            <div className="space-y-2 text-left bg-slate-800/70 p-3 rounded-2xl border border-slate-700/60 mb-5">
+              <div className="flex items-start gap-2.5 text-xs">
+                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-emerald-500/30">
                   ✓
                 </div>
                 <p className="text-slate-200">
                   <strong className="text-white">Review is copied</strong> to your clipboard.
                 </p>
               </div>
-              <div className="flex items-start gap-2 text-xs">
-                <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
+              <div className="flex items-start gap-2.5 text-xs">
+                <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-bold flex items-center justify-center shrink-0 text-[11px]">
                   2
                 </div>
                 <p className="text-slate-200">
-                  Tap below $\rightarrow$ Google opens $\rightarrow$ simply <strong className="text-amber-300">Paste &amp; Post</strong>!
+                  Tap below → Google Maps opens → simply <strong className="text-amber-300">Paste &amp; Post</strong>!
                 </p>
               </div>
             </div>
 
-            {/* Big Unblockable Direct Google Button */}
+            {/* High-Contrast Google Maps CTA Button */}
             <a
               href={googleUrl}
               target="_blank"
@@ -734,17 +852,17 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   }),
                 }).catch(() => {});
               }}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:opacity-95 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-950/60 transition transform active:scale-98"
+              className="w-full py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition transform active:scale-98"
             >
               {/* Google G Logo */}
-              <svg className="w-5 h-5 bg-white p-0.5 rounded-full flex-shrink-0" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
                 <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
               </svg>
               <span>Open Google Maps &amp; Paste Review</span>
-              <ExternalLink className="w-4 h-4 opacity-90" />
+              <ExternalLink className="w-4 h-4 text-slate-500" />
             </a>
 
             <button
