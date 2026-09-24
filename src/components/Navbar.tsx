@@ -13,6 +13,8 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
+import BrandLogo from "@/components/brand/BrandLogo";
+
 
 interface SessionUser {
   id: string;
@@ -45,17 +47,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-200">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <span className="font-extrabold text-lg tracking-tight text-slate-900">
-            Review<span className="text-indigo-600">Smart</span>
-            <span className="ml-1 text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-md border border-indigo-100">
-              AI
-            </span>
-          </span>
-        </Link>
+        <BrandLogo href="/" size="md" theme="light" />
 
         {/* Desktop Links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">

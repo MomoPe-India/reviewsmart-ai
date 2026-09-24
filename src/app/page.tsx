@@ -21,6 +21,7 @@ import {
   Lock,
   BarChart2,
 } from "lucide-react";
+import BrandLogo, { BrandIcon } from "@/components/brand/BrandLogo";
 
 const REVIEW_EXAMPLES = [
   {
@@ -448,9 +449,7 @@ export default function HomePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 rounded-full bg-indigo-600/20 blur-3xl" />
 
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-indigo-500/30">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
+          <BrandIcon size="xl" className="mx-auto mb-5 drop-shadow-2xl" />
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">
             Ready to Get More 5-Star Reviews?
           </h2>
@@ -481,12 +480,7 @@ export default function HomePage() {
       {/* ─── FOOTER ───────────────────────────────────────────────────────── */}
       <footer className="border-t border-white/5 py-8 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-black text-white text-sm">ReviewSmart <span className="text-indigo-400">AI</span></span>
-          </div>
+          <BrandLogo href="/" size="sm" theme="dark" />
           <p className="text-xs text-slate-600 text-center">
             Built by MomoPe Technologies · Kadapa, Andhra Pradesh ·{" "}
             <a href="https://momope.com" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition">

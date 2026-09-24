@@ -16,6 +16,7 @@ import {
   AlertCircle,
   MessageCircle,
 } from "lucide-react";
+import { BrandIcon } from "@/components/brand/BrandLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -103,14 +104,14 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-sm">
         {/* Brand Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-yellow-500 flex items-center justify-center shadow-2xl shadow-amber-500/30 mb-4 ring-4 ring-white/10">
-            <Sparkles className="w-10 h-10 text-white drop-shadow" />
-          </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">
-            ReviewSmart{" "}
-            <span className="text-indigo-400">AI</span>
+          <BrandIcon size="xl" className="mb-3.5 scale-110 drop-shadow-2xl" />
+          <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-1.5">
+            Review<span className="text-indigo-400">Smart</span>
+            <span className="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-2 py-0.5 rounded-md border border-amber-300 shadow-sm">
+              AI
+            </span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1 font-medium">
+          <p className="text-slate-400 text-xs mt-1 font-medium tracking-wide">
             Invite-only merchant platform
           </p>
         </div>

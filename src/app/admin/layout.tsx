@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import AdminMobileBottomNav from "@/components/navigation/AdminMobileBottomNav";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 export default async function AdminLayout({
   children,
@@ -34,17 +35,12 @@ export default async function AdminLayout({
           <aside className="hidden lg:flex lg:col-span-1 flex-col gap-3 no-print">
             {/* Brand Header */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-800/80 p-4 rounded-2xl border border-slate-700 shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                </div>
-                <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">
-                  SmartReview AI
-                </span>
+              <div className="mb-2.5">
+                <BrandLogo href="/admin" size="sm" theme="dark" />
               </div>
-              <h2 className="text-sm font-bold text-white">Admin Console</h2>
+              <h2 className="text-xs font-bold text-slate-300">Admin Console</h2>
               <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
-                Manage merchants, agents, and platform revenue
+                Manage merchants, agents &amp; platform revenue
               </p>
             </div>
 

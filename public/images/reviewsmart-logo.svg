@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none">
+  <defs>
+    <!-- Background Squircle Gradient -->
+    <linearGradient id="rs-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Indigo Ribbon Gradient -->
+    <linearGradient id="rs-indigo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8" />
+      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+
+    <!-- Radiant 5-Star Gold Gradient -->
+    <linearGradient id="rs-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="40%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+
+    <!-- Ambient Glow -->
+    <radialGradient id="rs-ambient-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="40" cy="40" r="32" fill="url(#rs-ambient-glow)" />
+
+  <!-- Base Squircle Shield -->
+  <rect x="10" y="10" width="60" height="60" rx="18" fill="url(#rs-bg-grad)" stroke="#4338ca" stroke-width="2" stroke-opacity="0.8" />
+
+  <!-- NFC Waves / Tech Arcs -->
+  <path d="M 52 21 A 22 22 0 0 1 58 34" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.4" />
+  <path d="M 57 17 A 30 30 0 0 1 64 31" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-opacity="0.25" />
+
+  <!-- Stylized 'R' Ribbon -->
+  <path d="M 26 54 V 26 H 40 C 46 26 49.5 29.5 49.5 35 C 49.5 40 46 43.5 40 43.5 H 32" stroke="url(#rs-indigo-grad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 39 43.5 L 50 54" stroke="url(#rs-indigo-grad)" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- 5-Star Sparkle Emblem -->
+  <path d="M 41 28.5 L 43 33 L 48 35 L 43 37 L 41 41.5 L 39 37 L 34 35 L 39 33 Z" fill="url(#rs-gold-grad)" filter="drop-shadow(0px 2px 4px rgba(245, 158, 11, 0.5))" />
+  <path d="M 24 22 L 25 24.5 L 27.5 25.5 L 25 26.5 L 24 29 L 23 26.5 L 20.5 25.5 L 23 24.5 Z" fill="#fef08a" opacity="0.85" />
+
+  <!-- Brand Typography -->
+  <text x="84" y="48" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="28" fill="#0f172a" letter-spacing="-0.8">Review<tspan fill="#6366f1">Smart</tspan></text>
+
+  <!-- AI Badge -->
+  <rect x="246" y="27" width="34" height="23" rx="6" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5" />
+  <text x="263" y="43" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="12" fill="#4338ca" text-anchor="middle" letter-spacing="0.5">AI</text>
+</svg>

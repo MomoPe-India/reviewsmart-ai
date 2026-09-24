@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Store,
   Globe,
@@ -28,6 +29,8 @@ import {
   Copy,
   Heart,
   Tag,
+  MessageCircle,
+  Printer,
 } from "lucide-react";
 
 interface BusinessData {
@@ -268,6 +271,122 @@ export default function SettingsClient({ business }: { business: BusinessData })
 
   return (
     <div className="space-y-6">
+      {/* ─── PROMINENT ACTIVATION STATUS BANNER (High Visibility on Mobile & Desktop) ─── */}
+      {!business.isPaid ? (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-amber-500/15 via-amber-500/10 to-orange-500/15 border-2 border-amber-400/60 shadow-lg shadow-amber-500/10 relative overflow-hidden animate-fadeIn">
+          {/* Subtle Ambient Radial Glow */}
+          <div className="pointer-events-none absolute -top-10 -right-10 w-48 h-48 rounded-full bg-amber-400/20 blur-3xl" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-md shadow-amber-500/30">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-400 text-slate-950">
+                    Payment Pending
+                  </span>
+                  <span className="text-xs font-bold text-amber-900">
+                    Preview Mode • Watermark Active
+                  </span>
+                </div>
+                <h2 className="text-sm sm:text-base font-black text-slate-900 leading-snug">
+                  Activate Your SmartReview AI Card — Watermark Removed Upon Payment
+                </h2>
+                <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed max-w-2xl">
+                  Your review card is fully customizable below. In preview mode, your card link displays a demo watermark. Once your negotiated payment is verified by MomoPe Admin, the watermark is immediately removed and your card goes live for real customer reviews.
+                </p>
+
+                {/* Pre-filled Account Verification Metadata */}
+                <div className="pt-1.5 flex flex-wrap items-center gap-2 text-[11px]">
+                  <span className="font-semibold text-slate-700 bg-white/90 border border-slate-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
+                    Store: <strong className="text-slate-900">{form.name || business.name}</strong>
+                  </span>
+                  <span className="font-semibold text-slate-700 bg-white/90 border border-slate-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
+                    User ID: <strong className="text-slate-900">{merchantPhone}</strong>
+                  </span>
+                  <span className="font-semibold text-slate-700 bg-white/90 border border-slate-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
+                    Channel: <strong className="text-indigo-700">{channelBadge}</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Direct 1-Tap WhatsApp Activation Button */}
+            <div className="flex flex-col sm:flex-row md:flex-col gap-1.5 shrink-0 pt-2 md:pt-0">
+              <a
+                href={waSupportLink}
+                target="_blank"
+                rel="noreferrer"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition transform active:scale-98"
+              >
+                <MessageCircle className="w-4 h-4 fill-slate-950 text-amber-500 shrink-0" />
+                <span>Verify &amp; Activate on WhatsApp</span>
+              </a>
+              <span className="text-[10px] text-center text-slate-500 font-medium">
+                Instant verification by MomoPe Support
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-emerald-500/10 border border-emerald-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/20">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-600 text-white">
+                  ✓ Card Activated &amp; Verified
+                </span>
+                <span className="text-xs font-bold text-emerald-900">Zero Watermark</span>
+              </div>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Your SmartReview AI Card is live and accepting customer reviews. Share your link or QR code with customers.
+              </p>
+            </div>
+          </div>
+          <a
+            href={`/r/${form.slug || business.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5 transition shrink-0"
+          >
+            <span>View Live Card</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      )}
+
+      {/* ─── STANDEE STUDIO QUICK NAV BANNER ─────────────────────────────────── */}
+      <div className="p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0">
+            <Printer className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-900">
+              {isOnline
+                ? "Want a physical acrylic countertop standee for your billing desk?"
+                : "Looking to print your 4\"×6\" countertop acrylic standee or decals?"}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              {isOnline
+                ? "Upgrade to receive our crystal acrylic standee with embedded NFC chip."
+                : "Customize your standee layout, colors, and download print-ready files."}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/studio"
+          className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-800 hover:text-indigo-600 font-bold text-xs flex items-center gap-1 shrink-0 transition"
+        >
+          <span>{isOnline ? "View Standee Upgrade" : "Open Standee Studio"}</span>
+          <ExternalLink className="w-3 h-3" />
+        </Link>
+      </div>
       {/* ─── MOBILE TAB SWITCHER (Sticky on Mobile screens) ──────────────────── */}
       <div className="lg:hidden sticky top-2 z-40 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-700/80 shadow-xl flex items-center justify-between gap-1">
         <button

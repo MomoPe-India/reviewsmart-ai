@@ -75,15 +75,13 @@ export default async function DashboardLayout({
                 <Settings className="w-4 h-4 text-slate-400" />
                 {isOffline ? "Customise Review Card" : "Customise Digital Card"}
               </Link>
-              {isOffline && (
-                <Link
-                  href="/dashboard/studio"
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
-                >
-                  <Printer className="w-4 h-4 text-slate-400" />
-                  Standee Studio
-                </Link>
-              )}
+              <Link
+                href="/dashboard/studio"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
+              >
+                <Printer className="w-4 h-4 text-slate-400" />
+                {isOffline ? "Standee Studio" : "Standee Studio (Offline Kit)"}
+              </Link>
               <Link
                 href="/dashboard/assistant"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"

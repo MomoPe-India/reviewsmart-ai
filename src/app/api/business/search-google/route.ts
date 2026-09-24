@@ -124,6 +124,7 @@ Respond strictly in pure JSON without markdown quotes:
       rating: 4.9,
       reviewCount: "120+ reviews",
       logoUrl: "/images/momo-it-logo.svg",
+      website: "https://www.momoittechnologies.com/",
     };
     return NextResponse.json({
       success: true,
