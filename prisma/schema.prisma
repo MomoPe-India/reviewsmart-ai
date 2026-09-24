@@ -8,32 +8,37 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ─── USER ─────────────────────────────────────────────────────────────────────
 model User {
-  id           String            @id @default(cuid())
-  email        String            @unique
-  name         String?
-  password     String
-  userIdTag    String?           @unique // Unique identifier: mobile number (e.g. 9876543210) or agent code (MKT-01)
-  pinCode      String?           // Hashed 4-6 digit numeric PIN
-  phone        String?
-  role         String            @default("BUSINESS_OWNER") // "SUPER_ADMIN" | "BUSINESS_OWNER" | "MARKETING_AGENT"
-  agentCode    String?           // Unique code for agents (e.g. MKT-01)
-  referredBy   String?           // Agent ID who onboarded the merchant
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  businesses   Business[]
-  subscription UserSubscription?
-  upiPayments  UpiPayment[]
+  id             String            @id @default(cuid())
+  email          String            @unique
+  name           String?
+  password       String
+  userIdTag      String?           @unique // Mobile number for merchants, Agent code for agents (e.g. MKT-01)
+  pinCode        String?           // Hashed 4-digit numeric PIN (bcrypt)
+  phone          String?
+  role           String            @default("BUSINESS_OWNER") // "SUPER_ADMIN" | "BUSINESS_OWNER" | "MARKETING_AGENT"
+  agentCode      String?           // Unique code for marketing agents (e.g. MKT-01)
+  referredBy     String?           // Agent user ID who onboarded this merchant
+  customerType   String            @default("OFFLINE") // "ONLINE" (admin direct) | "OFFLINE" (agent field sale)
+  isActive       Boolean           @default(true) // Admin can disable/suspend accounts
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  businesses     Business[]
+  subscription   UserSubscription?  // Kept for backward compat — not shown in UI
+  upiPayments    UpiPayment[]
 }
 
+// ─── SUBSCRIPTION (kept in DB for backward compat — hidden from UI) ───────────
 model SubscriptionPlan {
   id            String             @id @default(cuid())
-  name          String             // e.g. "Starter", "Pro Reseller", "Unlimited"
+  name          String
   price         Float              @default(0)
-  currency      String             @default("USD")
-  durationDays  Int                @default(30)
+  currency      String             @default("INR")
+  durationDays  Int                @default(365)
   maxCards      Int                @default(1)
-  features      String             @default("[\"AI Review Generation\",\"Negative Review Shield\",\"Smart QR Code\",\"Print Studio\"]")
+  features      String             @default("[\"AI Review Generation\",\"Negative Review Shield\",\"Smart QR Code\"]")
   isActive      Boolean            @default(true)
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
@@ -53,6 +58,7 @@ model UserSubscription {
   plan      SubscriptionPlan @relation(fields: [planId], references: [id])
 }
 
+// ─── BUSINESS ─────────────────────────────────────────────────────────────────
 model Business {
   id                 String            @id @default(cuid())
   userId             String
@@ -60,6 +66,7 @@ model Business {
   slug               String            @unique
   tagline            String?           @default("Review our service & share your experience!")
   category           String?           @default("Local Business")
+  customerType       String            @default("OFFLINE") // "ONLINE" | "OFFLINE"
   logoUrl            String?
   primaryColor       String            @default("#4f46e5")
   googlePlaceId      String?
@@ -73,15 +80,17 @@ model Business {
   minRatingForGoogle Int               @default(4)
   keywords           String            @default("exceptional service, highly recommended, friendly staff, prompt delivery, great experience")
   tagChips           String            @default("Friendly Staff,Fast Service,Great Quality,Fair Pricing,Clean Ambiance")
-  reviewPromptTone   String            @default("friendly") // "enthusiastic" | "professional" | "friendly" | "brief"
-  isPaid             Boolean           @default(true)
+  reviewPromptTone   String            @default("friendly")
+  isPaid             Boolean           @default(false) // false until admin explicitly approves payment
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
+
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   feedbacks          PrivateFeedback[]
   analytics          ReviewAnalytics[]
 }
 
+// ─── PRIVATE FEEDBACK (negative review intercept) ─────────────────────────────
 model PrivateFeedback {
   id            String   @id @default(cuid())
   businessId    String
@@ -95,6 +104,7 @@ model PrivateFeedback {
   business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
+// ─── REVIEW ANALYTICS ─────────────────────────────────────────────────────────
 model ReviewAnalytics {
   id         String   @id @default(cuid())
   businessId String
@@ -105,33 +115,38 @@ model ReviewAnalytics {
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
+// ─── UPI PAYMENT ──────────────────────────────────────────────────────────────
 model UpiPayment {
-  id            String   @id @default(cuid())
-  userId        String
-  businessId    String?
-  agentId       String?  // If sale was closed by a field marketing agent
-  agentCode     String?  // E.g. "MKT-01"
-  planType      String   @default("MONTHLY_299") // "MONTHLY_299" | "LIFETIME_999" | "ADDON_BRANCH" | "NEGOTIATED_DEAL"
-  amount        Float    @default(299)
-  utrNumber     String   // 12-digit UPI reference number
-  customerPhone String?
-  status        String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  userId         String
+  businessId     String?
+  agentId        String?  // Agent user ID who closed the offline deal
+  agentCode      String?  // e.g. "MKT-01"
+  planType       String   @default("NEGOTIATED_DEAL") // "NEGOTIATED_DEAL" | "ONLINE_DIRECT"
+  amount         Float    @default(499)
+  utrNumber      String   // 12-digit UPI reference number submitted by customer/agent
+  customerPhone  String?
+  status         String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  commission     Float?   // Auto-calculated: 40% of amount for agent deals (on approval)
+  commissionPaid Boolean  @default(false)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// ─── PLATFORM SETTINGS ────────────────────────────────────────────────────────
 model PlatformSetting {
   id                 String   @id @default("default")
   platformName       String   @default("ReviewSmart AI")
   supportEmail       String   @default("momopedeals@gmail.com")
+  supportWhatsapp    String   @default("+918639831132")
   customDomain       String?
   currencySymbol     String   @default("₹")
   upiId              String   @default("momopedeals@oksbi")
   upiPayeeName       String   @default("Damerla Mohan")
-  digitalPrice       Float    @default(299) // 1 Month Pass
-  physicalPrice      Float    @default(999) // 1 Year / Lifetime Pass
-  minNegotiatedPrice Float    @default(499) // Hard floor for agent deals
+  minNegotiatedPrice Float    @default(499)   // Hard floor for all agent + online deals
+  commissionRate     Float    @default(0.40)  // 40% agent commission on verified sales
   updatedAt          DateTime @updatedAt
 }

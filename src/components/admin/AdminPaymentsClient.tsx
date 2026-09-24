@@ -11,6 +11,9 @@ import {
   CheckCircle2,
   AlertCircle,
   ExternalLink,
+  IndianRupee,
+  UserCheck,
+  Globe,
 } from "lucide-react";
 
 interface AdminPaymentsProps {
@@ -27,30 +30,29 @@ export default function AdminPaymentsClient({
     initialSettings || {
       upiId: "momopedeals@oksbi",
       upiPayeeName: "Damerla Mohan",
-      digitalPrice: 299,
-      physicalPrice: 999,
+      minNegotiatedPrice: 499,
+      commissionRate: 0.40,
     }
   );
 
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [approvalMsg, setApprovalMsg] = useState<{ id: string; msg: string; commission?: number } | null>(null);
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
     setSettingsMsg("");
-
     try {
       const res = await fetch("/api/platform-settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-
       if (res.ok) {
-        setSettingsMsg("UPI Settings updated! Customers will now see this UPI ID.");
-        setTimeout(() => setSettingsMsg(""), 3500);
+        setSettingsMsg("Settings saved!");
+        setTimeout(() => setSettingsMsg(""), 3000);
       }
     } catch {
       alert("Failed to save settings");
@@ -61,6 +63,7 @@ export default function AdminPaymentsClient({
 
   const handleAction = async (paymentId: string, action: "APPROVE" | "REJECT") => {
     setProcessingId(paymentId);
+    setApprovalMsg(null);
     try {
       const res = await fetch("/api/payments/approve", {
         method: "POST",
@@ -77,6 +80,7 @@ export default function AdminPaymentsClient({
               : p
           )
         );
+        setApprovalMsg({ id: paymentId, msg: data.message, commission: data.commission });
       } else {
         alert(data.error || "Action failed");
       }
@@ -87,14 +91,32 @@ export default function AdminPaymentsClient({
     }
   };
 
+  const pendingCount = payments.filter((p) => p.status === "PENDING").length;
+
   return (
     <div className="space-y-8">
-      {/* 1. UPI ID & Price Configuration Form */}
+      {/* Approval success message */}
+      {approvalMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-start justify-between gap-3">
+          <div>
+            <CheckCircle2 className="w-4 h-4 inline-block mr-1.5" />
+            {approvalMsg.msg}
+            {approvalMsg.commission && approvalMsg.commission > 0 && (
+              <span className="ml-2 font-black text-amber-400">
+                Agent Commission: ₹{approvalMsg.commission.toFixed(2)}
+              </span>
+            )}
+          </div>
+          <button onClick={() => setApprovalMsg(null)} className="text-emerald-400 hover:text-white font-bold">✕</button>
+        </div>
+      )}
+
+      {/* 1. Platform UPI & Settings */}
       <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
             <Smartphone className="w-4 h-4 text-emerald-400" />
-            Your Receiving UPI ID &amp; Pricing Setup
+            UPI Payment Settings
           </h2>
           {settingsMsg && (
             <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -103,75 +125,41 @@ export default function AdminPaymentsClient({
           )}
         </div>
 
-        <form onSubmit={handleSaveSettings} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <form onSubmit={handleSaveSettings} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Receiver UPI ID (VPA) *
-            </label>
+            <label className="block text-[11px] font-semibold text-slate-300 mb-1">Receiver UPI ID *</label>
             <input
-              type="text"
-              required
+              type="text" required
               value={settings.upiId}
               onChange={(e) => setSettings({ ...settings, upiId: e.target.value })}
-              placeholder="e.g. 9876543210@paytm or name@okaxis"
+              placeholder="e.g. momopedeals@oksbi"
               className="w-full text-xs font-mono p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
-
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Payee Display Name *
-            </label>
+            <label className="block text-[11px] font-semibold text-slate-300 mb-1">Payee Display Name *</label>
             <input
-              type="text"
-              required
+              type="text" required
               value={settings.upiPayeeName}
               onChange={(e) => setSettings({ ...settings, upiPayeeName: e.target.value })}
-              placeholder="e.g. My Agency Pay"
+              placeholder="e.g. Damerla Mohan"
               className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
-
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              1 Month Pass Price (₹)
-            </label>
-            <input
-              type="number"
-              value={settings.digitalPrice}
-              onChange={(e) => setSettings({ ...settings, digitalPrice: Number(e.target.value) })}
-              className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              1 Year / Lifetime Pass Price (₹)
-            </label>
-            <input
-              type="number"
-              value={settings.physicalPrice}
-              onChange={(e) => setSettings({ ...settings, physicalPrice: Number(e.target.value) })}
-              className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Agent Min Negotiated Floor (₹)
+            <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+              Min Deal Floor (₹) — Agent price cannot go below this
             </label>
             <div className="flex gap-2">
               <input
-                type="number"
-                min={100}
+                type="number" min={100}
                 value={settings.minNegotiatedPrice || 499}
                 onChange={(e) => setSettings({ ...settings, minNegotiatedPrice: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                className="w-full text-xs p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-bold font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <button
-                type="submit"
-                disabled={savingSettings}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0"
+                type="submit" disabled={savingSettings}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0"
               >
                 {savingSettings ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 Save
@@ -179,123 +167,127 @@ export default function AdminPaymentsClient({
             </div>
           </div>
         </form>
+
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+          <span className="font-bold">Agent Commission Rate: 40%</span> — automatically calculated when you approve a deal from a marketing agent.
+        </div>
       </div>
 
-      {/* 2. Customer Payment Verifications Table */}
-      <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-sm space-y-4 p-6">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2">
-          <Clock className="w-4 h-4 text-indigo-400" />
-          Customer Payment Submissions ({payments.length})
-        </h2>
+      {/* 2. Payments table */}
+      <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-slate-700 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <Clock className="w-4 h-4 text-indigo-400" />
+            Payment Verifications
+          </h2>
+          {pendingCount > 0 && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              {pendingCount} pending
+            </span>
+          )}
+        </div>
 
         {payments.length === 0 ? (
-          <p className="text-xs text-slate-400 py-8 text-center">
-            No customer payments submitted yet.
-          </p>
+          <p className="text-xs text-slate-400 py-12 text-center">No payment submissions yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-[11px] text-slate-400 uppercase tracking-wider border-b border-slate-700">
+              <thead className="text-[11px] text-slate-400 uppercase tracking-wider border-b border-slate-700 bg-slate-800/50">
                 <tr>
-                  <th className="pb-3 font-semibold">Store / Client</th>
-                  <th className="pb-3 font-semibold">Source / Agent</th>
-                  <th className="pb-3 font-semibold">12-Digit UTR Ref</th>
-                  <th className="pb-3 font-semibold">Plan &amp; Amount</th>
-                  <th className="pb-3 font-semibold">Customer Phone</th>
-                  <th className="pb-3 font-semibold">Access Duration</th>
-                  <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 font-semibold text-right">Verification Action</th>
+                  <th className="py-3 px-4 font-semibold">Merchant / Business</th>
+                  <th className="py-3 px-4 font-semibold">Channel</th>
+                  <th className="py-3 px-4 font-semibold">UTR Reference</th>
+                  <th className="py-3 px-4 font-semibold">Amount</th>
+                  <th className="py-3 px-4 font-semibold">Commission</th>
+                  <th className="py-3 px-4 font-semibold">Status</th>
+                  <th className="py-3 px-4 font-semibold text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/60">
                 {payments.map((p) => {
                   const isPending = p.status === "PENDING";
                   const isApproved = p.status === "APPROVED";
-                  const storeName = p.user?.businesses[0]?.name || "Unassigned Store";
+                  const storeName = p.user?.businesses?.[0]?.name || "Unassigned";
+                  const storeSlug = p.user?.businesses?.[0]?.slug;
+                  const isAgentDeal = p.planType === "NEGOTIATED_DEAL" && p.agentCode;
+                  const previewCommission = isAgentDeal
+                    ? Math.round(p.amount * (settings.commissionRate || 0.40))
+                    : null;
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-700/30 transition">
-                      <td className="py-3">
+                    <tr key={p.id} className={`hover:bg-slate-700/30 transition ${isPending ? "bg-amber-500/5" : ""}`}>
+                      <td className="py-3 px-4">
                         <div className="font-bold text-white">{storeName}</div>
-                        <div className="text-[10px] text-slate-400">{p.user?.email || p.user?.userIdTag}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{p.customerPhone || p.user?.email}</div>
+                        {storeSlug && (
+                          <a href={`/r/${storeSlug}`} target="_blank" rel="noreferrer" className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 mt-0.5">
+                            /r/{storeSlug} <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        )}
                       </td>
-                      <td className="py-3">
-                        {p.agentCode ? (
-                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
-                            Agt: {p.agentCode}
-                          </span>
+                      <td className="py-3 px-4">
+                        {isAgentDeal ? (
+                          <div>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                              <UserCheck className="w-2.5 h-2.5" /> Offline
+                            </span>
+                            <div className="text-[10px] text-slate-500 mt-0.5">Agent: {p.agentCode}</div>
+                          </div>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-slate-700 text-slate-400 text-[10px]">
-                            Online Web
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
+                            <Globe className="w-2.5 h-2.5" /> Online
                           </span>
                         )}
                       </td>
-                      <td className="py-3 font-mono font-bold text-amber-300">
-                        {p.utrNumber}
+                      <td className="py-3 px-4 font-mono font-bold text-amber-300">{p.utrNumber}</td>
+                      <td className="py-3 px-4">
+                        <span className="font-black text-emerald-400 text-sm">₹{p.amount}</span>
                       </td>
-                      <td className="py-3">
-                        <span className="font-bold text-emerald-400 text-sm">₹{p.amount}</span>
-                        <div className="text-[10px] text-slate-400">
-                          {p.planType === "NEGOTIATED_DEAL"
-                            ? "Field Negotiated Deal"
-                            : p.planType === "LIFETIME_999"
-                            ? "1 Year / Lifetime Pass"
-                            : p.planType === "ADDON_BRANCH"
-                            ? "Extra Branch Pass"
-                            : "1 Month Pass"}
-                        </div>
-                      </td>
-                      <td className="py-3 text-slate-300 font-mono">
-                        {p.customerPhone || "-"}
-                      </td>
-                      <td className="py-3">
-                        {p.planType === "LIFETIME_999" || p.planType === "NEGOTIATED_DEAL" ? (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                            365 Days / Lifetime
-                          </span>
+                      <td className="py-3 px-4">
+                        {isApproved && p.commission ? (
+                          <span className="font-bold text-amber-400 text-xs">₹{p.commission?.toFixed(2)}</span>
+                        ) : previewCommission ? (
+                          <span className="text-slate-500 text-[10px]">~₹{previewCommission} (on approval)</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">
-                            30 Days Access
-                          </span>
+                          <span className="text-slate-600 text-[10px]">—</span>
                         )}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 px-4">
                         {isApproved ? (
-                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
-                            Approved
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px] flex items-center gap-1 w-fit">
+                            <CheckCircle2 className="w-3 h-3" /> Live
                           </span>
                         ) : p.status === "REJECTED" ? (
-                          <span className="px-2.5 py-1 rounded-full bg-red-500/20 text-red-300 font-bold text-[10px]">
-                            Rejected
+                          <span className="px-2.5 py-1 rounded-full bg-red-500/20 text-red-300 font-bold text-[10px] flex items-center gap-1 w-fit">
+                            <AlertCircle className="w-3 h-3" /> Rejected
                           </span>
                         ) : (
-                          <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px]">
-                            Needs Approval
+                          <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px] flex items-center gap-1 w-fit">
+                            <Clock className="w-3 h-3" /> Pending
                           </span>
                         )}
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 px-4 text-right">
                         {isPending ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               disabled={processingId === p.id}
                               onClick={() => handleAction(p.id, "APPROVE")}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition disabled:opacity-50"
                             >
-                              <Check className="w-3.5 h-3.5" />
-                              Approve &amp; Activate
+                              {processingId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                              Approve & Activate
                             </button>
                             <button
                               disabled={processingId === p.id}
                               onClick={() => handleAction(p.id, "REJECT")}
                               className="p-1.5 rounded-lg bg-slate-700 hover:bg-red-600 text-slate-300 hover:text-white transition"
-                              title="Reject"
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-500">Completed</span>
+                          <span className="text-[11px] text-slate-500">—</span>
                         )}
                       </td>
                     </tr>

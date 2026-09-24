@@ -77,13 +77,6 @@ export default function Navbar() {
             className="flex items-center gap-1 text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full text-xs font-semibold border border-emerald-200 transition"
           >
             Live Demo (Momo IT)
-            <ExternalLink className="w-3 h-3" />
-          </Link>
-          <Link
-            href="/#pricing"
-            className="hover:text-indigo-600 transition"
-          >
-            Pricing
           </Link>
         </nav>
 
@@ -100,13 +93,23 @@ export default function Navbar() {
                   Owner Panel
                 </Link>
               )}
-              <Link
-                href="/dashboard"
-                className="text-xs font-semibold px-3.5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm flex items-center gap-1.5"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Store Dashboard
-              </Link>
+              {user.role === "MARKETING_AGENT" ? (
+                <Link
+                  href="/agent"
+                  className="text-xs font-semibold px-3.5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Agent POS
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard"
+                  className="text-xs font-semibold px-3.5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Store Dashboard
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 title="Log Out"
@@ -123,12 +126,14 @@ export default function Navbar() {
               >
                 Sign In
               </Link>
-              <Link
-                href="/create"
-                className="text-xs font-bold px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
+              <a
+                href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-bold px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm"
               >
-                Create Smart Card Free
-              </Link>
+                Get Started
+              </a>
             </div>
           )}
         </div>
@@ -162,23 +167,9 @@ export default function Navbar() {
             Live Customer Review (Momo IT)
             <ExternalLink className="w-4 h-4" />
           </Link>
-          <Link
-            href="/#pricing"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-medium text-slate-700 py-1"
-          >
-            Pricing
-          </Link>
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
             {user ? (
               <>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-xs"
-                >
-                  Go to Dashboard
-                </Link>
                 {user.role === "SUPER_ADMIN" && (
                   <Link
                     href="/admin"
@@ -186,6 +177,23 @@ export default function Navbar() {
                     className="w-full text-center py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-xs"
                   >
                     Owner Admin Panel
+                  </Link>
+                )}
+                {user.role === "MARKETING_AGENT" ? (
+                  <Link
+                    href="/agent"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-xs"
+                  >
+                    Agent POS
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-xs"
+                  >
+                    Go to Dashboard
                   </Link>
                 )}
                 <button
@@ -207,13 +215,15 @@ export default function Navbar() {
                 >
                   Sign In (User ID &amp; PIN)
                 </Link>
-                <Link
-                  href="/create"
+                <a
+                  href="https://wa.me/918639831132?text=Hi%20MomoPe%2C%20I%20am%20interested%20in%20SmartReview%20AI%20for%20my%20business."
+                  target="_blank"
+                  rel="noreferrer"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md transition"
                 >
-                  Create Smart Card Free
-                </Link>
+                  Get Started via WhatsApp
+                </a>
               </div>
             )}
           </div>

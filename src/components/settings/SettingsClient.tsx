@@ -13,6 +13,8 @@ import {
   Check,
   AlertCircle,
   ExternalLink,
+  Upload,
+  Camera,
 } from "lucide-react";
 
 interface BusinessData {
@@ -67,6 +69,23 @@ export default function SettingsClient({ business }: { business: BusinessData })
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Please upload an image smaller than 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === "string") {
+          setForm((prev) => ({ ...prev, logoUrl: event.target?.result as string }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,9 +190,21 @@ export default function SettingsClient({ business }: { business: BusinessData })
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Google Maps Profile Logo / Avatar
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-700">
+                Business Logo / Avatar
+              </label>
+              <label className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 cursor-pointer">
+                <Camera className="w-3.5 h-3.5" />
+                <span>Upload Logo / Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
             <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
               <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
                 {form.logoUrl ? (
@@ -188,14 +219,23 @@ export default function SettingsClient({ business }: { business: BusinessData })
                   </span>
                 )}
               </div>
-              <div className="text-[11px] leading-snug">
+              <div className="text-[11px] leading-snug flex-1">
                 {form.logoUrl ? (
-                  <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5" /> Auto-synced from Google Maps
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Custom Logo Set
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, logoUrl: "" }))}
+                      className="text-[10px] text-red-500 hover:underline font-semibold"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 ) : (
                   <span className="text-slate-500">
-                    No custom logo on Google profile. Smart brand initials badge is shown automatically.
+                    No logo set. Tap &apos;Upload Logo / Photo&apos; to add your store logo or snap a store board photo.
                   </span>
                 )}
               </div>

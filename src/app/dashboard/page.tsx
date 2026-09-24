@@ -15,6 +15,7 @@ import {
   MessageSquare,
   AlertCircle,
   Calendar,
+  Settings,
 } from "lucide-react";
 import { generateQrDataUrl } from "@/lib/qr";
 import { getAppUrl } from "@/lib/utils";
@@ -121,13 +122,23 @@ export default async function DashboardOverviewPage({
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard/studio"
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold flex items-center gap-2 transition"
-            >
-              <Printer className="w-4 h-4" />
-              Print Acrylic Stands
-            </Link>
+            {business.customerType === "OFFLINE" ? (
+              <Link
+                href="/dashboard/studio"
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold flex items-center gap-2 transition"
+              >
+                <Printer className="w-4 h-4" />
+                Standee Studio
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/settings"
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold flex items-center gap-2 transition"
+              >
+                <Settings className="w-4 h-4" />
+                Customise Card
+              </Link>
+            )}
             <a
               href={reviewUrl}
               target="_blank"
@@ -254,13 +265,23 @@ export default async function DashboardOverviewPage({
           </div>
 
           <div className="mt-6 pt-4 border-t border-slate-100">
-            <Link
-              href="/dashboard/studio"
-              className="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition"
-            >
-              <Printer className="w-4 h-4" />
-              Open Acrylic Stand Print Studio
-            </Link>
+            {business.customerType === "OFFLINE" ? (
+              <Link
+                href="/dashboard/studio"
+                className="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition"
+              >
+                <Printer className="w-4 h-4" />
+                Open Acrylic Stand Print Studio
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/settings"
+                className="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition"
+              >
+                <Settings className="w-4 h-4" />
+                Customise Your Digital Card
+              </Link>
+            )}
           </div>
         </div>
 
@@ -328,23 +349,17 @@ export default async function DashboardOverviewPage({
             )}
           </div>
 
-          {/* Membership tier summary */}
-          {subscription && (
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-indigo-500" />
-                <span className="text-slate-600">
-                  Plan:{" "}
-                  <strong className="text-slate-900 font-bold">
-                    {subscription.plan.name}
-                  </strong>
-                </span>
-              </div>
-              <span className="text-[11px] text-emerald-600 font-medium">
-                Active through {new Date(subscription.endDate).toLocaleDateString()}
+          {/* Account Channel & Card Status Summary */}
+          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-600">
+                Channel: <strong className="text-slate-900 font-bold">{business.customerType === "ONLINE" ? "💻 Online Digital Card" : "🤝 Offline Field Partner"}</strong>
               </span>
             </div>
-          )}
+            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${business.isPaid ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-700 border border-amber-200"}`}>
+              {business.isPaid ? "✓ Verified & Live" : "⏳ Activation Pending"}
+            </span>
+          </div>
         </div>
       </div>
     </div>

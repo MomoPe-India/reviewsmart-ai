@@ -12,10 +12,7 @@ export async function POST(req: NextRequest) {
     const { paymentId, action } = await req.json(); // action: "APPROVE" | "REJECT"
 
     if (!paymentId || !action) {
-      return NextResponse.json(
-        { error: "Payment ID and action are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Payment ID and action are required." }, { status: 400 });
     }
 
     const payment = await prisma.upiPayment.findUnique({
@@ -23,17 +20,30 @@ export async function POST(req: NextRequest) {
     });
 
     if (!payment) {
-      return NextResponse.json({ error: "Payment record not found" }, { status: 404 });
+      return NextResponse.json({ error: "Payment record not found." }, { status: 404 });
     }
 
     if (action === "APPROVE") {
-      // 1. Mark payment as APPROVED
+      // 1. Get platform settings for commission rate
+      const settings = await prisma.platformSetting.findUnique({
+        where: { id: "default" },
+      });
+      const commissionRate = settings?.commissionRate ?? 0.40;
+
+      // 2. Calculate commission (only for agent deals)
+      const commission =
+        payment.agentId ? Math.round(payment.amount * commissionRate * 100) / 100 : null;
+
+      // 3. Update payment status + set commission
       await prisma.upiPayment.update({
         where: { id: paymentId },
-        data: { status: "APPROVED" },
+        data: {
+          status: "APPROVED",
+          commission: commission,
+        },
       });
 
-      // 2. Mark business as isPaid = true
+      // 4. Auto-activate the business card
       if (payment.businessId) {
         await prisma.business.update({
           where: { id: payment.businessId },
@@ -41,49 +51,30 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // 3. Extend subscription based on planType (30 Days for Monthly ₹299 vs 365 Days for 1-Year / Lifetime ₹999)
-      const isMonthly = payment.planType === "MONTHLY_299";
-      const daysToAdd = isMonthly ? 30 : 365;
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + daysToAdd);
+      const commissionMsg = commission
+        ? ` Agent earns ₹${commission.toFixed(2)} commission.`
+        : "";
 
-      const starterPlan = await prisma.subscriptionPlan.findFirst({
-        where: { isActive: true },
-        orderBy: { price: "asc" },
-      });
-
-      if (starterPlan) {
-        await prisma.userSubscription.upsert({
-          where: { userId: payment.userId },
-          update: {
-            status: "ACTIVE",
-            endDate: expiryDate,
-          },
-          create: {
-            userId: payment.userId,
-            planId: starterPlan.id,
-            status: "ACTIVE",
-            endDate: expiryDate,
-          },
-        });
-      }
-
-      const planLabel = isMonthly ? "1 Month (30 Days)" : "1 Year / Lifetime";
       return NextResponse.json({
         success: true,
-        message: `Payment approved & store activated for ${planLabel}!`,
+        message: `Payment approved! Business card is now LIVE.${commissionMsg}`,
+        commission,
       });
-    } else {
+    } else if (action === "REJECT") {
       await prisma.upiPayment.update({
         where: { id: paymentId },
         data: { status: "REJECTED" },
       });
-      return NextResponse.json({ success: true, message: "Payment rejected." });
+
+      // Keep business as isPaid = false (stays inactive)
+      return NextResponse.json({ success: true, message: "Payment rejected. Business card remains inactive." });
+    } else {
+      return NextResponse.json({ error: "Invalid action. Use APPROVE or REJECT." }, { status: 400 });
     }
   } catch (error) {
     console.error("Approve payment error:", error);
     return NextResponse.json(
-      { error: "Failed to process payment action" },
+      { error: "Failed to process payment action." },
       { status: 500 }
     );
   }

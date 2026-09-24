@@ -65,6 +65,27 @@ export default async function DashboardLayout({
                 Overview
               </Link>
               <Link
+                href="/dashboard/settings"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
+              >
+                <Settings className="w-4 h-4 text-slate-400" />
+                Customise Review Card
+              </Link>
+              <Link
+                href="/dashboard/assistant"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-500" />
+                AI Reply Assistant
+              </Link>
+              <Link
+                href="/dashboard/feedback"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
+              >
+                <Inbox className="w-4 h-4 text-slate-400" />
+                Feedback Shield Inbox
+              </Link>
+              <Link
                 href="/dashboard/branches"
                 className="flex items-center justify-between px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
               >
@@ -75,41 +96,6 @@ export default async function DashboardLayout({
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
                   {businesses.length}
                 </span>
-              </Link>
-              <Link
-                href="/dashboard/studio"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
-              >
-                <Printer className="w-4 h-4 text-slate-400" />
-                Print &amp; NFC Studio
-              </Link>
-              <Link
-                href="/dashboard/feedback"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
-              >
-                <Inbox className="w-4 h-4 text-slate-400" />
-                Feedback Shield Inbox
-              </Link>
-              <Link
-                href="/dashboard/assistant"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
-              >
-                <Sparkles className="w-4 h-4 text-indigo-500" />
-                AI Reply Assistant
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition"
-              >
-                <Settings className="w-4 h-4 text-slate-400" />
-                Card &amp; SEO Settings
-              </Link>
-              <Link
-                href="/dashboard/billing"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-emerald-600 font-bold transition border-t border-slate-100 mt-1 pt-2"
-              >
-                <span className="w-4 h-4 text-emerald-600 flex items-center justify-center font-bold">₹</span>
-                UPI Activation &amp; Plans
               </Link>
             </nav>
           </aside>

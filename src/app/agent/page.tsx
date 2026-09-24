@@ -27,6 +27,7 @@ import {
   Award,
   Radio,
   Upload,
+  RefreshCw,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -49,6 +50,12 @@ interface AgentSession {
   name: string | null;
   agentCode: string | null;
   role: string;
+  agentStats?: {
+    dealsClosed: number;
+    totalRevenue: number;
+    totalCommission: number;
+    pendingDeals: number;
+  } | null;
 }
 
 export default function AgentPosPage() {
@@ -64,9 +71,13 @@ export default function AgentPosPage() {
 
   // Form Details
   const [merchantPhone, setMerchantPhone] = useState("");
-  const [merchantPin, setMerchantPin] = useState("1234");
+  const [merchantPin, setMerchantPin] = useState(() => Math.floor(1000 + Math.random() * 9000).toString());
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
+
+  const handleGenerateNewPin = () => {
+    setMerchantPin(Math.floor(1000 + Math.random() * 9000).toString());
+  };
 
   // Pricing & Deal
   const [negotiatedPrice, setNegotiatedPrice] = useState<number>(1499);
@@ -345,6 +356,26 @@ export default function AgentPosPage() {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5 space-y-5">
+        {/* Agent Performance & Earnings Bar */}
+        {agent?.agentStats && (
+          <div className="grid grid-cols-3 gap-2 p-3 bg-slate-900 rounded-2xl border border-slate-800 text-center shadow-lg">
+            <div className="p-2 rounded-xl bg-slate-950/60">
+              <span className="text-[9px] font-semibold text-slate-400 block">Deals Closed</span>
+              <span className="text-base font-black text-white">{agent.agentStats.dealsClosed}</span>
+            </div>
+            <div className="p-2 rounded-xl bg-slate-950/60">
+              <span className="text-[9px] font-semibold text-slate-400 block">40% Earned</span>
+              <span className="text-base font-black text-emerald-400">
+                ₹{agent.agentStats.totalCommission.toLocaleString("en-IN")}
+              </span>
+            </div>
+            <div className="p-2 rounded-xl bg-slate-950/60">
+              <span className="text-[9px] font-semibold text-slate-400 block">Pending Verify</span>
+              <span className="text-base font-black text-amber-400">{agent.agentStats.pendingDeals}</span>
+            </div>
+          </div>
+        )}
+
         {/* SUCCESS VIEW: Deal Closed & Dynamic UPI QR */}
         {createdDeal ? (
           <div className="bg-slate-900 rounded-3xl p-5 border border-emerald-500/40 shadow-2xl space-y-4 animate-fadeIn">
@@ -414,6 +445,33 @@ export default function AgentPosPage() {
               <div className="pt-2 border-t text-[10px] text-slate-500">
                 Ref Note: <code className="bg-slate-100 px-1 py-0.5 rounded">{createdDeal.upiNote}</code>
               </div>
+            </div>
+
+            {/* Agent 40% Commission Highlight */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-600/10 to-transparent border border-emerald-500/30 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                  Your 40% Instant Commission
+                </span>
+                <span className="text-xl font-black text-emerald-300">
+                  ₹{createdDeal.agentCommission || Math.round(createdDeal.negotiatedAmount * 0.40)}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-1 rounded-full border border-amber-500/30">
+                Credited on Admin Verify
+              </span>
+            </div>
+
+            {/* Offline Standee Handover Checklist */}
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs text-left">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                <Award className="w-3.5 h-3.5 text-amber-400" /> Offline Physical Asset Handover:
+              </span>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                ✓ Hand over 1x Flipkart 4"×6" (A6) Portrait Acrylic Standee<br />
+                ✓ Apply SmartReview AI NFC / QR Counter Sticker<br />
+                ✓ Educate merchant on checking Google reviews
+              </p>
             </div>
 
             {/* Action Buttons */}
@@ -753,7 +811,7 @@ export default function AgentPosPage() {
             <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3">
               <label className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Smartphone className="w-4 h-4 text-indigo-400" />
-                Step 2: Merchant Mobile &amp; Login PIN
+                Step 2: Merchant Mobile &amp; 4-Digit Random PIN
               </label>
 
               <div className="grid grid-cols-2 gap-2">
@@ -773,9 +831,18 @@ export default function AgentPosPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] text-slate-400 font-semibold mb-1">
-                    4-Digit Login PIN
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] text-slate-400 font-semibold">
+                      Random PIN
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleGenerateNewPin}
+                      className="text-[9px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-0.5"
+                    >
+                      <RefreshCw className="w-2.5 h-2.5" /> Roll New
+                    </button>
+                  </div>
                   <input
                     type="text"
                     required
@@ -787,6 +854,9 @@ export default function AgentPosPage() {
                   />
                 </div>
               </div>
+              <p className="text-[10px] text-slate-500">
+                🔐 Random 4-digit PIN is auto-generated. Share it with the merchant once closed.
+              </p>
             </div>
 
             {/* STEP 3: Negotiated Amount & Deal Submission */}
@@ -830,6 +900,21 @@ export default function AgentPosPage() {
                   onChange={(e) => setNegotiatedPrice(Number(e.target.value))}
                   className="w-full text-sm font-bold p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
                 />
+              </div>
+
+              {/* Instant 40% Commission Preview */}
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-600/10 to-transparent border border-emerald-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                    Your 40% Instant Commission
+                  </span>
+                  <span className="text-base font-black text-emerald-300">
+                    ₹{Math.round(negotiatedPrice * 0.40).toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+                  Credited on Admin Verify
+                </span>
               </div>
 
               {/* Optional UTR Reference Number */}

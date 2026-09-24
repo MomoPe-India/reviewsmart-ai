@@ -37,66 +37,65 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Clean and validate phone number
+    // Validate phone
     const cleanPhone = String(merchantPhone).replace(/[^0-9]/g, "");
     if (cleanPhone.length < 10) {
       return NextResponse.json(
-        { error: "Please enter a valid 10-digit mobile number for the merchant." },
+        { error: "Please enter a valid 10-digit mobile number." },
         { status: 400 }
       );
     }
 
-    // Fetch platform minimum price floor
+    // Fetch platform settings
     const platformSettings = await prisma.platformSetting.findUnique({
       where: { id: "default" },
     });
-    const minFloor = platformSettings?.minNegotiatedPrice || 499;
+    const minFloor = platformSettings?.minNegotiatedPrice ?? 499;
+    const commissionRate = platformSettings?.commissionRate ?? 0.40;
 
     const finalAmount = Number(negotiatedPrice);
     if (isNaN(finalAmount) || finalAmount < minFloor) {
       return NextResponse.json(
-        {
-          error: `Minimum authorized price floor is ₹${minFloor}. You cannot submit a lower amount.`,
-        },
+        { error: `Minimum authorized price floor is ₹${minFloor}. Cannot submit a lower amount.` },
         { status: 400 }
       );
     }
 
-    // Determine merchant PIN (use provided 4-digit PIN or default to last 4 digits of phone)
-    const pinString = String(merchantPin || cleanPhone.slice(-4)).trim();
-    if (pinString.length < 4) {
-      return NextResponse.json(
-        { error: "PIN must be at least 4 digits." },
-        { status: 400 }
-      );
+    // Generate random 4-digit PIN if not provided
+    const rawPin = merchantPin
+      ? String(merchantPin).trim().replace(/[^0-9]/g, "").slice(0, 4)
+      : Math.floor(1000 + Math.random() * 9000).toString();
+
+    if (rawPin.length !== 4) {
+      return NextResponse.json({ error: "PIN must be exactly 4 digits." }, { status: 400 });
     }
 
-    const hashedPin = await hashPin(pinString);
-    const hashedPassword = await hashPassword(pinString);
+    const hashedPin = await hashPin(rawPin);
+    const hashedPassword = await hashPassword(rawPin);
 
-    // Check if merchant already exists by phone/userIdTag
+    // Upsert merchant user (use phone as userIdTag)
     let merchantUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ userIdTag: cleanPhone }, { phone: cleanPhone }],
-      },
+      where: { OR: [{ userIdTag: cleanPhone }, { phone: cleanPhone }] },
     });
 
     if (!merchantUser) {
       merchantUser = await prisma.user.create({
         data: {
-          email: `${cleanPhone}@reviewsmart.local`,
+          email: `${cleanPhone}@merchant.reviewsmart.local`,
           name: merchantName,
           phone: cleanPhone,
           userIdTag: cleanPhone,
           pinCode: hashedPin,
           password: hashedPassword,
           role: "BUSINESS_OWNER",
+          customerType: "OFFLINE",
+          isActive: true,
           referredBy: session.id,
         },
       });
     }
 
-    // Generate collision-resistant slug
+    // Generate unique slug
     const baseSlug = merchantName
       .toLowerCase()
       .trim()
@@ -105,14 +104,14 @@ export async function POST(req: NextRequest) {
     const randomSuffix = crypto.randomBytes(2).toString("hex");
     const uniqueSlug = `${baseSlug || "store"}-${randomSuffix}`;
 
-    // Detect Industry Intelligence
+    // Detect industry
     const industry = detectIndustry(merchantName, body.category || "", body.tagline || "");
     const finalCategory = body.category || industry.label;
     const finalTagline = body.tagline || industry.tagline;
     const finalTags = body.tagChips || industry.tags.join(",");
     const finalKeywords = body.keywords || industry.keywords;
 
-    // Create Business Profile
+    // Create business — isPaid = false until admin approves
     const business = await prisma.business.create({
       data: {
         userId: merchantUser.id,
@@ -120,10 +119,12 @@ export async function POST(req: NextRequest) {
         slug: uniqueSlug,
         tagline: finalTagline,
         category: finalCategory,
+        customerType: "OFFLINE",
         logoUrl: logoUrl || null,
         googlePlaceId: googlePlaceId || null,
-        googleReviewUrl: googleReviewUrl,
+        googleReviewUrl,
         googleAddress: googleAddress || null,
+        phone: cleanPhone,
         whatsapp: whatsapp || null,
         instagram: instagram || null,
         website: website || null,
@@ -131,44 +132,48 @@ export async function POST(req: NextRequest) {
         keywords: finalKeywords,
         minRatingForGoogle: 4,
         reviewPromptTone: "friendly",
-        isPaid: true,
+        isPaid: false, // CRITICAL: never auto-activate
       },
     });
 
-    // Create UpiPayment record linked to Agent
+    // Create UPI payment record
     const upiPayment = await prisma.upiPayment.create({
       data: {
         userId: merchantUser.id,
         businessId: business.id,
-        agentId: session.id,
-        agentCode: session.agentCode || "DIRECT_AGENT",
+        agentId: session.role === "MARKETING_AGENT" ? session.id : null,
+        agentCode: session.agentCode || null,
         planType: "NEGOTIATED_DEAL",
         amount: finalAmount,
-        utrNumber: utrNumber ? String(utrNumber).trim() : `AGT-${Date.now().toString().slice(-8)}`,
+        utrNumber: utrNumber ? String(utrNumber).trim() : `PENDING-${Date.now().toString().slice(-8)}`,
         customerPhone: cleanPhone,
-        status: utrNumber ? "PENDING" : "PENDING",
-        notes: `Negotiated on-site deal by Agent ${session.agentCode || session.name || session.id}`,
+        status: "PENDING",
+        notes: `Offline deal by Agent ${session.agentCode || session.name || "DIRECT"}. Negotiated: ₹${finalAmount}`,
       },
     });
 
-    // Format central UPI payment payload
+    // Format UPI deep link
     const upiId = platformSettings?.upiId || "momopedeals@oksbi";
     const upiPayee = platformSettings?.upiPayeeName || "Damerla Mohan";
-    const upiNote = `RS-${cleanPhone}-${session.agentCode || "AGT"}`;
-    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
-      upiPayee
-    )}&am=${finalAmount}&cu=INR&tn=${encodeURIComponent(upiNote)}`;
+    const upiNote = `RS-${cleanPhone.slice(-4)}-${session.agentCode || "AGT"}`;
+    const upiDeepLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(upiPayee)}&am=${finalAmount}&cu=INR&tn=${encodeURIComponent(upiNote)}`;
+
+    // Preview commission for agent UI
+    const agentCommission = session.role === "MARKETING_AGENT"
+      ? Math.round(finalAmount * commissionRate)
+      : 0;
 
     return NextResponse.json({
       success: true,
       deal: {
         paymentId: upiPayment.id,
         merchantUserId: cleanPhone,
-        merchantPin: pinString,
+        merchantPin: rawPin, // Show ONCE — admin/agent must note this
         businessId: business.id,
         businessSlug: business.slug,
         businessName: business.name,
         negotiatedAmount: finalAmount,
+        agentCommission,
         upiId,
         upiPayee,
         upiNote,
@@ -178,7 +183,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Agent deal creation error:", error);
     return NextResponse.json(
-      { error: "Failed to create deal. Please verify details." },
+      { error: "Failed to create deal. Please check details and try again." },
       { status: 500 }
     );
   }
