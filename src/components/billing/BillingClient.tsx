@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import QRCode from "qrcode";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface BillingClientProps {
   business: any;
@@ -83,7 +84,7 @@ export default function BillingClient({
   }, [upiUri]);
 
   const handleCopyUpi = async () => {
-    await navigator.clipboard.writeText(upiId);
+    await copyToClipboard(upiId);
     setCopiedUpi(true);
     setTimeout(() => setCopiedUpi(false), 2500);
   };

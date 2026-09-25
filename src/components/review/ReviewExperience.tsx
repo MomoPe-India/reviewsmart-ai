@@ -23,6 +23,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { detectIndustry } from "@/lib/industry";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface BusinessData {
   id: string;
@@ -96,9 +97,15 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     rawTags.length > 0 && !isGenericRestaurantChips ? rawTags : industry.tags;
 
   const [isMobile, setIsMobile] = useState(true);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    setIsMobile(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    const ua = navigator.userAgent || "";
+    setIsMobile(/Mobi|Android|iPhone|iPad|iPod/i.test(ua));
+    const appleDevice =
+      /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    setIsIOS(appleDevice);
   }, []);
 
   // Resolved Direct GMB Review URL
@@ -303,16 +310,15 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     const textToCopy =
       customText || (selected ? selected.text : "Great experience at " + business.name + "! Highly recommended.");
 
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    } catch (err) {
-      console.error("Clipboard copy error:", err);
-    }
+    // Run multi-layer universal copy FIRST so synchronous iOS selection executes immediately
+    const copyPromise = copyToClipboard(textToCopy);
 
     setModalCopiedText(textToCopy);
     setShowCopyModal(true);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+
+    await copyPromise;
 
     // Celebratory Confetti
     try {
@@ -326,13 +332,9 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   };
 
   const handleReCopyInModal = async () => {
-    try {
-      await navigator.clipboard.writeText(modalCopiedText);
-      setModalReCopied(true);
-      setTimeout(() => setModalReCopied(false), 2000);
-    } catch (err) {
-      console.error("Re-copy error:", err);
-    }
+    await copyToClipboard(modalCopiedText);
+    setModalReCopied(true);
+    setTimeout(() => setModalReCopied(false), 2000);
   };
 
   const isPositive = rating >= business.minRatingForGoogle;
@@ -723,7 +725,10 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   return (
                     <div
                       key={opt.id}
-                      onClick={() => setSelectedOptionId(opt.id)}
+                      onClick={() => {
+                        setSelectedOptionId(opt.id);
+                        copyToClipboard(opt.text);
+                      }}
                       className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                         isSelected
                           ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-950/40 ring-1 ring-amber-400"
@@ -833,15 +838,21 @@ export default function ReviewExperience({ business }: { business: BusinessData 
               Step 1 of 2 Complete!
             </p>
 
-            {/* Copied Review Snippet Box */}
-            <div className="my-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-700 text-left relative">
+            {/* Copied Review Snippet Box (Tap anywhere on box to re-copy) */}
+            <div
+              onClick={handleReCopyInModal}
+              className="my-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-700 hover:border-amber-400/50 text-left relative cursor-pointer transition active:scale-98"
+            >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
                   ★★★★★ 5-Star Draft
                 </span>
                 <button
                   type="button"
-                  onClick={handleReCopyInModal}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReCopyInModal();
+                  }}
                   className="text-[10px] font-bold text-slate-300 hover:text-white flex items-center gap-1 bg-slate-800 px-2 py-0.5 rounded-md"
                 >
                   {modalReCopied ? (
@@ -857,7 +868,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-200 leading-relaxed italic max-h-32 overflow-y-auto">
+              <p className="text-xs text-slate-200 leading-relaxed italic max-h-32 overflow-y-auto select-all">
                 &ldquo;{modalCopiedText}&rdquo;
               </p>
             </div>
@@ -877,16 +888,23 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   2
                 </div>
                 <p className="text-slate-200">
-                  Tap below → <strong className="text-white">Google Maps app opens</strong>.
+                  Tap below → <strong className="text-white">Google review screen opens</strong>.
                 </p>
               </div>
               <div className="flex items-start gap-2.5 text-xs">
                 <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30">
                   3
                 </div>
-                <p className="text-slate-200">
-                  Tap <strong className="text-amber-300">★★★★★</strong>, paste &amp; post!
-                </p>
+                <div className="space-y-1">
+                  <p className="text-slate-200">
+                    Tap <strong className="text-amber-300">★★★★★</strong>, paste &amp; post!
+                  </p>
+                  {isIOS && (
+                    <p className="text-[11px] text-amber-300/95 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2 py-1 leading-snug">
+                      📱 <strong>On iPhone:</strong> Tap inside the review box &amp; tap <strong>&ldquo;Paste&rdquo;</strong> on the popup menu.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -894,6 +912,9 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             <a
               href={googleUrl}
               onClick={() => {
+                // Guarantee fresh synchronous copy to iOS UIPasteboard & Android clipboard right on button click
+                copyToClipboard(modalCopiedText);
+
                 fetch("/api/analytics/track", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -922,6 +943,9 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             {mapsAppUrl && (
               <a
                 href={mapsAppUrl}
+                onClick={() => {
+                  copyToClipboard(modalCopiedText);
+                }}
                 className="mt-2.5 text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center justify-center gap-1"
               >
                 <span>Or open in Google Maps App &rarr;</span>

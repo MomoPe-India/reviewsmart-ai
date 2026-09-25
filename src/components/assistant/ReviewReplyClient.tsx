@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Send,
 } from "lucide-react";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface BusinessData {
   id: string;
@@ -59,7 +60,7 @@ export default function ReviewReplyClient({
 
   const handleCopy = async () => {
     if (!generatedReply) return;
-    await navigator.clipboard.writeText(generatedReply);
+    await copyToClipboard(generatedReply);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };

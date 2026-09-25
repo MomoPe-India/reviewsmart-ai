@@ -23,6 +23,7 @@ import {
   QrCode,
   Check,
 } from "lucide-react";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface FeedbackItem {
   id: string;
@@ -77,12 +78,10 @@ export default function DashboardClientView({
 }: DashboardClientViewProps) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopyLink = () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(reviewUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
+  const handleCopyLink = async () => {
+    await copyToClipboard(reviewUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleShareWhatsApp = () => {

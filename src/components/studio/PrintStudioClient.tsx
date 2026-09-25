@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import { printElement } from "@/lib/print";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface BusinessData {
   id: string;
@@ -184,7 +185,7 @@ export default function PrintStudioClient({
   };
 
   const handleCopyNfcUrl = async () => {
-    await navigator.clipboard.writeText(reviewUrl);
+    await copyToClipboard(reviewUrl);
     setCopiedNfc(true);
     setTimeout(() => setCopiedNfc(false), 2500);
   };
