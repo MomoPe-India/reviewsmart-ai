@@ -101,39 +101,18 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     setIsMobile(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
   }, []);
 
-  // Resolved Google URL: device-aware routing
-  // Mobile -> Launches Google Maps native app directly (user is already logged in, no login wall!)
-  // Desktop -> Uses search.google.com/local/writereview web composer modal
+  // Resolved Direct GMB Review URL
+  // Takes user directly to the Google Business Profile review composer (5 stars + paste review box)
   const getResolvedGoogleUrl = () => {
-    const rawUrl = (business.googleReviewUrl || "").trim();
     const placeId = (business.googlePlaceId || "").trim();
+    const rawUrl = (business.googleReviewUrl || "").trim();
 
-    // 1. On Mobile: Prioritize Google Maps native app links so users are never blocked by a web browser login wall
-    if (isMobile) {
-      // If merchant has a Google Maps share link (e.g. maps.app.goo.gl or google.com/maps), it opens the Maps app directly!
-      if (
-        rawUrl &&
-        (rawUrl.includes("maps.app.goo.gl") ||
-          rawUrl.includes("google.com/maps") ||
-          rawUrl.includes("maps.google.com") ||
-          rawUrl.includes("g.page/"))
-      ) {
-        return rawUrl;
-      }
-
-      // If Place ID is available, use Google's official cross-platform deep link to launch the Maps app
-      if (placeId) {
-        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
-      }
-
-      return rawUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
-    }
-
-    // 2. On Desktop: Web review composer popup works best since desktop browsers are already signed into Google
+    // 1. Direct Place ID has highest priority for the direct GMB review composer
     if (placeId) {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
     }
 
+    // 2. Extract Place ID from rawUrl if embedded
     if (rawUrl) {
       const match = rawUrl.match(/[?&]place(?:_)?id=([^&#]+)/i);
       if (match && match[1]) {
@@ -145,7 +124,17 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
   };
 
+  // Maps App Fallback URL
+  const getMapsAppUrl = () => {
+    const placeId = (business.googlePlaceId || "").trim();
+    if (placeId) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
+    }
+    return (business.googleReviewUrl || "").trim() || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
+  };
+
   const googleUrl = getResolvedGoogleUrl();
+  const mapsAppUrl = getMapsAppUrl();
 
   // Track page view once
   useEffect(() => {
@@ -895,11 +884,9 @@ export default function ReviewExperience({ business }: { business: BusinessData 
               </div>
             </div>
 
-            {/* High-Contrast Google Maps CTA Button */}
+            {/* High-Contrast Direct GMB Review CTA Button */}
             <a
               href={googleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               onClick={() => {
                 fetch("/api/analytics/track", {
                   method: "POST",
@@ -921,9 +908,19 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
               </svg>
-              <span>Open Google Maps &amp; Paste Review</span>
+              <span>Open GMB &amp; Paste Review</span>
               <ExternalLink className="w-4 h-4 text-slate-500" />
             </a>
+
+            {/* Google Maps App Option */}
+            {mapsAppUrl && (
+              <a
+                href={mapsAppUrl}
+                className="mt-2.5 text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center justify-center gap-1"
+              >
+                <span>Or open in Google Maps App &rarr;</span>
+              </a>
+            )}
 
             <button
               type="button"
