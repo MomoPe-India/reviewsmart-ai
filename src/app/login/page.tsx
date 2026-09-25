@@ -15,6 +15,7 @@ import {
   EyeOff,
   AlertCircle,
   MessageCircle,
+  X,
 } from "lucide-react";
 import { BrandIcon } from "@/components/brand/BrandLogo";
 
@@ -231,16 +232,36 @@ export default function LoginPage() {
                   Your Mobile Number or Agent Code
                 </label>
                 <div className="relative">
-                  <Smartphone className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Smartphone className="w-4 h-4 text-indigo-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     required
                     maxLength={16}
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
-                    placeholder="e.g. 8639831132 or MKT-01"
-                    className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-white/8 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium transition"
+                    placeholder="e.g. 9014960900 or MKT-01"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    inputMode="text"
+                    className="w-full text-base sm:text-sm pl-11 pr-10 py-3.5 rounded-2xl bg-slate-900 border-2 border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 font-semibold tracking-wide transition caret-indigo-400"
+                    style={{
+                      color: "#ffffff",
+                      WebkitTextFillColor: "#ffffff",
+                      backgroundColor: "#0f172a",
+                    }}
                   />
+                  {userId.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setUserId("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition"
+                      aria-label="Clear user ID"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -284,11 +305,16 @@ export default function LoginPage() {
                         onChange={(e) => handlePinDigitChange(idx, e.target.value)}
                         onKeyDown={(e) => handlePinKeyDown(idx, e)}
                         onPaste={handlePinPaste}
-                        className={`w-14 h-14 text-center text-xl font-black rounded-2xl bg-white/8 border transition-all duration-150 focus:outline-none focus:scale-105 ${
+                        className={`w-14 h-14 text-center text-2xl font-black rounded-2xl border-2 transition-all duration-150 focus:outline-none focus:scale-105 caret-indigo-400 ${
                           digit
-                            ? "border-indigo-500 bg-indigo-500/10 text-white shadow-lg shadow-indigo-500/20"
-                            : "border-white/10 text-white placeholder-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40"
+                            ? "border-indigo-500 bg-indigo-950/80 text-white shadow-lg shadow-indigo-500/25 ring-2 ring-indigo-500/40"
+                            : "border-slate-700 bg-slate-900 text-white placeholder-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30"
                         }`}
+                        style={{
+                          color: "#ffffff",
+                          WebkitTextFillColor: "#ffffff",
+                          backgroundColor: digit ? "#1e1b4b" : "#0f172a",
+                        }}
                         placeholder="•"
                       />
                     );
@@ -354,14 +380,20 @@ export default function LoginPage() {
                   Super Admin Email
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Mail className="w-4 h-4 text-amber-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="admin@reviewsmart.ai"
-                    className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-white/8 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent font-medium transition"
+                    autoComplete="email"
+                    className="w-full text-base sm:text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-900 border-2 border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30 font-medium transition caret-amber-400"
+                    style={{
+                      color: "#ffffff",
+                      WebkitTextFillColor: "#ffffff",
+                      backgroundColor: "#0f172a",
+                    }}
                   />
                 </div>
               </div>
@@ -372,14 +404,20 @@ export default function LoginPage() {
                   Master Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Lock className="w-4 h-4 text-amber-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-white/8 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent font-medium transition"
+                    autoComplete="current-password"
+                    className="w-full text-base sm:text-sm pl-11 pr-4 py-3.5 rounded-2xl bg-slate-900 border-2 border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30 font-medium transition caret-amber-400"
+                    style={{
+                      color: "#ffffff",
+                      WebkitTextFillColor: "#ffffff",
+                      backgroundColor: "#0f172a",
+                    }}
                   />
                 </div>
               </div>

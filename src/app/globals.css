@@ -85,6 +85,25 @@ body {
   background: #94a3b8;
 }
 
+/* Dark inputs & mobile browser autofill text visibility */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+  box-shadow: 0 0 0 1000px #0f172a inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #ffffff !important;
+}
+
+/* Ensure text inputs remain 100% visible and unmasked */
+input[type="text"],
+input[type="tel"],
+input[type="email"] {
+  -webkit-text-security: none !important;
+}
+
 @media print {
   @page {
     margin: 8mm;
