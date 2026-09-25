@@ -978,7 +978,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   ✓
                 </div>
                 <p className="text-slate-200">
-                  <strong className="text-white">Review copied</strong> to your clipboard.
+                  <strong className="text-white">Review copied</strong> to your clipboard automatically ✅
                 </p>
               </div>
               <div className="flex items-start gap-2.5 text-xs">
@@ -986,22 +986,29 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   2
                 </div>
                 <p className="text-slate-200">
-                  <strong className="text-white">Tap the button above</strong> to open Google review screen
+                  Tap the button below &darr; &rarr; <strong className="text-white">Google review page opens</strong>
                 </p>
               </div>
               <div className="flex items-start gap-2.5 text-xs">
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30">
+                <div className="w-5 h-5 rounded-full bg-indigo-500 text-white font-black flex items-center justify-center shrink-0 text-[11px]">
                   3
                 </div>
-                <div className="space-y-1">
-                  <p className="text-slate-200">
-                    In Google: tap the review text box &rarr; tap &ldquo;Paste&rdquo; &rarr; tap Post
+                <div className="space-y-2 flex-1">
+                  <p className="text-slate-200 font-semibold">
+                    In Google: select <strong className="text-amber-300">&#x2B50;&#x2B50;&#x2B50;&#x2B50;&#x2B50;</strong> &rarr; tap <strong className="text-amber-300">Post</strong>
                   </p>
-                  {isIOS && (
-                    <p className="text-[11px] text-amber-300/95 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2 py-1 leading-snug">
-                      📱 <strong>On iPhone:</strong> Tap inside the review box &amp; tap <strong>&ldquo;Paste&rdquo;</strong> on the popup menu.
-                    </p>
-                  )}
+                  {/* Bold paste callout — impossible to miss */}
+                  <div className="w-full bg-gradient-to-r from-amber-500/20 to-amber-400/10 border-2 border-amber-400/60 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                    <span className="text-xl leading-none shrink-0">📋</span>
+                    <div>
+                      <p className="text-xs font-black text-amber-300 leading-snug">
+                        {isIOS ? "📱 iPhone:" : "📱 Android:"} Tap inside the review text box &rarr; {isIOS ? "tap \"Paste\" on the popup" : "long-press → tap \"Paste\""}
+                      </p>
+                      <p className="text-[11px] text-white/80 font-bold mt-0.5">
+                        ✨ Your AI review fills in instantly!
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
