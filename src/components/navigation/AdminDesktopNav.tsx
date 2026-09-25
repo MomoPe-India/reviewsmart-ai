@@ -55,8 +55,8 @@ export default function AdminDesktopNav() {
             href={item.href}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 ${
               isActive
-                ? "bg-indigo-600/25 text-white font-bold border border-indigo-500/35 shadow-sm shadow-black/30"
-                : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                ? "bg-indigo-600/30 text-white border-l-2 border-indigo-500 pl-2.5"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
             }`}
           >
             <Icon

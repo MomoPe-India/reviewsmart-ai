@@ -491,12 +491,22 @@ export default function AdminAgentsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-xs border flex-shrink-0 ${
+                      className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-xs border flex-shrink-0 relative ${
                         agt.isActive
                           ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"
                           : "bg-red-500/20 text-red-300 border-red-500/30"
                       }`}
                     >
+                      {(() => {
+                        const sortedByCommission = [...agents].sort((a, b) => 
+                          (b.commissionEarned ?? b.totalCommission ?? 0) - (a.commissionEarned ?? a.totalCommission ?? 0)
+                        );
+                        const rank = sortedByCommission.findIndex(a => a.id === agt.id) + 1;
+                        if (rank === 1 && (agt.commissionEarned ?? agt.totalCommission ?? 0) > 0) return <span className="absolute -top-2 -right-2 text-xl">🥇</span>;
+                        if (rank === 2 && (agt.commissionEarned ?? agt.totalCommission ?? 0) > 0) return <span className="absolute -top-2 -right-2 text-xl">🥈</span>;
+                        if (rank === 3 && (agt.commissionEarned ?? agt.totalCommission ?? 0) > 0) return <span className="absolute -top-2 -right-2 text-xl">🥉</span>;
+                        return null;
+                      })()}
                       {agt.agentCode ?? "AGT"}
                     </div>
                     <div className="min-w-0">
@@ -510,8 +520,19 @@ export default function AdminAgentsPage() {
                     </div>
                   </div>
 
-                  {/* Actions Header: Edit & Delete buttons */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Actions Header: Edit, WhatsApp, Delete buttons */}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {agt.phone && (
+                      <a
+                        href={`https://wa.me/91${agt.phone}?text=Hello ${agt.name},`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Send WhatsApp Message"
+                        className="p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                      </a>
+                    )}
                     <button
                       onClick={() => openEditModal(agt)}
                       title="Edit Agent Details"

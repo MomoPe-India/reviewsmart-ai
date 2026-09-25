@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
-import Navbar from "@/components/Navbar";
 import {
   LayoutDashboard,
   Users,
@@ -32,16 +31,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-20 lg:pb-0">
-      <Navbar variant="dark" />
-
-
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20 lg:pb-0">
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Admin Sidebar (Desktop only) */}
-          <aside className="hidden lg:flex lg:col-span-1 flex-col gap-3 no-print">
+          <aside className="hidden lg:flex lg:col-span-1 flex-col gap-3 no-print bg-slate-900 border-r border-slate-800 p-4 rounded-3xl h-fit">
             {/* Brand Header */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-800/80 p-4 rounded-2xl border border-slate-700 shadow-sm">
+            <div className="mb-4">
               <div className="mb-2.5">
                 <BrandLogo href="/admin" size="sm" theme="dark" />
               </div>
@@ -55,13 +51,13 @@ export default async function AdminLayout({
             <AdminDesktopNav />
 
             {/* Back to Dashboard */}
-            <div>
+            <div className="mt-4 pt-4 border-t border-slate-800">
               <Link
                 href="/dashboard"
                 className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition border border-slate-700"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                Return to Store Dashboard
+                Store Dashboard
               </Link>
             </div>
           </aside>

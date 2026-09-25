@@ -336,13 +336,13 @@ export default function AdminPaymentsClient({
                       </td>
                       <td className="py-3 px-4 font-mono font-bold text-amber-300">{p.utrNumber}</td>
                       <td className="py-3 px-4">
-                        <span className="font-black text-emerald-400 text-sm">₹{p.amount}</span>
+                        <span className="font-black text-emerald-400 text-sm">₹{p.amount.toLocaleString("en-IN")}</span>
                       </td>
                       <td className="py-3 px-4">
                         {isApproved && p.commission ? (
-                          <span className="font-bold text-amber-400 text-xs">₹{p.commission?.toFixed(2)}</span>
+                          <span className="font-bold text-amber-400 text-xs">₹{p.commission?.toLocaleString("en-IN")}</span>
                         ) : previewCommission ? (
-                          <span className="text-slate-500 text-[10px]">~₹{previewCommission} (on approval)</span>
+                          <span className="text-slate-500 text-[10px]">~₹{previewCommission.toLocaleString("en-IN")} (on approval)</span>
                         ) : (
                           <span className="text-slate-600 text-[10px]">—</span>
                         )}

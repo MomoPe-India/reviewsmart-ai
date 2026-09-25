@@ -28,6 +28,7 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
+  Mic,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { getAppUrl } from "@/lib/utils";
@@ -238,6 +239,26 @@ export default function AgentPosPage() {
     }
   }, [createdDeal]);
 
+  // Auto-WhatsApp Pre-fill Logic
+  useEffect(() => {
+    if (merchantPhone.trim().length === 10 && !whatsapp) {
+      setWhatsapp(merchantPhone.trim());
+    }
+  }, [merchantPhone, whatsapp]);
+
+  const [nextDealCountdown, setNextDealCountdown] = useState(30);
+  useEffect(() => {
+    if (!createdDeal) return;
+    setNextDealCountdown(30);
+    const interval = setInterval(() => {
+      setNextDealCountdown(prev => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [createdDeal]);
+
   // Submit Deal
   const handleRegisterDeal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,55 +325,80 @@ export default function AgentPosPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4 p-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-2xl">
+          <span className="text-2xl font-black text-white">POS</span>
+        </div>
+        <div className="text-center">
+          <h2 className="text-lg font-black text-white">Agent Closer</h2>
+          <p className="text-sm text-slate-400">Loading your dashboard...</p>
+        </div>
+        <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
       </div>
     );
   }
+
+  const activeStep = createdDeal ? 3 : selectedPlace ? (merchantPhone.length === 10 ? 3 : 2) : 1;
+
+  const formatPhone = (val: string) => {
+    if (!val) return '';
+    const match = val.match(/^(\d{0,4})(\d{0,3})(\d{0,3})$/);
+    if (!match) return val;
+    return !match[2] ? match[1] : `${match[1]} ${match[2]}` + (match[3] ? ` ${match[3]}` : '');
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
       {/* Top Mobile Bar */}
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black text-sm shadow-md">
             POS
           </div>
           <div>
-            <h1 className="text-xs font-black text-white flex items-center gap-1.5">
-              <span>Agent Closer</span>
-              <span className="text-[10px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30">
+            <h1 className="text-sm font-black text-white flex items-center gap-1.5">
+              <span>{agent?.name?.split(' ')[0] || "Agent"}</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30">
                 {agent?.agentCode || "MKT-REP"}
               </span>
             </h1>
             <p className="text-[10px] text-slate-400 truncate max-w-[160px]">
-              {agent?.name || "Field Sales Rep"}
+              Agent Closer
             </p>
           </div>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
-          title="Sign Out"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-800/80 border border-slate-700 shadow-inner">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            <span className="text-[9px] font-black text-slate-300">LIVE</span>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition shadow-sm"
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5 space-y-5">
         {/* Agent Performance & Earnings Bar */}
-        {agent?.agentStats && (
+        {agent?.agentStats ? (
           <div className="grid grid-cols-3 gap-2 p-3 bg-slate-900 rounded-2xl border border-slate-800 text-center shadow-lg">
-            <div className="p-2 rounded-xl bg-slate-950/60">
+            <div className="p-2 rounded-xl bg-slate-950/60 border-b-2 border-indigo-500">
               <span className="text-[9px] font-semibold text-slate-400 block">Deals Closed</span>
               <span className="text-base font-black text-white">{agent.agentStats.dealsClosed}</span>
             </div>
             <button
               type="button"
               onClick={() => setShowEarnings(!showEarnings)}
-              className="p-2 rounded-xl bg-slate-950/60 hover:bg-slate-950 transition text-center relative group"
-              title={showEarnings ? "Hide Earnings (Merchant Pitch Mode)" : "Tap to View Earnings"}
+              className="p-2 rounded-xl bg-slate-950/60 hover:bg-slate-950 transition text-center relative group border-b-2 border-emerald-500"
+              title={showEarnings ? "Hide Earnings" : "Tap to View Earnings"}
             >
               <div className="flex items-center justify-center gap-1">
                 <span className="text-[9px] font-semibold text-slate-400">Earnings</span>
@@ -362,14 +408,26 @@ export default function AgentPosPage() {
                   <Eye className="w-2.5 h-2.5 text-slate-500 group-hover:text-slate-300" />
                 )}
               </div>
-              <span className="text-base font-black text-emerald-400 tracking-wider">
-                {showEarnings ? `₹${agent.agentStats.totalCommission.toLocaleString("en-IN")}` : "••••"}
-              </span>
+              {showEarnings ? (
+                <span className="text-base font-black text-emerald-400 tracking-wider inline-block animate-in zoom-in duration-200">
+                  ₹{agent.agentStats.totalCommission.toLocaleString("en-IN")}
+                </span>
+              ) : (
+                <span className="text-base font-black text-emerald-400/50 tracking-wider inline-block animate-pulse">
+                  ••••
+                </span>
+              )}
             </button>
-            <div className="p-2 rounded-xl bg-slate-950/60">
+            <div className="p-2 rounded-xl bg-slate-950/60 border-b-2 border-amber-500 group cursor-help" title="Pending admin verification — check back soon">
               <span className="text-[9px] font-semibold text-slate-400 block">Pending Verify</span>
               <span className="text-base font-black text-amber-400">{agent.agentStats.pendingDeals}</span>
             </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-gradient-to-r from-indigo-900/40 to-violet-900/40 rounded-2xl border border-indigo-500/30 text-center shadow-lg">
+            <p className="text-sm font-bold text-indigo-200 flex items-center justify-center gap-2">
+              <span>🚀</span> Close your first deal below to start earning!
+            </p>
           </div>
         )}
 
@@ -377,13 +435,12 @@ export default function AgentPosPage() {
         {createdDeal ? (
           <div className="bg-slate-900 rounded-3xl p-5 border border-emerald-500/40 shadow-2xl space-y-4 animate-fadeIn">
             <div className="text-center space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
-                <CheckCircle2 className="w-7 h-7" />
+              <div className="text-4xl mb-2 animate-bounce">🎉</div>
+              <h2 className="text-lg font-black text-white">Deal Closed! ₹{createdDeal.negotiatedAmount} Earned!</h2>
+              
+              <div className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                Your commission: ₹{Math.floor(createdDeal.negotiatedAmount * 0.4).toLocaleString('en-IN')}
               </div>
-              <h2 className="text-base font-black text-white">Deal Successfully Created!</h2>
-              <p className="text-xs text-slate-400">
-                Merchant account provisioned under your agent code.
-              </p>
             </div>
 
             {/* Merchant Credentials Card */}
@@ -395,7 +452,7 @@ export default function AgentPosPage() {
                 <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700">
                   <span className="text-[10px] text-slate-400 block">User ID (Mobile):</span>
                   <span className="font-mono font-bold text-white text-sm">
-                    {createdDeal.merchantUserId}
+                    {formatPhone(createdDeal.merchantUserId)}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700">
@@ -469,14 +526,15 @@ export default function AgentPosPage() {
                     "_blank"
                   );
                 }}
-                className="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition"
+                className="w-full py-4 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition"
               >
-                <Share2 className="w-4 h-4" />
-                Share Credentials via WhatsApp to Merchant
+                <Share2 className="w-5 h-5" />
+                Share Credentials via WhatsApp
               </button>
 
               <button
                 type="button"
+                disabled={nextDealCountdown > 0}
                 onClick={() => {
                   setCreatedDeal(null);
                   setSelectedPlace(null);
@@ -484,9 +542,13 @@ export default function AgentPosPage() {
                   setMerchantPhone("");
                   setUtrNumber("");
                 }}
-                className="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs text-center transition"
+                className={`w-full py-3 rounded-2xl font-bold text-xs text-center transition ${
+                  nextDealCountdown > 0 
+                  ? "bg-slate-800/50 text-slate-500 cursor-not-allowed" 
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                }`}
               >
-                + Close Another Deal
+                {nextDealCountdown > 0 ? `Opening next deal in ${nextDealCountdown}s...` : "+ Close Another Deal"}
               </button>
             </div>
           </div>
@@ -499,12 +561,36 @@ export default function AgentPosPage() {
               </div>
             )}
 
+            {/* Progress Bar */}
+            <div className="flex items-center gap-1 mb-4 mt-2">
+              {[1, 2, 3].map((step) => (
+                <React.Fragment key={step}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all ${
+                    step < activeStep ? 'bg-emerald-500 border-emerald-500 text-white' :
+                    step === activeStep ? 'bg-indigo-600 border-indigo-500 text-white scale-110 shadow-lg shadow-indigo-500/30' :
+                    'bg-slate-800 border-slate-700 text-slate-500'
+                  }`}>
+                    {step < activeStep ? '✓' : step}
+                  </div>
+                  {step < 3 && <div className={`flex-1 h-0.5 rounded transition-all ${
+                    step < activeStep ? 'bg-emerald-500' : 'bg-slate-700'
+                  }`} />}
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="flex justify-between text-[9px] font-bold text-slate-400 px-1 -mt-2 mb-3">
+              <span className={activeStep >= 1 ? 'text-indigo-400' : ''}>Search Business</span>
+              <span className={activeStep >= 2 ? 'text-indigo-400 text-center' : 'text-center'}>Merchant Details</span>
+              <span className={activeStep >= 3 ? 'text-emerald-400 text-right' : 'text-right'}>Payment & Close</span>
+            </div>
+
             {/* STEP 1: Search & Demo Generator (LIVE TYPEAHEAD AUTOCOMPLETE) */}
             <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3 relative z-30">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Store className="w-4 h-4 text-indigo-400" />
                   Step 1: Search Merchant's Google Business
+                  {selectedPlace && <CheckCircle2 className="w-4 h-4 text-emerald-500 animate-in zoom-in" />}
                 </label>
                 <span className="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-800 flex items-center gap-1">
                   <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
@@ -514,7 +600,7 @@ export default function AgentPosPage() {
 
               <div ref={searchContainerRef} className="relative">
                 <div className="relative flex items-center">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10 pointer-events-none" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 z-10 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -524,19 +610,22 @@ export default function AgentPosPage() {
                     }}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
                     placeholder="Type store name or paste Google Maps share link (maps.app.goo.gl)..."
-                    className="w-full text-xs pl-10 pr-24 py-3 rounded-2xl bg-slate-800/90 border-2 border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-inner"
+                    className="w-full text-sm pl-10 pr-28 py-3.5 rounded-2xl bg-slate-800/90 border-2 border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-inner"
                   />
-                  <div className="absolute right-2.5 top-2 z-10 flex items-center gap-1">
+                  <div className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1.5">
+                    <button type="button" className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-700 transition" title="Paste Google Maps share link here">
+                      <Mic className="w-4 h-4" />
+                    </button>
                     {isSearching ? (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-2 py-1 rounded-xl border border-indigo-800 animate-pulse">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-2 py-1.5 rounded-xl border border-indigo-800 animate-pulse">
                         <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
-                        <span>Searching...</span>
+                        <span>Wait...</span>
                       </span>
                     ) : searchQuery.length >= 2 ? (
                       <button
                         type="button"
                         onClick={handleSearch}
-                        className="px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold shadow-sm transition"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold shadow-sm transition"
                       >
                         Search
                       </button>
@@ -693,6 +782,16 @@ export default function AgentPosPage() {
                       <p className="text-[9px] text-slate-400 max-w-[220px] truncate mt-0.5">
                         📍 {selectedPlace.address}
                       </p>
+                      
+                      {selectedPlace.rating && (
+                        <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-amber-200 to-amber-400 text-amber-900 shadow-md border border-amber-100">
+                          <Star className="w-3.5 h-3.5 fill-amber-900" />
+                          <span className="text-[11px] font-black">{selectedPlace.rating}</span>
+                          <span className="text-[9px] font-bold opacity-80">
+                            ({selectedPlace.reviewCount} reviews)
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* QR Code Inset Box */}
@@ -708,9 +807,20 @@ export default function AgentPosPage() {
                       ① Scan QR &bull; ② Pick AI Compliments &bull; ③ Post in 5 Sec
                     </div>
 
-                    <span className="text-[8px] font-medium text-slate-500">
+                    <span className="text-[8px] font-medium text-slate-500 block mb-3">
                       Flipkart 4"×6" (A6) Portrait Acrylic Standee Fit
                     </span>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPlace(null);
+                        setSearchQuery("");
+                      }}
+                      className="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg transition border border-slate-700"
+                    >
+                      Change Business
+                    </button>
                   </div>
 
                   {/* LIVE AI REVIEWS PITCH DEMO FOR AGENTS */}
@@ -800,6 +910,7 @@ export default function AgentPosPage() {
               <label className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Smartphone className="w-4 h-4 text-indigo-400" />
                 Step 2: Merchant Mobile &amp; 4-Digit Random PIN
+                {merchantPhone.length === 10 && <CheckCircle2 className="w-4 h-4 text-emerald-500 animate-in zoom-in" />}
               </label>
 
               <div className="grid grid-cols-2 gap-2">
@@ -810,10 +921,10 @@ export default function AgentPosPage() {
                   <input
                     type="tel"
                     required
-                    maxLength={10}
-                    value={merchantPhone}
-                    onChange={(e) => setMerchantPhone(e.target.value.replace(/[^0-9]/g, ""))}
-                    placeholder="9876543210"
+                    maxLength={12}
+                    value={formatPhone(merchantPhone)}
+                    onChange={(e) => setMerchantPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+                    placeholder="9876 543 210"
                     className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -831,19 +942,33 @@ export default function AgentPosPage() {
                       <RefreshCw className="w-2.5 h-2.5" /> Roll New
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    required
-                    maxLength={4}
-                    value={merchantPin}
-                    onChange={(e) => setMerchantPin(e.target.value.replace(/[^0-9]/g, ""))}
-                    placeholder="1234"
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400 font-mono font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                  
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      maxLength={4}
+                      value={merchantPin}
+                      onChange={(e) => setMerchantPin(e.target.value.replace(/[^0-9]/g, ""))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-text"
+                    />
+                    <div className="flex gap-1.5 h-[38px]">
+                      {[0, 1, 2, 3].map((index) => (
+                        <div 
+                          key={index} 
+                          className="flex-1 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 font-mono font-bold text-sm pointer-events-none"
+                        >
+                          {merchantPin[index] || ""}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               <p className="text-[10px] text-slate-500">
-                🔐 Random 4-digit PIN is auto-generated. Share it with the merchant once closed.
+                🔐 Random 4-digit PIN is auto-generated.
+                <br />
+                <span className="text-amber-400 font-medium">💡 Tell merchant: This is your 4-digit secret PIN to login to your dashboard</span>
               </p>
 
               <div>
@@ -878,7 +1003,7 @@ export default function AgentPosPage() {
             </div>
 
             {/* STEP 3: Negotiated Amount & Deal Submission */}
-            <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3">
+            <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-4">
               <label className="text-xs font-bold text-white flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -894,15 +1019,22 @@ export default function AgentPosPage() {
                     key={amt}
                     type="button"
                     onClick={() => setNegotiatedPrice(amt)}
-                    className={`py-2 rounded-xl text-xs font-bold border transition ${
+                    className={`py-3 px-1 rounded-xl text-xs font-black border transition-all ${
                       negotiatedPrice === amt
-                        ? "bg-indigo-600 text-white border-indigo-500"
+                        ? "bg-indigo-600 text-white border-indigo-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-indigo-500 scale-105 shadow-lg shadow-indigo-500/20"
                         : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                     }`}
                   >
                     ₹{amt}
                   </button>
                 ))}
+              </div>
+
+              {/* Commission badge */}
+              <div className="flex justify-end -mt-1 mb-2">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                  Your commission: ₹{Math.floor(negotiatedPrice * 0.4).toLocaleString('en-IN')} (40%)
+                </span>
               </div>
 
               {/* Custom Negotiated Amount Input */}
@@ -955,7 +1087,7 @@ export default function AgentPosPage() {
             <button
               type="submit"
               disabled={isSubmittingDeal}
-              className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-indigo-950 transition disabled:opacity-50"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] animate-[shimmer_2s_linear_infinite] hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.4)] ring-2 ring-indigo-500/50 ring-offset-2 ring-offset-slate-950 transition-all disabled:opacity-50"
             >
               {isSubmittingDeal ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
