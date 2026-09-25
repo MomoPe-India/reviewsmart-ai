@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 import { MessageCircle } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {

@@ -104,7 +104,10 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   // Resolved Direct GMB Review URL
   // Takes user directly to the Google Business Profile review composer (5 stars + paste review box)
   const getResolvedGoogleUrl = () => {
-    const placeId = (business.googlePlaceId || "").trim();
+    const placeId =
+      business.slug === "momo-it-technologies"
+        ? "ChIJd5iV_xdzszsR_OIKD3ympJo"
+        : (business.googlePlaceId || "").trim();
     const rawUrl = (business.googleReviewUrl || "").trim();
 
     // 1. Direct Place ID has highest priority for the direct GMB review composer
@@ -124,8 +127,11 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
   };
 
-  // Maps App Fallback URL
+  // Maps App / Official GMB Share Profile Fallback URL
   const getMapsAppUrl = () => {
+    if (business.slug === "momo-it-technologies") {
+      return "https://share.google/TZztrbNbTy89hTgkp";
+    }
     const placeId = (business.googlePlaceId || "").trim();
     if (placeId) {
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;

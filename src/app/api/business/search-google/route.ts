@@ -38,7 +38,9 @@ async function handleSearch(query: string | null) {
     cleanQuery.startsWith("https://") ||
     cleanQuery.includes("maps.app.goo.gl") ||
     cleanQuery.includes("goo.gl/maps") ||
-    cleanQuery.includes("google.com/maps");
+    cleanQuery.includes("google.com/maps") ||
+    cleanQuery.includes("share.google") ||
+    cleanQuery.includes("g.co/");
 
   if (isMapsUrl) {
     try {
@@ -152,9 +154,11 @@ Respond strictly in pure JSON without markdown quotes:
     const momoResult = {
       name: "Momo IT Technologies",
       branchName: "Krishnapuram, Kadapa (HQ)",
-      address: "4/106, Krishnapuram, Kadapa, Andhra Pradesh 516003",
+      address: "4/106, Road, Krishnapuram, Kadapa, Andhra Pradesh 516005",
       category: "Software Development & IT Solutions",
-      googleReviewUrl: "https://www.google.com/maps/search/?api=1&query=Momo+IT+Technologies+Kadapa",
+      googlePlaceId: "ChIJd5iV_xdzszsR_OIKD3ympJo",
+      placeId: "ChIJd5iV_xdzszsR_OIKD3ympJo",
+      googleReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJd5iV_xdzszsR_OIKD3ympJo",
       suggestedTags: [
         "Expert Developers",
         "Robust Software",

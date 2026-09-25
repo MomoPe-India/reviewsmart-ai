@@ -103,12 +103,15 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
 
     // 5. Extract Business Name
     let name = "";
-    const nameQueryMatch = html.match(/[?&](?:amp;)?q=([^&"]+)/);
-    if (nameQueryMatch && nameQueryMatch[1]) {
+    const urlQueryMatch = finalUrl.match(/[?&]q=([^&]+)/);
+    const htmlQueryMatch = html.match(/[?&](?:amp;)?q=([^&"]+)/);
+    const matchedQuery = (urlQueryMatch && urlQueryMatch[1]) || (htmlQueryMatch && htmlQueryMatch[1]);
+
+    if (matchedQuery) {
       try {
-        name = decodeURIComponent(nameQueryMatch[1].replace(/\+/g, " "));
+        name = decodeURIComponent(matchedQuery.replace(/\+/g, " "));
       } catch {
-        name = nameQueryMatch[1].replace(/\+/g, " ");
+        name = matchedQuery.replace(/\+/g, " ");
       }
     }
 
@@ -128,8 +131,8 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
         html.match(/<meta content="([^"]+)" (?:property="og:title"|itemprop="name")/) ||
         html.match(/<title>([^<]+)<\/title>/);
       if (titleMatch) {
-        name = titleMatch[1].replace(/ - Google Maps$/, "").trim();
-        if (name.toLowerCase() === "google maps") name = "";
+        name = titleMatch[1].replace(/ - Google Maps$/, "").replace(/ - Google Search$/, "").trim();
+        if (name.toLowerCase() === "google maps" || name.toLowerCase() === "google") name = "";
       }
     }
 
@@ -144,8 +147,48 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
       lng = parseFloat(coordMatch[2]);
     }
 
+    // 7. Universal Fallback via Google Maps Embed for share.google / g.co/kgs / Search Knowledge Graph links
+    let embedAddress = "";
+    let embedCategory = "";
+    if (!placeId && name) {
+      try {
+        const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(name)}&output=embed`;
+        const embedRes = await fetch(embedUrl, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+          },
+        });
+        const embedHtml = await embedRes.text();
+
+        const embedChijMatch = embedHtml.match(/ChIJ[A-Za-z0-9_-]{20,}/);
+        const embedHexMatch = embedHtml.match(/(0x[0-9a-fA-F]+):(0x[0-9a-fA-F]+)/);
+
+        if (embedChijMatch) {
+          placeId = embedChijMatch[0];
+        } else if (embedHexMatch) {
+          placeId = convertHexPairToPlaceId(embedHexMatch[1], embedHexMatch[2]);
+        }
+
+        if (embedHexMatch && !cid) {
+          try {
+            cid = BigInt(embedHexMatch[2]).toString();
+          } catch {}
+        }
+
+        // Extract full address from embed payload if present
+        const addrMatch = embedHtml.match(new RegExp(`"${placeId ? "" : ""}[^"]*","([^"]+\\d{5,6})"`));
+        if (addrMatch && addrMatch[1]) {
+          embedAddress = addrMatch[1];
+        }
+      } catch (embedErr) {
+        console.error("Maps embed lookup fallback error:", embedErr);
+      }
+    }
+
     const businessName = name || "Verified Google Business";
-    const industry = detectIndustry(businessName);
+    const industry = detectIndustry(businessName, embedCategory);
 
     const googleReviewUrl = placeId
       ? `https://search.google.com/local/writereview?placeid=${placeId}`
@@ -160,8 +203,12 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
       cid,
       lat,
       lng,
-      address: lat && lng ? `Google Verified Location (${lat.toFixed(4)}, ${lng.toFixed(4)})` : "Google Verified Profile",
-      category: industry.label,
+      address:
+        embedAddress ||
+        (lat && lng
+          ? `Google Verified Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`
+          : "Google Verified Profile"),
+      category: embedCategory || industry.label,
       suggestedTags: industry.tags.slice(0, 5),
       googleReviewUrl,
       source: "DIRECT_LINK",
