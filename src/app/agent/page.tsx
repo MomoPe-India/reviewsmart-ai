@@ -34,6 +34,7 @@ import { getAppUrl } from "@/lib/utils";
 
 interface GoogleSearchResult {
   placeId?: string;
+  googlePlaceId?: string;
   name: string;
   branchName?: string;
   address: string;
@@ -75,6 +76,7 @@ export default function AgentPosPage() {
   const [merchantPin, setMerchantPin] = useState(() => Math.floor(1000 + Math.random() * 9000).toString());
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
+  const [customReviewUrl, setCustomReviewUrl] = useState("");
 
   const handleGenerateNewPin = () => {
     setMerchantPin(Math.floor(1000 + Math.random() * 9000).toString());
@@ -218,6 +220,7 @@ export default function AgentPosPage() {
 
   const handleSelectBusiness = (b: GoogleSearchResult) => {
     setSelectedPlace(b);
+    setCustomReviewUrl(b.googleReviewUrl || b.reviewUrl || "");
     setSearchResults([]);
     setIsDropdownOpen(false);
     setSearchQuery(b.name + (b.branchName ? ` - ${b.branchName}` : ""));
@@ -262,14 +265,15 @@ export default function AgentPosPage() {
           merchantName: selectedPlace.name,
           merchantPhone: merchantPhone.trim(),
           merchantPin: merchantPin.trim() || "1234",
-          googlePlaceId: selectedPlace.placeId,
+          googlePlaceId: selectedPlace.placeId || selectedPlace.googlePlaceId || null,
           googleAddress: selectedPlace.address,
           googleReviewUrl:
-            selectedPlace.reviewUrl ||
-            selectedPlace.googleReviewUrl ||
-            (selectedPlace.placeId
-              ? `https://search.google.com/local/writereview?placeid=${selectedPlace.placeId}`
-              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name)}`),
+            customReviewUrl.trim() ||
+            (selectedPlace.placeId || selectedPlace.googlePlaceId
+              ? `https://search.google.com/local/writereview?placeid=${selectedPlace.placeId || selectedPlace.googlePlaceId}`
+              : selectedPlace.reviewUrl ||
+                selectedPlace.googleReviewUrl ||
+                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name)}`),
           logoUrl: selectedPlace.logoUrl || null,
           whatsapp: whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null,
           instagram: instagram ? `https://instagram.com/${instagram.replace("@", "")}` : null,
@@ -519,7 +523,7 @@ export default function AgentPosPage() {
                       if (searchResults.length > 0) setIsDropdownOpen(true);
                     }}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
-                    placeholder="Type store name (e.g. Paradise Biryani, Chai Point)..."
+                    placeholder="Type store name or paste Google Maps share link (maps.app.goo.gl)..."
                     className="w-full text-xs pl-10 pr-24 py-3 rounded-2xl bg-slate-800/90 border-2 border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-inner"
                   />
                   <div className="absolute right-2.5 top-2 z-10 flex items-center gap-1">
@@ -539,6 +543,11 @@ export default function AgentPosPage() {
                     ) : null}
                   </div>
                 </div>
+
+                <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5 px-1">
+                  <span className="text-amber-400 font-bold">⚡ Pro Tip:</span>
+                  Ask merchant to WhatsApp their Google Maps location &mdash; paste the share link (<span className="text-indigo-300 font-mono">maps.app.goo.gl/...</span>) here for 100% instant auto-fill &amp; direct 5-star review modal!
+                </p>
 
                 {/* Floating Live Autocomplete Dropdown */}
                 {isDropdownOpen && (
@@ -836,6 +845,22 @@ export default function AgentPosPage() {
               <p className="text-[10px] text-slate-500">
                 🔐 Random 4-digit PIN is auto-generated. Share it with the merchant once closed.
               </p>
+
+              <div>
+                <label className="block text-[10px] text-slate-400 font-semibold mb-1">
+                  Direct Google Review Link (Optional &mdash; for instant 5-star modal)
+                </label>
+                <input
+                  type="url"
+                  value={customReviewUrl}
+                  onChange={(e) => setCustomReviewUrl(e.target.value)}
+                  placeholder="Paste from Google Maps Share or Ask for reviews"
+                  className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <p className="text-[9px] text-slate-500 mt-1">
+                  💡 Tip: In Google Maps, tap Share &rarr; Copy Link, or use Google Business &ldquo;Ask for reviews&rdquo; link so customers open the 5-star review box directly!
+                </p>
+              </div>
             </div>
 
             {/* STEP 3: Negotiated Amount & Deal Submission */}

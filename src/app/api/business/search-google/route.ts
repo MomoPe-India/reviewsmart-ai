@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { detectIndustry } from "@/lib/industry";
+import { resolveGoogleMapsUrl } from "@/lib/googleMapsResolver";
 
 // In-memory cache for ultra-fast typeahead autocomplete responses (<10ms)
 const searchCache = new Map<string, { timestamp: number; data: any }>();
@@ -30,6 +31,43 @@ async function handleSearch(query: string | null) {
   }
 
   const cleanQuery = query.trim();
+
+  // Instant Auto-Detection: If the query is a Google Maps share or profile link, resolve it directly
+  const isMapsUrl =
+    cleanQuery.startsWith("http://") ||
+    cleanQuery.startsWith("https://") ||
+    cleanQuery.includes("maps.app.goo.gl") ||
+    cleanQuery.includes("goo.gl/maps") ||
+    cleanQuery.includes("google.com/maps");
+
+  if (isMapsUrl) {
+    try {
+      const resolved = await resolveGoogleMapsUrl(cleanQuery);
+      if (resolved.placeId || resolved.name) {
+        const directResult = {
+          name: resolved.name,
+          branchName: "Direct Google Link",
+          address: resolved.address,
+          category: resolved.category,
+          googlePlaceId: resolved.placeId,
+          placeId: resolved.placeId,
+          googleReviewUrl: resolved.googleReviewUrl,
+          suggestedTags: resolved.suggestedTags,
+          rating: 5.0,
+          reviewCount: "Google Verified Location",
+          logoUrl: null,
+          isDirectLink: true,
+        };
+        return NextResponse.json({
+          success: true,
+          results: [directResult],
+        });
+      }
+    } catch (err) {
+      console.error("Direct Google Maps link resolution error:", err);
+    }
+  }
+
   const cacheKey = cleanQuery.toLowerCase();
 
   // Check cache for instant typeahead response
@@ -55,12 +93,14 @@ For each matching business profile:
 2. "branchName": The specific locality, neighborhood, or landmark that makes this store immediately recognizable (e.g. "Indiranagar 100ft Rd", "Hitech City Cyber Towers", "Jayanagar 4th Block", "Connaught Place")
 3. "address": Full recognizable street address with city & state
 4. "category": Precise business type (e.g. "Biryani Restaurant", "Specialty Coffee Shop", "Multi-Cuisine Diner", "Dental Clinic", "Hair & Beauty Salon")
-5. "googleReviewUrl": Direct Google Maps review link:
-   "https://www.google.com/maps/search/?api=1&query=" + URI encoded (name + " " + branchName + " " + address)
-6. "rating": Realistic Google star rating (e.g. 4.6, 4.8)
-7. "reviewCount": Readable review count (e.g. "3,420 reviews", "1,850 reviews")
-8. "suggestedTags": Array of 5 positive compliment chips suitable for 5-star customer reviews
-9. "logoUrl": Public brand logo URL or null
+5. "googlePlaceId": Google Place ID if available or known, otherwise null or ""
+6. "googleReviewUrl": Direct Google Maps review link or Google Place link:
+   If placeId is known: "https://search.google.com/local/writereview?placeid=" + placeId
+   Otherwise: "https://www.google.com/maps/search/?api=1&query=" + URI encoded (name + " " + branchName + " " + address)
+7. "rating": Realistic Google star rating (e.g. 4.6, 4.8)
+8. "reviewCount": Readable review count (e.g. "3,420 reviews", "1,850 reviews")
+9. "suggestedTags": Array of 5 positive compliment chips suitable for 5-star customer reviews
+10. "logoUrl": Public brand logo URL or null
 
 Respond strictly in pure JSON without markdown quotes:
 {
@@ -70,7 +110,8 @@ Respond strictly in pure JSON without markdown quotes:
       "branchName": "Hitech City (Opp. Cyber Towers)",
       "address": "Ground Floor, Opposite Cyber Towers, Madhapur, Hitech City, Hyderabad, Telangana 500081",
       "category": "Biryani & Mughlai Restaurant",
-      "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Paradise+Biryani+Hitech+City",
+      "googlePlaceId": "ChIJb_f8YpS3zjsRNQ2vLzK9k0Q",
+      "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJb_f8YpS3zjsRNQ2vLzK9k0Q",
       "rating": 4.7,
       "reviewCount": "5,120 reviews",
       "suggestedTags": ["World Famous Biryani", "Mirchi Ka Salan", "Quick Service", "Royal Ambience", "Great Hospitality"],

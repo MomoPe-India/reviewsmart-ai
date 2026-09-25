@@ -95,6 +95,7 @@ export default function AdminMerchantsPage() {
     slug: "",
     category: "",
     tagline: "",
+    googlePlaceId: "",
     googleReviewUrl: "",
     googleAddress: "",
     whatsapp: "",
@@ -207,6 +208,7 @@ export default function AdminMerchantsPage() {
       slug: b.slug || "",
       category: b.category || "",
       tagline: b.tagline || "",
+      googlePlaceId: b.googlePlaceId || "",
       googleReviewUrl: b.googleReviewUrl || "",
       googleAddress: b.googleAddress || "",
       whatsapp: b.whatsapp || m.phone || "",
@@ -1025,18 +1027,35 @@ export default function AdminMerchantsPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-                      Google Review Direct Target URL
-                    </label>
-                    <input
-                      type="url"
-                      value={editForm.googleReviewUrl}
-                      onChange={(e) => setEditForm({ ...editForm, googleReviewUrl: e.target.value })}
-                      placeholder="https://search.google.com/local/writereview?placeid=..."
-                      className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Google Place ID (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.googlePlaceId}
+                        onChange={(e) => setEditForm({ ...editForm, googlePlaceId: e.target.value })}
+                        placeholder="ChIJ... or placeid"
+                        className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Google Review Direct URL
+                      </label>
+                      <input
+                        type="url"
+                        value={editForm.googleReviewUrl}
+                        onChange={(e) => setEditForm({ ...editForm, googleReviewUrl: e.target.value })}
+                        placeholder="https://search.google.com/local/writereview?placeid=..."
+                        className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
                   </div>
+                  <p className="text-[10px] text-amber-400/90 -mt-2">
+                    ⭐ For the direct 5-star review modal, use Google Business &ldquo;Ask for reviews&rdquo; link, Google Maps Share link, or https://search.google.com/local/writereview?placeid=...
+                  </p>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>

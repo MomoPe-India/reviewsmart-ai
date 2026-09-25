@@ -95,12 +95,42 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const tagsList =
     rawTags.length > 0 && !isGenericRestaurantChips ? rawTags : industry.tags;
 
-  // Resolved Google URL
-  const googleUrl =
-    business.googleReviewUrl ||
-    (business.googlePlaceId
-      ? `https://search.google.com/local/writereview?placeid=${business.googlePlaceId}`
-      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`);
+  // Resolved Google URL with smart priority for direct review modal
+  const getResolvedGoogleUrl = () => {
+    // 1. Direct Place ID has highest priority for instant review composer
+    if (business.googlePlaceId && business.googlePlaceId.trim()) {
+      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(business.googlePlaceId.trim())}`;
+    }
+
+    const rawUrl = (business.googleReviewUrl || "").trim();
+
+    if (rawUrl) {
+      // 2. If URL contains placeid parameter, normalize to direct writereview URL
+      const match = rawUrl.match(/[?&]place(?:_)?id=([^&#]+)/i);
+      if (match && match[1]) {
+        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
+      }
+
+      // 3. Official Google direct review links: g.page shortlinks or writereview
+      if (
+        rawUrl.includes("search.google.com/local/writereview") ||
+        rawUrl.includes("g.page/") ||
+        rawUrl.includes("/review")
+      ) {
+        return rawUrl;
+      }
+
+      // 4. Any direct Google Maps link that is not just a generic search query
+      if (!rawUrl.includes("/maps/search")) {
+        return rawUrl;
+      }
+    }
+
+    // 5. Fallback: Search link if no direct link exists
+    return rawUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
+  };
+
+  const googleUrl = getResolvedGoogleUrl();
 
   // Track page view once
   useEffect(() => {
