@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import {
   Star,
@@ -189,7 +189,23 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     ];
   };
 
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const handleRatingClick = (star: number) => {
+    // For 4 or 5 stars, instantly build and auto-copy the review draft on this very tap!
+    if (star >= business.minRatingForGoogle) {
+      const currentDrafts = reviewOptions.length > 0 ? reviewOptions : buildInstantDrafts([]);
+      const activeDraft = currentDrafts.find((r) => r.id === selectedOptionId) || currentDrafts[0];
+      if (activeDraft) {
+        copyToClipboard(activeDraft.text);
+      }
+      if (reviewOptions.length === 0) {
+        setReviewOptions(currentDrafts);
+        setSelectedOptionId(1);
+      }
+    }
+
     setRating(star);
 
     // Track rating selection
@@ -203,24 +219,18 @@ export default function ReviewExperience({ business }: { business: BusinessData 
         rating: star,
       }),
     }).catch(() => {});
-
-    // For 4 or 5 stars, instantly show industry-tailored 5-star drafts
-    if (star >= business.minRatingForGoogle) {
-      if (reviewOptions.length === 0) {
-        const instant = buildInstantDrafts([]);
-        setReviewOptions(instant);
-        setSelectedOptionId(1);
-      }
-    }
   };
 
   const toggleTag = (tag: string) => {
     const next = selectedTags.includes(tag)
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
-    setSelectedTags(next);
-    // Instantly update drafts with new tags
     const updated = buildInstantDrafts(next, customNote);
+    const activeDraft = updated.find((r) => r.id === selectedOptionId) || updated[0];
+    if (activeDraft) {
+      copyToClipboard(activeDraft.text);
+    }
+    setSelectedTags(next);
     setReviewOptions(updated);
   };
 
@@ -304,34 +314,88 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     }
   };
 
-  // Trigger Wow Modal & Copy
-  const handleOpenCopyModal = async (customText?: string) => {
-    const selected = reviewOptions.find((r) => r.id === selectedOptionId) || reviewOptions[0];
+  // Trigger Wow Modal, Copy to Clipboard, & Auto-Redirect to Google
+  const handleOpenCopyModal = async (customText?: string, optId?: number) => {
+    const selected = reviewOptions.find((r) => r.id === (optId ?? selectedOptionId)) || reviewOptions[0];
     const textToCopy =
       customText || (selected ? selected.text : "Great experience at " + business.name + "! Highly recommended.");
 
-    // Run multi-layer universal copy FIRST so synchronous iOS selection executes immediately
-    const copyPromise = copyToClipboard(textToCopy);
+    // CRITICAL FOR iOS SAFARI: Execute native clipboard write FIRST before any state/DOM updates!
+    await copyToClipboard(textToCopy);
 
+    if (optId !== undefined) {
+      setSelectedOptionId(optId);
+    }
     setModalCopiedText(textToCopy);
     setShowCopyModal(true);
     setCopied(true);
+    setIsRedirecting(true);
     setTimeout(() => setCopied(false), 3000);
-
-    await copyPromise;
 
     // Celebratory Confetti
     try {
       confetti({
-        particleCount: 100,
+        particleCount: 90,
         spread: 70,
         origin: { y: 0.6 },
         colors: ["#f59e0b", "#4f46e5", "#10b981", "#3b82f6", "#ec4899"],
       });
     } catch {}
+
+    // Track Google redirect
+    fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        slug: business.slug,
+        businessId: business.id,
+        eventType: "GOOGLE_REDIRECT",
+        rating: 5,
+      }),
+    }).catch(() => {});
+
+    // Automatically open Google Review page after 900ms (gives iOS UIPasteboard full time to commit)
+    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    redirectTimerRef.current = setTimeout(() => {
+      window.location.href = googleUrl;
+    }, 900);
+  };
+
+  const handleCopyAndRedirect = async (targetUrl: string) => {
+    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    setIsRedirecting(true);
+
+    // Ensure clipboard write completes 100% BEFORE page navigation starts
+    await copyToClipboard(modalCopiedText);
+
+    fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        slug: business.slug,
+        businessId: business.id,
+        eventType: "GOOGLE_REDIRECT",
+        rating: 5,
+      }),
+    }).catch(() => {});
+
+    // 120ms buffer so iOS pasteboardd commits across WebContent -> UIProcess before navigation
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 120);
+  };
+
+  const handleCloseCopyModal = () => {
+    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    setIsRedirecting(false);
+    setShowCopyModal(false);
   };
 
   const handleReCopyInModal = async () => {
+    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    setIsRedirecting(false);
     await copyToClipboard(modalCopiedText);
     setModalReCopied(true);
     setTimeout(() => setModalReCopied(false), 2000);
@@ -726,8 +790,8 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                     <div
                       key={opt.id}
                       onClick={() => {
-                        setSelectedOptionId(opt.id);
                         copyToClipboard(opt.text);
+                        setSelectedOptionId(opt.id);
                       }}
                       className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                         isSelected
@@ -772,8 +836,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedOptionId(opt.id);
-                            handleOpenCopyModal(opt.text);
+                            handleOpenCopyModal(opt.text, opt.id);
                           }}
                           className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow transition active:scale-95"
                         >
@@ -800,7 +863,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 <ExternalLink className="w-4 h-4" />
               </button>
               <p className="text-[11px] text-center text-slate-400 font-medium mt-2">
-                ⚡ 1 Tap copies review and opens Google Maps write-review dialog!
+                ⚡ 1 Tap automatically copies review &amp; opens Google review composer!
               </p>
             </div>
           </div>
@@ -820,7 +883,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             {/* Close Button */}
             <button
               type="button"
-              onClick={() => setShowCopyModal(false)}
+              onClick={handleCloseCopyModal}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition"
             >
               <X className="w-4 h-4" />
@@ -834,8 +897,15 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             <h3 className="text-xl font-black text-white tracking-tight">
               Review Copied! 🎉
             </h3>
-            <p className="text-xs text-amber-300 font-semibold mt-0.5">
-              Step 1 of 2 Complete!
+            <p className="text-xs text-emerald-400 font-bold mt-0.5 flex items-center justify-center gap-1.5">
+              {isRedirecting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Opening Google Review Page Automatically...</span>
+                </>
+              ) : (
+                <span>Ready to Paste on Google!</span>
+              )}
             </p>
 
             {/* Copied Review Snippet Box (Tap anywhere on box to re-copy) */}
@@ -888,7 +958,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   2
                 </div>
                 <p className="text-slate-200">
-                  Tap below → <strong className="text-white">Google review screen opens</strong>.
+                  <strong className="text-white">Google review screen</strong> opens automatically.
                 </p>
               </div>
               <div className="flex items-start gap-2.5 text-xs">
@@ -908,24 +978,10 @@ export default function ReviewExperience({ business }: { business: BusinessData 
               </div>
             </div>
 
-            {/* High-Contrast Direct GMB Review CTA Button */}
-            <a
-              href={googleUrl}
-              onClick={() => {
-                // Guarantee fresh synchronous copy to iOS UIPasteboard & Android clipboard right on button click
-                copyToClipboard(modalCopiedText);
-
-                fetch("/api/analytics/track", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    slug: business.slug,
-                    businessId: business.id,
-                    eventType: "GOOGLE_REDIRECT",
-                    rating: 5,
-                  }),
-                }).catch(() => {});
-              }}
+            {/* High-Contrast Direct GMB Review CTA Button (Awaits Clipboard Flush Before Navigating) */}
+            <button
+              type="button"
+              onClick={() => handleCopyAndRedirect(googleUrl)}
               className="w-full py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition transform active:scale-98"
             >
               {/* Google G Logo */}
@@ -937,24 +993,22 @@ export default function ReviewExperience({ business }: { business: BusinessData 
               </svg>
               <span>Open GMB &amp; Paste Review</span>
               <ExternalLink className="w-4 h-4 text-slate-500" />
-            </a>
+            </button>
 
             {/* Google Maps App Option */}
             {mapsAppUrl && (
-              <a
-                href={mapsAppUrl}
-                onClick={() => {
-                  copyToClipboard(modalCopiedText);
-                }}
-                className="mt-2.5 text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center justify-center gap-1"
+              <button
+                type="button"
+                onClick={() => handleCopyAndRedirect(mapsAppUrl)}
+                className="w-full mt-2.5 text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center justify-center gap-1"
               >
                 <span>Or open in Google Maps App &rarr;</span>
-              </a>
+              </button>
             )}
 
             <button
               type="button"
-              onClick={() => setShowCopyModal(false)}
+              onClick={handleCloseCopyModal}
               className="mt-3 text-xs text-slate-400 hover:text-slate-200 transition font-medium"
             >
               Done / Close

@@ -1,106 +1,98 @@
 /**
- * Universal, Multi-Layer Clipboard Copy Utility
- * 
- * Specifically engineered for 100% reliability on:
- * - iPhone & iPad (iOS Safari, Mobile Safari, Chrome iOS)
- * - In-App WebViews on iOS (Camera QR scanner preview, WhatsApp, Instagram, Telegram)
- * - Android (Chrome, Samsung Internet, Firefox)
- * - Desktop browsers (Safari, Chrome, Firefox, Edge)
+ * Universal Clipboard Copy Engine (iOS Safari, iOS WebViews, Android & Desktop)
+ *
+ * CRITICAL FOR iPHONE / iOS SAFARI:
+ * 1. `navigator.clipboard.writeText(text)` MUST be called as the VERY FIRST operation
+ *    inside a user tap gesture BEFORE any DOM mutations or `execCommand` calls.
+ *    Running `execCommand` first consumes WebKit's transient UserGestureIndicator token
+ *    and causes `navigator.clipboard` to fail on iOS Safari.
+ * 2. Only if `navigator.clipboard.writeText` throws (e.g. non-HTTPS local IP or legacy WebView)
+ *    do we fall back to `ClipboardItem` or synchronous `<textarea>` selection.
  */
 
 export async function copyToClipboard(text: string): Promise<boolean> {
   if (!text) return false;
 
-  let copied = false;
+  // ── 1. PRIMARY: Native WebKit / Blink Async Clipboard API (writeText) ──
+  // Works natively on iOS 13.4–18+ Safari, Chrome iOS, and Android Chrome when called first.
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
+  ) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      console.warn("Primary navigator.clipboard.writeText failed, trying fallbacks:", err);
+    }
+  }
 
-  // ── LAYER 1: Synchronous DOM Range selection on an unstyled SPAN ──
-  // This is the most reliable method for iOS Safari and iOS WebViews because:
-  // 1. It runs synchronously within the user's tap gesture frame (never expires).
-  // 2. It does NOT focus a textarea or input, so the iOS virtual keyboard NEVER pops up.
-  // 3. It prevents iOS viewport zoom and scrolling jumps.
+  // ── 2. SECONDARY: Apple WebKit ClipboardItem with Promise<Blob> ──
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.write === "function" &&
+    typeof ClipboardItem !== "undefined"
+  ) {
+    try {
+      const item = new ClipboardItem({
+        "text/plain": Promise.resolve(new Blob([text], { type: "text/plain" })),
+      });
+      await navigator.clipboard.write([item]);
+      return true;
+    } catch (err) {
+      console.warn("Secondary ClipboardItem write failed:", err);
+    }
+  }
+
+  // ── 3. FALLBACK: Classic iOS / Android <textarea> setSelectionRange + execCommand ──
   try {
-    const span = document.createElement("span");
-    span.textContent = text;
-    span.setAttribute("aria-hidden", "true");
-    span.style.all = "unset";
-    span.style.position = "fixed";
-    span.style.top = "0";
-    span.style.left = "0";
-    span.style.clip = "rect(0, 0, 0, 0)";
-    span.style.whiteSpace = "pre";
-    span.style.webkitUserSelect = "text";
-    span.style.userSelect = "text";
-    span.style.opacity = "0.001";
-    span.style.pointerEvents = "none";
-    document.body.appendChild(span);
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Prevent iOS auto-zoom (font-size >= 16px) and prevent viewport scroll jump
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    textArea.style.fontSize = "16px";
+    textArea.style.opacity = "0.01";
+    textArea.style.zIndex = "-1";
+
+    textArea.contentEditable = "true";
+    textArea.readOnly = false;
+
+    document.body.appendChild(textArea);
+
+    textArea.focus({ preventScroll: true });
+    textArea.select();
+    textArea.setSelectionRange(0, 999999);
+
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      ok = false;
+    }
+
+    textArea.blur();
+    document.body.removeChild(textArea);
 
     const selection = window.getSelection();
     if (selection) {
-      const range = document.createRange();
-      range.selectNodeContents(span);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      try {
-        copied = document.execCommand("copy");
-      } catch {
-        // May fail in rare restricted security contexts
-      }
       selection.removeAllRanges();
     }
-    document.body.removeChild(span);
+
+    return ok;
   } catch (err) {
-    console.warn("Layer 1 Range copy error:", err);
+    console.warn("Fallback textarea copy error:", err);
+    return false;
   }
-
-  // ── LAYER 2: Synchronous TEXTAREA setSelectionRange (iOS / WebKit secondary) ──
-  if (!copied) {
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.setAttribute("readonly", "");
-      textArea.contentEditable = "true";
-      textArea.style.position = "fixed";
-      textArea.style.top = "-9999px";
-      textArea.style.left = "-9999px";
-      textArea.style.fontSize = "16pt"; // Prevents iOS Safari auto-zoom
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-
-      textArea.focus({ preventScroll: true });
-      textArea.select();
-      textArea.setSelectionRange(0, text.length);
-
-      try {
-        copied = document.execCommand("copy");
-      } catch {}
-
-      textArea.blur();
-      document.body.removeChild(textArea);
-    } catch (err) {
-      console.warn("Layer 2 Textarea copy error:", err);
-    }
-  }
-
-  // ── LAYER 3: Modern Async Clipboard API (ClipboardItem & writeText) ──
-  // Always trigger modern API so UIPasteboard on modern iOS (13.4 - 18+)
-  // and modern Android/Desktop browsers are updated through the system pasteboard API.
-  if (typeof navigator !== "undefined" && navigator.clipboard) {
-    try {
-      if (typeof ClipboardItem !== "undefined" && navigator.clipboard.write) {
-        const item = new ClipboardItem({
-          "text/plain": new Blob([text], { type: "text/plain" }),
-        });
-        await navigator.clipboard.write([item]);
-        copied = true;
-      } else if (navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(text);
-        copied = true;
-      }
-    } catch (asyncErr) {
-      // Async failure is non-fatal if Layer 1 or 2 already succeeded!
-      console.warn("Layer 3 Async clipboard write error:", asyncErr);
-    }
-  }
-
-  return copied;
 }
