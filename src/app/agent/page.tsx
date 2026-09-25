@@ -30,6 +30,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import QRCode from "qrcode";
+import { getAppUrl } from "@/lib/utils";
 
 interface GoogleSearchResult {
   placeId?: string;
@@ -457,7 +458,8 @@ export default function AgentPosPage() {
               <button
                 type="button"
                 onClick={() => {
-                  const msg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login Link: https://reviewsmart-ai.com/login\n👤 User ID: ${createdDeal.merchantUserId}\n🔑 PIN: ${createdDeal.merchantPin}\n\nLive Review URL: https://reviewsmart-ai.com/r/${createdDeal.businessSlug}`;
+                  const base = getAppUrl();
+                  const msg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login Link: ${base}/login\n👤 User ID: ${createdDeal.merchantUserId}\n🔑 PIN: ${createdDeal.merchantPin}\n\nLive Review URL: ${base}/r/${createdDeal.businessSlug}`;
                   window.open(
                     `https://wa.me/91${createdDeal.merchantUserId}?text=${encodeURIComponent(msg)}`,
                     "_blank"

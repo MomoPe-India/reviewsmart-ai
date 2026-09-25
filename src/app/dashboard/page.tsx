@@ -104,7 +104,7 @@ export default async function DashboardOverviewPage({
       `🏪 Store Name: ${business.name}\n` +
       `👤 Owner: ${merchantOwnerName}\n` +
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
-      `🔗 Review Link: https://reviewsmart.in/r/${business.slug}\n` +
+      `🔗 Review Link: ${reviewUrl}\n` +
       `💼 Channel: ${channelBadge}\n\n` +
       `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`
   );

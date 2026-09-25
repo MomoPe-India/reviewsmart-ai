@@ -32,6 +32,7 @@ import {
   MessageCircle,
   Printer,
 } from "lucide-react";
+import { getAppUrl } from "@/lib/utils";
 
 interface BusinessData {
   id: string;
@@ -263,7 +264,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
     `Hi ReviewSmart AI Support, I am requesting activation for my ReviewSmart AI Card.\n\n` +
       `🏪 Store Name: ${form.name || business.name}\n` +
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
-      `🔗 Review Link: https://reviewsmart.in/r/${form.slug || business.slug}\n` +
+      `🔗 Review Link: ${getAppUrl()}/r/${form.slug || business.slug}\n` +
       `💼 Channel: ${channelBadge}\n\n` +
       `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`
   );

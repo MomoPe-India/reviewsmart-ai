@@ -27,6 +27,7 @@ import {
   Save,
   MapPin,
 } from "lucide-react";
+import { getAppUrl } from "@/lib/utils";
 
 interface BusinessItem {
   id: string;
@@ -374,7 +375,8 @@ export default function AdminMerchantsPage() {
   const buildWhatsAppShareUrl = (name: string, phone: string, pin: string, slug?: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
     const waNumber = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-    const msg = `Hello ${name}! 👋\nWelcome to ReviewSmart AI!\n\nHere are your store login credentials:\n📱 Login: https://reviewsmart-ai.com/login\n👤 User ID (Mobile): ${cleanPhone}\n🔑 4-Digit Security PIN: ${pin}${slug ? `\n\n🌟 Your Review Card: https://reviewsmart-ai.com/r/${slug}` : ""}\n\nLog in to customize your digital review card and protect your store ratings.`;
+    const base = getAppUrl();
+    const msg = `Hello ${name}! 👋\nWelcome to ReviewSmart AI!\n\nHere are your store login credentials:\n📱 Login: ${base}/login\n👤 User ID (Mobile): ${cleanPhone}\n🔑 4-Digit Security PIN: ${pin}${slug ? `\n\n🌟 Your Review Card: ${base}/r/${slug}` : ""}\n\nLog in to customize your digital review card and protect your store ratings.`;
     return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
   };
 
