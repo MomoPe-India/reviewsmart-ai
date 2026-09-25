@@ -78,6 +78,11 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const [modalCopiedText, setModalCopiedText] = useState("");
   const [modalReCopied, setModalReCopied] = useState(false);
 
+  const googleLinkRef = useRef<HTMLAnchorElement>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const [modalCountdown, setModalCountdown] = useState<number>(0);
+  const reviewSectionRef = useRef<HTMLDivElement>(null);
+
   // Detect Industry Intelligence
   const industry = detectIndustry(business.name, business.category || "", business.tagline || "");
 
@@ -192,18 +197,22 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const handleRatingClick = (star: number) => {
+  const handleRatingClick = async (star: number) => {
     // For 4 or 5 stars, instantly build and auto-copy the review draft on this very tap!
     if (star >= business.minRatingForGoogle) {
       const currentDrafts = reviewOptions.length > 0 ? reviewOptions : buildInstantDrafts([]);
       const activeDraft = currentDrafts.find((r) => r.id === selectedOptionId) || currentDrafts[0];
       if (activeDraft) {
-        copyToClipboard(activeDraft.text);
+        await copyToClipboard(activeDraft.text);
       }
       if (reviewOptions.length === 0) {
         setReviewOptions(currentDrafts);
         setSelectedOptionId(1);
       }
+      // Auto-scroll to review section after 200ms
+      setTimeout(() => {
+        reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
     }
 
     setRating(star);
@@ -355,15 +364,24 @@ export default function ReviewExperience({ business }: { business: BusinessData 
       }),
     }).catch(() => {});
 
-    // Automatically open Google Review page after 900ms (gives iOS UIPasteboard full time to commit)
-    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
-    redirectTimerRef.current = setTimeout(() => {
-      window.location.href = googleUrl;
-    }, 900);
+    // START 3-2-1 COUNTDOWN (click the hidden anchor at 0 — works on iOS!)
+    if (countdownRef.current) clearTimeout(countdownRef.current);
+    setModalCountdown(3);
+    countdownRef.current = setTimeout(() => {
+      setModalCountdown(2);
+      countdownRef.current = setTimeout(() => {
+        setModalCountdown(1);
+        countdownRef.current = setTimeout(() => {
+          setModalCountdown(0);
+          // Programmatic anchor click — allowed by iOS Safari even from setTimeout!
+          googleLinkRef.current?.click();
+        }, 1000);
+      }, 1000);
+    }, 1000);
   };
 
   const handleCopyAndRedirect = async (targetUrl: string) => {
-    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    if (countdownRef.current) clearTimeout(countdownRef.current);
     setIsRedirecting(true);
 
     // Ensure clipboard write completes 100% BEFORE page navigation starts
@@ -381,20 +399,19 @@ export default function ReviewExperience({ business }: { business: BusinessData 
       }),
     }).catch(() => {});
 
-    // 120ms buffer so iOS pasteboardd commits across WebContent -> UIProcess before navigation
-    setTimeout(() => {
-      window.location.href = targetUrl;
-    }, 120);
+    // Use window.open with _self — more reliable than window.location.href on some iOS WebViews
+    window.open(targetUrl, '_self');
   };
 
   const handleCloseCopyModal = () => {
-    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    if (countdownRef.current) clearTimeout(countdownRef.current);
     setIsRedirecting(false);
+    setModalCountdown(0);
     setShowCopyModal(false);
   };
 
   const handleReCopyInModal = async () => {
-    if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    if (countdownRef.current) clearTimeout(countdownRef.current);
     setIsRedirecting(false);
     await copyToClipboard(modalCopiedText);
     setModalReCopied(true);
@@ -705,7 +722,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
 
         {/* ─── 4-5 STARS: AI REVIEW FLOW ───────────────────────────────────── */}
         {isPositive && (
-          <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-amber-400/30 shadow-2xl animate-fadeIn space-y-4">
+          <div ref={reviewSectionRef} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-amber-400/30 shadow-2xl animate-fadeIn space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
@@ -870,6 +887,17 @@ export default function ReviewExperience({ business }: { business: BusinessData 
         )}
       </div>
 
+      {/* Hidden anchor for iOS-safe programmatic navigation */}
+      <a
+        ref={googleLinkRef}
+        href={googleUrl}
+        className="sr-only"
+        aria-hidden
+        tabIndex={-1}
+      >
+        Open Google
+      </a>
+
       {/* ─── FOOTER BRANDING ──────────────────────────────────────────────── */}
       <div className="mt-8 text-center text-xs text-slate-500 flex items-center justify-center gap-1 relative z-10">
         Powered by <span className="font-bold text-slate-300">ReviewSmart AI</span>
@@ -958,7 +986,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   2
                 </div>
                 <p className="text-slate-200">
-                  <strong className="text-white">Google review screen</strong> opens automatically.
+                  <strong className="text-white">Tap the button above</strong> to open Google review screen
                 </p>
               </div>
               <div className="flex items-start gap-2.5 text-xs">
@@ -967,7 +995,7 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 </div>
                 <div className="space-y-1">
                   <p className="text-slate-200">
-                    Tap <strong className="text-amber-300">★★★★★</strong>, paste &amp; post!
+                    In Google: tap the review text box &rarr; tap &ldquo;Paste&rdquo; &rarr; tap Post
                   </p>
                   {isIOS && (
                     <p className="text-[11px] text-amber-300/95 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2 py-1 leading-snug">
@@ -978,11 +1006,16 @@ export default function ReviewExperience({ business }: { business: BusinessData 
               </div>
             </div>
 
-            {/* High-Contrast Direct GMB Review CTA Button (Awaits Clipboard Flush Before Navigating) */}
-            <button
-              type="button"
-              onClick={() => handleCopyAndRedirect(googleUrl)}
-              className="w-full py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition transform active:scale-98"
+            {/* Main CTA — use <a> tag so iOS Safari treats it as direct user navigation */}
+            <a
+              href={googleUrl}
+              onClick={async (e) => {
+                e.preventDefault();
+                if (countdownRef.current) clearTimeout(countdownRef.current);
+                await copyToClipboard(modalCopiedText);
+                window.open(googleUrl, '_self');
+              }}
+              className="w-full py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition transform active:scale-98 cursor-pointer"
             >
               {/* Google G Logo */}
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
@@ -991,9 +1024,13 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                 <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
               </svg>
-              <span>Open GMB &amp; Paste Review</span>
+              <span>
+                {modalCountdown > 0
+                  ? `Opening Google in ${modalCountdown}...`
+                  : 'Tap Here → Open Google & Paste Review'}
+              </span>
               <ExternalLink className="w-4 h-4 text-slate-500" />
-            </button>
+            </a>
 
             {/* Google Maps App Option */}
             {mapsAppUrl && (

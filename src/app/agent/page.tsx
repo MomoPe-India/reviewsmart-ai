@@ -854,6 +854,20 @@ export default function AgentPosPage() {
                   type="url"
                   value={customReviewUrl}
                   onChange={(e) => setCustomReviewUrl(e.target.value)}
+                  onBlur={async () => {
+                    const val = customReviewUrl.trim();
+                    if (val && (val.includes("maps.app.goo.gl") || val.includes("share.google") || val.includes("g.co/") || val.includes("goo.gl/"))) {
+                      try {
+                        const res = await fetch(`/api/business/search-google?query=${encodeURIComponent(val)}`);
+                        const data = await res.json();
+                        if (data.results && data.results[0]?.googleReviewUrl) {
+                          setCustomReviewUrl(data.results[0].googleReviewUrl);
+                        }
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }
+                  }}
                   placeholder="Paste from Google Maps Share or Ask for reviews"
                   className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
