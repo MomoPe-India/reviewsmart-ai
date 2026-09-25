@@ -3,6 +3,8 @@ import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 // ─── GET: List all merchants with complete details ────────────────────────────
 export async function GET() {
   try {
@@ -359,14 +361,68 @@ export async function DELETE(req: NextRequest) {
     });
     if (!merchant) return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
 
-    await prisma.user.delete({ where: { id: merchantId } });
+    // Explicit cascaded deletion in a transaction to prevent any foreign key constraint violations
+    await prisma.$transaction(async (tx) => {
+      // 1. Find all businesses belonging to the merchant
+      const businesses = await tx.business.findMany({
+        where: { userId: merchantId },
+        select: { id: true },
+      });
+      const businessIds = businesses.map((b) => b.id);
+
+      if (businessIds.length > 0) {
+        // 2. Delete analytics
+        await tx.reviewAnalytics.deleteMany({
+          where: { businessId: { in: businessIds } },
+        });
+
+        // 3. Delete private feedbacks
+        await tx.privateFeedback.deleteMany({
+          where: { businessId: { in: businessIds } },
+        });
+
+        // 4. Delete payments linked to these businesses
+        await tx.upiPayment.deleteMany({
+          where: { businessId: { in: businessIds } },
+        });
+      }
+
+      // 5. Delete any payments linked directly to this user
+      await tx.upiPayment.deleteMany({
+        where: { userId: merchantId },
+      });
+
+      // 6. Delete subscriptions for this user
+      await tx.userSubscription.deleteMany({
+        where: { userId: merchantId },
+      });
+
+      // 7. Delete businesses
+      await tx.business.deleteMany({
+        where: { userId: merchantId },
+      });
+
+      // 8. Nullify referredBy on any other user
+      await tx.user.updateMany({
+        where: { referredBy: merchantId },
+        data: { referredBy: null },
+      });
+
+      // 9. Finally delete the user record
+      await tx.user.delete({
+        where: { id: merchantId },
+      });
+    });
 
     return NextResponse.json({
       success: true,
       message: `${merchant.name || "Merchant"} and all associated data have been permanently deleted.`,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Delete merchant error:", error);
-    return NextResponse.json({ error: "Failed to delete merchant." }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || "Failed to delete merchant." },
+      { status: 500 }
+    );
   }
 }

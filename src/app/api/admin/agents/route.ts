@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // ─── GET: List all marketing agents with stats ──────────────────────────────
 export async function GET() {
   try {
@@ -312,15 +314,59 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "User is not a marketing agent." }, { status: 400 });
     }
 
-    // Delete agent record
-    await prisma.user.delete({ where: { id: agentId } });
+    // Safely delete agent in transaction: unlink payments and referrals to preserve financial stats
+    await prisma.$transaction(async (tx) => {
+      // 1. Unlink agentId in upiPayment (deal financial history is preserved, but unlinked from agent)
+      await tx.upiPayment.updateMany({
+        where: { agentId },
+        data: { agentId: null },
+      });
+
+      // 2. Unlink referredBy on merchants
+      await tx.user.updateMany({
+        where: { referredBy: agentId },
+        data: { referredBy: null },
+      });
+
+      // 3. Clean up any businesses/subscriptions directly owned by the agent user if any exist
+      const businesses = await tx.business.findMany({
+        where: { userId: agentId },
+        select: { id: true },
+      });
+      const businessIds = businesses.map((b) => b.id);
+      if (businessIds.length > 0) {
+        await tx.reviewAnalytics.deleteMany({
+          where: { businessId: { in: businessIds } },
+        });
+        await tx.privateFeedback.deleteMany({
+          where: { businessId: { in: businessIds } },
+        });
+        await tx.business.deleteMany({
+          where: { userId: agentId },
+        });
+      }
+
+      await tx.userSubscription.deleteMany({
+        where: { userId: agentId },
+      });
+
+      await tx.upiPayment.deleteMany({
+        where: { userId: agentId },
+      });
+
+      // 4. Finally delete the agent user record
+      await tx.user.delete({ where: { id: agentId } });
+    });
 
     return NextResponse.json({
       success: true,
       message: `Agent ${agent.name || "Representative"} has been deleted successfully.`,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Delete agent error:", error);
-    return NextResponse.json({ error: "Failed to delete agent." }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || "Failed to delete agent." },
+      { status: 500 }
+    );
   }
 }

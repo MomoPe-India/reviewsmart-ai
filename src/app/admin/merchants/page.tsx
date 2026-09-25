@@ -161,14 +161,20 @@ export default function AdminMerchantsPage() {
           customerType: createType,
         }),
       });
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        setCreateError(data.error || "Failed to create merchant.");
+        setCreateError(data?.error || `Failed to create merchant (Server status: ${res.status}).`);
         return;
       }
       setCreatedResult({
         pin: data.pin,
-        userId: data.merchant.userIdTag || data.phone,
+        userId: data.merchant?.userIdTag || data.phone,
         name: createName,
         phone: data.phone,
         slug: data.slug,
@@ -178,8 +184,8 @@ export default function AdminMerchantsPage() {
       setCreateBusinessName("");
       setCreateCategory("");
       fetchMerchants();
-    } catch {
-      setCreateError("Network error. Please try again.");
+    } catch (err: any) {
+      setCreateError(err?.message || "Network error. Please try again.");
     } finally {
       setCreating(false);
     }
@@ -226,9 +232,15 @@ export default function AdminMerchantsPage() {
         }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        setEditError(data.error || "Failed to update merchant.");
+        setEditError(data?.error || `Failed to update merchant (Server status: ${res.status}).`);
         return;
       }
 
@@ -267,8 +279,8 @@ export default function AdminMerchantsPage() {
       );
 
       setEditingMerchant(null);
-    } catch {
-      setEditError("Failed to update merchant. Check your connection.");
+    } catch (err: any) {
+      setEditError(err?.message || "Failed to update merchant. Check your connection.");
     } finally {
       setSavingEdit(false);
     }
@@ -286,15 +298,37 @@ export default function AdminMerchantsPage() {
         body: JSON.stringify({ merchantId: deletingMerchant.id }),
       });
 
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (res.ok) {
         setMerchants((prev) => prev.filter((m) => m.id !== deletingMerchant.id));
         setDeletingMerchant(null);
       } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete merchant.");
+        alert(data?.error || `Failed to delete merchant (Server status: ${res.status}).`);
       }
-    } catch {
-      alert("Network error while deleting merchant.");
+    } catch (err: any) {
+      console.error("Delete merchant error:", err);
+      // Auto-recheck if the merchant was actually deleted on the server before alerting
+      try {
+        const verifyRes = await fetch("/api/admin/merchants");
+        const verifyData = await verifyRes.json();
+        if (verifyRes.ok && verifyData.merchants) {
+          const stillExists = verifyData.merchants.some((m: any) => m.id === deletingMerchant.id);
+          if (!stillExists) {
+            setMerchants(verifyData.merchants);
+            setDeletingMerchant(null);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      alert(err?.message || "Network error while deleting merchant. Please check your internet connection.");
     } finally {
       setDeleting(false);
     }

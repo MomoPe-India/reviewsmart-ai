@@ -75,7 +75,13 @@ export default function AdminPaymentsClient({
         body: JSON.stringify({ paymentId, action }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (res.ok) {
         setPayments((prev) =>
           prev.map((p) =>
@@ -84,12 +90,12 @@ export default function AdminPaymentsClient({
               : p
           )
         );
-        setApprovalMsg({ id: paymentId, msg: data.message, commission: data.commission });
+        setApprovalMsg({ id: paymentId, msg: data?.message || "Payment processed.", commission: data?.commission });
       } else {
-        alert(data.error || "Action failed");
+        alert(data?.error || `Action failed (Server status: ${res.status}).`);
       }
-    } catch {
-      alert("Network error");
+    } catch (err: any) {
+      alert(err?.message || "Network error. Please try again.");
     } finally {
       setProcessingId(null);
     }

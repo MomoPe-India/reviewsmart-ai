@@ -136,9 +136,15 @@ export default function AdminAgentsPage() {
         }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        setCreateError(data.error || "Failed to create agent");
+        setCreateError(data?.error || `Failed to create agent (Server status: ${res.status}).`);
         setSubmittingCreate(false);
         return;
       }
@@ -156,8 +162,8 @@ export default function AdminAgentsPage() {
         setShowCreateModal(false);
         setCreateSuccessMsg("");
       }, 3000);
-    } catch {
-      setCreateError("Network error while creating agent.");
+    } catch (err: any) {
+      setCreateError(err?.message || "Network error while creating agent.");
     } finally {
       setSubmittingCreate(false);
     }
@@ -191,16 +197,22 @@ export default function AdminAgentsPage() {
         }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        setEditError(data.error || "Failed to update agent");
+        setEditError(data?.error || `Failed to update agent (Server status: ${res.status}).`);
         return;
       }
 
       setEditingAgent(null);
       fetchAgents();
-    } catch {
-      setEditError("Network error while updating agent.");
+    } catch (err: any) {
+      setEditError(err?.message || "Network error while updating agent.");
     } finally {
       setSubmittingEdit(false);
     }
@@ -219,16 +231,38 @@ export default function AdminAgentsPage() {
         body: JSON.stringify({ agentId: deletingAgent.id }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        setDeleteError(data.error || "Failed to delete agent");
+        setDeleteError(data?.error || `Failed to delete agent (Server status: ${res.status}).`);
         return;
       }
 
       setDeletingAgent(null);
       fetchAgents();
-    } catch {
-      setDeleteError("Network error while deleting agent.");
+    } catch (err: any) {
+      console.error("Delete agent error:", err);
+      // Auto-recheck if the agent was actually deleted on the server before alerting
+      try {
+        const verifyRes = await fetch("/api/admin/agents");
+        const verifyData = await verifyRes.json();
+        if (verifyRes.ok && verifyData.agents) {
+          const stillExists = verifyData.agents.some((a: any) => a.id === deletingAgent.id);
+          if (!stillExists) {
+            setAgents(verifyData.agents);
+            setDeletingAgent(null);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      setDeleteError(err?.message || "Network error while deleting agent.");
     } finally {
       setSubmittingDelete(false);
     }
