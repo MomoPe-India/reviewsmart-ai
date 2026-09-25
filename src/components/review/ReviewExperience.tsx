@@ -95,39 +95,54 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const tagsList =
     rawTags.length > 0 && !isGenericRestaurantChips ? rawTags : industry.tags;
 
-  // Resolved Google URL with smart priority for direct review modal
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    setIsMobile(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  }, []);
+
+  // Resolved Google URL: device-aware routing
+  // Mobile -> Launches Google Maps native app directly (user is already logged in, no login wall!)
+  // Desktop -> Uses search.google.com/local/writereview web composer modal
   const getResolvedGoogleUrl = () => {
-    // 1. Direct Place ID has highest priority for instant review composer
-    if (business.googlePlaceId && business.googlePlaceId.trim()) {
-      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(business.googlePlaceId.trim())}`;
-    }
-
     const rawUrl = (business.googleReviewUrl || "").trim();
+    const placeId = (business.googlePlaceId || "").trim();
 
-    if (rawUrl) {
-      // 2. If URL contains placeid parameter, normalize to direct writereview URL
-      const match = rawUrl.match(/[?&]place(?:_)?id=([^&#]+)/i);
-      if (match && match[1]) {
-        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
-      }
-
-      // 3. Official Google direct review links: g.page shortlinks or writereview
+    // 1. On Mobile: Prioritize Google Maps native app links so users are never blocked by a web browser login wall
+    if (isMobile) {
+      // If merchant has a Google Maps share link (e.g. maps.app.goo.gl or google.com/maps), it opens the Maps app directly!
       if (
-        rawUrl.includes("search.google.com/local/writereview") ||
-        rawUrl.includes("g.page/") ||
-        rawUrl.includes("/review")
+        rawUrl &&
+        (rawUrl.includes("maps.app.goo.gl") ||
+          rawUrl.includes("google.com/maps") ||
+          rawUrl.includes("maps.google.com") ||
+          rawUrl.includes("g.page/"))
       ) {
         return rawUrl;
       }
 
-      // 4. Any direct Google Maps link that is not just a generic search query
-      if (!rawUrl.includes("/maps/search")) {
-        return rawUrl;
+      // If Place ID is available, use Google's official cross-platform deep link to launch the Maps app
+      if (placeId) {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
       }
+
+      return rawUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
     }
 
-    // 5. Fallback: Search link if no direct link exists
-    return rawUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
+    // 2. On Desktop: Web review composer popup works best since desktop browsers are already signed into Google
+    if (placeId) {
+      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
+    }
+
+    if (rawUrl) {
+      const match = rawUrl.match(/[?&]place(?:_)?id=([^&#]+)/i);
+      if (match && match[1]) {
+        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
+      }
+      return rawUrl;
+    }
+
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
   };
 
   const googleUrl = getResolvedGoogleUrl();
@@ -852,14 +867,14 @@ export default function ReviewExperience({ business }: { business: BusinessData 
               </p>
             </div>
 
-            {/* 2-Step Action Instructions (Clean symbols, NO LaTeX bugs) */}
-            <div className="space-y-2 text-left bg-slate-800/70 p-3 rounded-2xl border border-slate-700/60 mb-5">
+            {/* 3-Step Clear Action Instructions */}
+            <div className="space-y-2 text-left bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 mb-5">
               <div className="flex items-start gap-2.5 text-xs">
                 <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-emerald-500/30">
                   ✓
                 </div>
                 <p className="text-slate-200">
-                  <strong className="text-white">Review is copied</strong> to your clipboard.
+                  <strong className="text-white">Review copied</strong> to your clipboard.
                 </p>
               </div>
               <div className="flex items-start gap-2.5 text-xs">
@@ -867,7 +882,15 @@ export default function ReviewExperience({ business }: { business: BusinessData 
                   2
                 </div>
                 <p className="text-slate-200">
-                  Tap below → Google Maps opens → simply <strong className="text-amber-300">Paste &amp; Post</strong>!
+                  Tap below → <strong className="text-white">Google Maps app opens</strong>.
+                </p>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs">
+                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30">
+                  3
+                </div>
+                <p className="text-slate-200">
+                  Tap <strong className="text-amber-300">★★★★★</strong>, paste &amp; post!
                 </p>
               </div>
             </div>
