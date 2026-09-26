@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   Award
 } from "lucide-react";
-import AdminComposerTriggerButton from "@/components/admin/AdminComposerTriggerButton";
 
 export const dynamic = "force-dynamic";
 
@@ -147,9 +146,6 @@ export default async function AdminOverviewPage() {
           Verify Payments
         </Link>
       </div>
-
-      {/* Antigravity AI Command Composer Hero Banner */}
-      <AdminComposerTriggerButton />
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
