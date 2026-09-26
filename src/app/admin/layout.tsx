@@ -14,6 +14,7 @@ import {
 import AdminMobileBottomNav from "@/components/navigation/AdminMobileBottomNav";
 import AdminDesktopNav from "@/components/navigation/AdminDesktopNav";
 import BrandLogo from "@/components/brand/BrandLogo";
+import AdminAiComposer from "@/components/admin/AdminAiComposer";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20 lg:pb-0">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20 lg:pb-0 relative">
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Admin Sidebar (Desktop only) */}
@@ -66,6 +67,9 @@ export default async function AdminLayout({
           <main className="lg:col-span-4 pb-6">{children}</main>
         </div>
       </div>
+
+      {/* Global Antigravity AI Command Composer */}
+      <AdminAiComposer />
 
       {/* Mobile Bottom Navigation */}
       <AdminMobileBottomNav />
