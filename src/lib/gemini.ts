@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { detectIndustry, INDUSTRY_CONFIGS } from "./industry";
+import { detectIndustry } from "./industry";
 
 interface GenerateReviewParams {
   businessName: string;
@@ -11,7 +11,7 @@ interface GenerateReviewParams {
   category?: string;
 }
 
-interface ReviewOption {
+export interface ReviewOption {
   id: number;
   text: string;
   headline: string;
@@ -37,51 +37,63 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (apiKey && apiKey.trim().length > 5) {
-    try {
-      const client = new GoogleGenAI({ apiKey });
+    // Try gemini-2.5-flash first, then gemini-2.0-flash
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
 
-      const prompt = `
-You are an expert review assistant creating authentic, human-sounding 5-star Google reviews.
+    for (const model of modelsToTry) {
+      try {
+        const client = new GoogleGenAI({ apiKey });
+
+        const prompt = `You are a real customer writing an authentic, human-sounding 5-star Google review on your phone.
 Business Name: "${businessName}"
-Industry / Domain: ${industry.label} (${industry.tagline})
+Industry: ${industry.label}
 ${tagline ? `Tagline: "${tagline}"` : ""}
-Selected Customer Highlights: ${tagsString}
-${keywords ? `Key terms/services: ${keywords}` : ""}
-${customNote ? `Customer specific detail or note: "${customNote}"` : ""}
-Target Tone: ${tone}
+Things the customer liked: ${tagsString}
+${keywords ? `Natural business services/context: ${keywords}` : ""}
+${customNote ? `Specific customer comment/note: "${customNote}"` : ""}
+Desired tone: ${tone}
 
-IMPORTANT GUIDELINES:
-1. Tailor the review vocabulary strictly to this specific business industry (${industry.label}). For example, if it is a tech/software company, talk about dev speed, tech stack, clean code, responsive support, and UI/UX. If it is a clinic, talk about hygiene, gentle doctors, and painless care. Do NOT use food or restaurant phrases unless this is a dining business!
-2. Write 3 distinct, authentic 5-star reviews as if written by real customers on a smartphone.
-3. Variation 1: Short & Punchy (2 sentences).
-4. Variation 2: Detailed & Warm (3-4 sentences, highlighting execution & communication).
-5. Variation 3: Enthusiastic & Strong Recommendation ("10/10 would recommend!").
-6. Output strictly a JSON array with schema:
+CRITICAL RULES FOR AUTHENTICITY:
+1. Sound like a REAL PERSON who actually visited this business — NOT an AI marketing bot.
+2. DO NOT use generic AI clichés like "exemplary", "testament to", "transcends expectations", "delve into", "epitome of", or "a game changer".
+3. Use natural, conversational, everyday phrasing that regular customers use on Google Maps (e.g., "Had a really good experience here", "Staff was very polite and helpful", "Fair prices and great quality", "Clean place and quick service").
+4. Tailor vocabulary strictly to ${industry.label}. Never mix medical terms into food, or food terms into fashion/clothing!
+5. NEVER fabricate specific employee names, fake dates, or claims not mentioned.
+6. Provide exactly 3 distinct reviews with different lengths and styles:
+   - Review 1 (Quick & Direct): 1-2 punchy, genuine sentences.
+   - Review 2 (Detailed & Helpful): 2-3 sentences with specific praise on quality, service, and atmosphere.
+   - Review 3 (Warm Recommendation): 2-3 sentences warmly recommending the place to locals.
+
+Output strictly a JSON array without markdown formatting:
 [
-  { "id": 1, "headline": "Catchy Title", "text": "...", "tone": "Direct & Punchy" },
-  { "id": 2, "headline": "Catchy Title", "text": "...", "tone": "Detailed & Warm" },
-  { "id": 3, "headline": "Catchy Title", "text": "...", "tone": "Enthusiastic" }
-]
-`;
+  { "id": 1, "headline": "Quick Take", "text": "...", "tone": "Quick & Direct" },
+  { "id": 2, "headline": "Detailed Experience", "text": "...", "tone": "Detailed & Helpful" },
+  { "id": 3, "headline": "Warm Recommendation", "text": "...", "tone": "Warm Recommendation" }
+]`;
 
-      const response = await client.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: prompt,
-      });
+        const response = await client.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            temperature: 0.85,
+            responseMimeType: "application/json",
+          },
+        });
 
-      const responseText = response.text || "";
-      const cleaned = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsed = JSON.parse(cleaned);
-      if (Array.isArray(parsed) && parsed.length >= 3) {
-        return parsed;
+        const responseText = response.text || "";
+        const cleaned = responseText.replace(/```json/gi, "").replace(/```/gi, "").trim();
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed) && parsed.length >= 3 && parsed[0]?.text) {
+          return parsed;
+        }
+      } catch (err: any) {
+        console.warn(`Gemini (${model}) attempt failed:`, err?.message || err);
+        // Continue to fallback model or dynamic generator
       }
-    } catch (err: any) {
-      console.warn("Gemini API call bypassed or depleted, utilizing dynamic industry generator:", err?.message || err);
     }
   }
 
-  // 2. High-precision dynamic industry generation fallback
-  // Generates 100% domain-specific, natural 5-star reviews matching the exact business type!
+  // 2. High-entropy dynamic industry generator fallback
   const drafts = industry.reviewDrafts;
   const tagsFormatted = activeTags.join(" and ");
 
@@ -90,19 +102,19 @@ IMPORTANT GUIDELINES:
       id: 1,
       headline: drafts.direct.headline,
       text: drafts.direct.text(businessName, tagsFormatted, customNote),
-      tone: "Direct & Punchy",
+      tone: "Quick & Direct",
     },
     {
       id: 2,
       headline: drafts.detailed.headline,
       text: drafts.detailed.text(businessName, tagsFormatted, customNote),
-      tone: "Detailed & Warm",
+      tone: "Detailed & Helpful",
     },
     {
       id: 3,
       headline: drafts.enthusiastic.headline,
       text: drafts.enthusiastic.text(businessName, tagsFormatted, customNote),
-      tone: "Enthusiastic",
+      tone: "Warm Recommendation",
     },
   ];
 }
@@ -117,34 +129,40 @@ export async function generateReviewReply(
   const nameGreeting = reviewerName ? ` ${reviewerName}` : "";
 
   if (apiKey && apiKey.trim().length > 5) {
-    try {
-      const client = new GoogleGenAI({ apiKey });
-      const prompt = `
-You are the business owner of "${businessName}". 
-A customer left a ${rating}-star review on Google:
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
+    for (const model of modelsToTry) {
+      try {
+        const client = new GoogleGenAI({ apiKey });
+        const prompt = `You are the owner/manager of "${businessName}". 
+A customer left this ${rating}-star review on Google:
 "${reviewText}"
-Reviewer Name: ${reviewerName || "Customer"}
+Customer Name: ${reviewerName || "Valued Customer"}
 
-Write an authentic, polite, professional, and brand-building reply from the business owner to post on Google Business Profile.
-Keep it under 3-4 sentences. If rating is 4-5, express heartfelt gratitude. If rating is 1-3, apologize politely and offer to make things right.
-`;
+Write a warm, authentic, polite reply to post on your Google Business Profile.
+Guidelines:
+- Keep it concise (2-3 sentences).
+- If 4-5 stars: thank them sincerely and mention looking forward to welcoming them back.
+- If 1-3 stars: apologize politely for their experience, take accountability, and invite them to reach out directly so you can resolve the issue.
+- Sound genuine, respectful, and professional.`;
 
-      const response = await client.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: prompt,
-      });
+        const response = await client.models.generateContent({
+          model,
+          contents: prompt,
+        });
 
-      if (response.text) {
-        return response.text.trim();
+        if (response.text) {
+          return response.text.trim();
+        }
+      } catch (err) {
+        console.warn(`Gemini reply (${model}) error:`, err);
       }
-    } catch (err) {
-      console.warn("Gemini reply error, using industry reply:", err);
     }
   }
 
+  // Fallback replies
   if (rating >= 4) {
-    return `Thank you so much${nameGreeting} for the fantastic 5-star review! Our team at ${businessName} truly appreciates your trust and kind words. Looking forward to continuing to provide top-quality service!`;
+    return `Thank you so much${nameGreeting} for the fantastic 5-star review! The entire team at ${businessName} truly appreciates your kind feedback. We look forward to serving you again soon!`;
   } else {
-    return `Hi${nameGreeting}, thank you for your feedback. We sincerely apologize that your experience did not meet your expectations. We strive for excellence at ${businessName} and would love the opportunity to make this right. Please reach out to our management team directly so we can assist you.`;
+    return `Hi${nameGreeting}, thank you for sharing your feedback. We sincerely apologize that your experience did not meet expectations. We take quality and service very seriously at ${businessName}. Please contact us directly so we can understand what happened and make things right.`;
   }
 }

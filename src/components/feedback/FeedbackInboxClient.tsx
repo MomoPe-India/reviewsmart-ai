@@ -153,13 +153,26 @@ export default function FeedbackInboxClient({
                 {/* Contact Actions */}
                 <div className="flex flex-wrap items-center gap-3 text-xs">
                   {item.customerPhone && (
-                    <a
-                      href={`tel:${item.customerPhone}`}
-                      className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-3 py-1.5 rounded-xl transition"
-                    >
-                      <Phone className="w-3.5 h-3.5" />
-                      Call {item.customerPhone}
-                    </a>
+                    <>
+                      <a
+                        href={`https://wa.me/91${item.customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                          `Hi ${item.customerName || "there"}, thank you for visiting our store. We received your feedback note and would love to understand how we can make things right!`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-900 font-semibold bg-emerald-50 px-3 py-1.5 rounded-xl transition"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                        WhatsApp
+                      </a>
+                      <a
+                        href={`tel:${item.customerPhone}`}
+                        className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-3 py-1.5 rounded-xl transition"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        Call {item.customerPhone}
+                      </a>
+                    </>
                   )}
 
                   {item.customerEmail && (
