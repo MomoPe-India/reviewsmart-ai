@@ -8,6 +8,7 @@ export type IndustryType =
   | "RETAIL_SHOP"
   | "HOTEL_HOSPITALITY"
   | "PROFESSIONAL_SERVICES"
+  | "PHOTOGRAPHY_STUDIO"
   | "GENERAL";
 
 export interface IndustryConfig {
@@ -322,6 +323,39 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     },
   },
 
+  PHOTOGRAPHY_STUDIO: {
+    type: "PHOTOGRAPHY_STUDIO",
+    label: "Photography Studios & Gift Shops",
+    tagline: "Creative Photography, Custom Gifts & Framing Services",
+    tags: [
+      "Creative Photography",
+      "High-Quality Prints",
+      "Customized Gifts",
+      "Friendly Photographers",
+      "Prompt Delivery",
+      "Beautiful Framing",
+    ],
+    placeholder: "Mention photo shoot, gift item, frame or event (optional)...",
+    keywords: "best photo studio, creative photography, custom gifts, photo framing, event photoshoot, kadapa studio",
+    reviewDrafts: {
+      direct: {
+        headline: "Exceptional Photography & Wonderful Gifts!",
+        text: (name, tags, note) =>
+          `Had a wonderful experience with ${name}! Their ${tags || "creative photography and prompt delivery"} made our memories truly special.${note ? ` Loved how they handled ${note}.` : ""} Highly recommended studio and gift center!`,
+      },
+      detailed: {
+        headline: "Professional, Creative & Superb Quality",
+        text: (name, tags, note) =>
+          `Visited ${name} for photography services and custom gifts. The team is genuinely skilled, patient, and creative. Their ${tags || "high-quality prints and friendly service"} exceeded all expectations.${note ? ` Especially happy with the ${note}.` : ""} The best studio in town!`,
+      },
+      enthusiastic: {
+        headline: "10/10 Photos & Beautiful Gift Customization!",
+        text: (name, tags, note) =>
+          `Cannot say enough good things about ${name}! From capturing stunning shots to crafting the perfect customized gifts, their work is pure perfection.${note ? ` Loved the ${note}.` : ""} 5 stars all the way!`,
+      },
+    },
+  },
+
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
@@ -433,6 +467,20 @@ export function detectIndustry(
   }
 
   if (
+    hasWord(normCat, "photography") ||
+    hasWord(normCat, "photo") ||
+    hasWord(normCat, "photos") ||
+    hasWord(normCat, "photographer") ||
+    hasWord(normCat, "gift") ||
+    hasWord(normCat, "gifts") ||
+    hasWord(normCat, "framing") ||
+    hasWord(normCat, "videography") ||
+    (hasWord(normCat, "studio") && (normCat.includes("photo") || normCat.includes("gift")))
+  ) {
+    return INDUSTRY_CONFIGS.PHOTOGRAPHY_STUDIO;
+  }
+
+  if (
     hasWord(normCat, "fashion") ||
     hasWord(normCat, "clothing") ||
     hasWord(normCat, "garment") ||
@@ -451,7 +499,7 @@ export function detectIndustry(
     hasWord(normCat, "optical") ||
     hasWord(normCat, "optics") ||
     hasWord(normCat, "store") ||
-    hasWord(normCat, "shop") ||
+    (hasWord(normCat, "shop") && !normCat.includes("photo") && !normCat.includes("gift")) ||
     hasWord(normCat, "supermarket") ||
     hasWord(normCat, "mart")
   ) {
@@ -530,6 +578,21 @@ export function detectIndustry(
     (hasWord(normName, "solutions") && (normName.includes("tech") || normName.includes("it")))
   ) {
     return INDUSTRY_CONFIGS.SOFTWARE_IT;
+  }
+
+  if (
+    hasWord(normName, "photography") ||
+    hasWord(normName, "photos") ||
+    hasWord(normName, "photo") ||
+    (hasWord(normName, "studio") &&
+      (normCat.includes("photo") ||
+        normCat.includes("gift") ||
+        normCat.includes("framing") ||
+        normTag.includes("photo") ||
+        normTag.includes("gift") ||
+        normTag.includes("framing")))
+  ) {
+    return INDUSTRY_CONFIGS.PHOTOGRAPHY_STUDIO;
   }
 
   if (
@@ -623,6 +686,16 @@ export function detectIndustry(
     normTag.includes("tech solutions")
   ) {
     return INDUSTRY_CONFIGS.SOFTWARE_IT;
+  }
+
+  if (
+    normTag.includes("photography") ||
+    normTag.includes("photo studio") ||
+    normTag.includes("custom gifts") ||
+    normTag.includes("photo framing") ||
+    normTag.includes("photo shoot")
+  ) {
+    return INDUSTRY_CONFIGS.PHOTOGRAPHY_STUDIO;
   }
 
   if (
