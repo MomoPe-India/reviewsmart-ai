@@ -136,18 +136,18 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
       "Fresh Ingredients",
       "Great Value",
     ],
-    placeholder: "Mention favorite dish or server (optional)...",
+    placeholder: "Mention favorite dish or food order (optional)...",
     keywords: "delicious food, best restaurant, cozy ambiance, quick service, authentic taste",
     reviewDrafts: {
       direct: {
         headline: "Fantastic Food & Quick Service!",
         text: (name, tags, note) =>
-          `Had a wonderful meal at ${name}! The ${tags || "delicious food and quick service"} were spot on.${note ? ` Loved the ${note}!` : ""} Definitely coming back with friends!`,
+          `Had a wonderful meal from ${name}! The ${tags || "delicious food and quick service"} were spot on.${note ? ` Loved the ${note}!` : ""} Definitely ordering again!`,
       },
       detailed: {
-        headline: "Superb Flavors & Welcoming Ambiance",
+        headline: "Superb Flavors & Welcoming Service",
         text: (name, tags, note) =>
-          `Visited ${name} and had a delightful dining experience. Every dish tasted fresh and authentic, especially with their ${tags || "great hospitality and cozy ambiance"}.${note ? ` Must try their ${note}.` : ""} Kudos to the chef and service staff!`,
+          `Had a delightful dining experience with ${name}. Every dish tasted fresh and authentic, especially with their ${tags || "great hospitality and quality ingredients"}.${note ? ` Must try their ${note}.` : ""} Kudos to the chef and service staff!`,
       },
       enthusiastic: {
         headline: "5 Stars for Taste & Hospitality!",
@@ -175,50 +175,50 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
       direct: {
         headline: "Fast, Honest & Reliable Service!",
         text: (name, tags, note) =>
-          `Got vehicle service done at ${name} and couldn't be happier. The ${tags || "honest mechanics and transparent pricing"} gave total peace of mind.${note ? ` They diagnosed and fixed ${note} in record time.` : ""} Car feels brand new!`,
+          `Got vehicle service done at ${name} and couldn't be happier. The ${tags || "honest mechanics and transparent pricing"} gave total peace of mind.${note ? ` They diagnosed and fixed ${note} in record time.` : ""} Vehicle feels brand new!`,
       },
       detailed: {
-        headline: "Professional Mechanics & Genuine Work",
+        headline: "Professional Diagnostics & Quality Work",
         text: (name, tags, note) =>
-          `Finding a trustworthy garage is rare, but ${name} is exceptional. They explained the repairs clearly, used genuine parts, and delivered on time.${note ? ` Solved the issue with ${note} perfectly.` : ""} Very satisfied with the smoothness of the drive.`,
+          `Excellent garage experience at ${name}. The team explained every repair clearly before touching the vehicle. Their ${tags || "quick turnaround and genuine parts"} restored full performance.${note ? ` Great job with ${note}.` : ""} 100% recommended for reliable servicing!`,
       },
       enthusiastic: {
-        headline: "Top Rated Auto Care!",
+        headline: "Best Garage in Town!",
         text: (name, tags, note) =>
-          `Best garage experience ever! ${name} has skilled technicians who know their craft thoroughly. Fair pricing, no unnecessary charges, and prompt turnaround.${note ? ` Thank you for fixing ${note}!` : ""} 10/10 recommended!`,
+          `Found my go-to automobile service center at ${name}! Skilled mechanics, fair pricing, and zero hassle.${note ? ` Especially thankful for solving the ${note} issue.` : ""} 5 stars without hesitation!`,
       },
     },
   },
 
   FITNESS_GYM: {
     type: "FITNESS_GYM",
-    label: "Gyms, Fitness & Yoga",
-    tagline: "Modern Equipment, Certified Trainers & Fitness Community",
+    label: "Gyms, Crossfit & Fitness Studios",
+    tagline: "High-Energy Training, Modern Equipment & Expert Coaching",
     tags: [
+      "Modern Equipment",
       "Certified Trainers",
-      "Top Equipment",
-      "Clean Facilities",
-      "High Energy",
-      "Personal Guidance",
-      "Spacious Gym",
+      "Clean & Motivating",
+      "Personal Attention",
+      "Great Community",
+      "Flexible Timings",
     ],
-    placeholder: "Mention trainer or fitness goal (optional)...",
-    keywords: "best gym, certified fitness trainer, modern gym equipment, workout motivation, clean gym",
+    placeholder: "Mention your workout, coach or fitness goal (optional)...",
+    keywords: "best gym, certified fitness trainer, modern gym equipment, weight loss coaching, motivating gym",
     reviewDrafts: {
       direct: {
-        headline: "Awesome Gym & High Energy!",
+        headline: "Best Gym to Stay Fit & Motivated!",
         text: (name, tags, note) =>
-          `Loving my workouts at ${name}! The ${tags || "top equipment and certified trainers"} create the best fitness environment.${note ? ` Great coaching on ${note}.` : ""} Highly recommended for anyone wanting results!`,
+          `Training at ${name} has been amazing! The ${tags || "modern equipment and certified trainers"} create the perfect workout environment.${note ? ` The guidance for ${note} has been great.` : ""} Highly recommended fitness center!`,
       },
       detailed: {
-        headline: "Exceptional Training & Spotless Setup",
+        headline: "Super Clean, Well Equipped & Great Vibe",
         text: (name, tags, note) =>
-          `Joined ${name} and it's by far the best decision for my health. The trainers are knowledgeable, encouraging, and ensure proper workout posture. The ${tags || "clean facilities and motivating vibe"} keep you consistent.${note ? ` Seeing great progress in ${note}.` : ""} 5 stars!`,
+          `Joined ${name} and loving the journey so far. State-of-the-art machines, well-maintained floor, and supportive coaches who focus on ${tags || "personal attention and proper form"}.${note ? ` Seeing real results with ${note}.` : ""} Worth every penny!`,
       },
       enthusiastic: {
-        headline: "Best Fitness Center in the Area!",
+        headline: "Top-Tier Fitness Experience!",
         text: (name, tags, note) =>
-          `10/10 gym! ${name} has top-of-the-line machines, friendly community, and dedicated coaches who push you to achieve your personal best.${note ? ` Special shoutout for ${note}!` : ""} Join without hesitation!`,
+          `10/10 energy and coaching at ${name}! If you want serious results and a motivating community, this is the place to join.${note ? ` Loved the ${note} sessions.` : ""} Proud to be a member here!`,
       },
     },
   },
@@ -226,7 +226,7 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
   RETAIL_SHOP: {
     type: "RETAIL_SHOP",
     label: "Retail, Boutiques & Stores",
-    tagline: "Curated Collections, Premium Quality & Great Value",
+    tagline: "Curated Fashion, Lifestyle & Premium In-Store Experience",
     tags: [
       "Great Collection",
       "Helpful Staff",
@@ -235,23 +235,23 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
       "Latest Trends",
       "Hassle-Free Shopping",
     ],
-    placeholder: "Mention product bought or shopping experience (optional)...",
+    placeholder: "Mention clothing, product bought or shopping experience (optional)...",
     keywords: "best shopping store, great collection, premium quality, helpful sales staff, fair prices",
     reviewDrafts: {
       direct: {
-        headline: "Wonderful Shopping Experience!",
+        headline: "Wonderful Experience & Great Selection!",
         text: (name, tags, note) =>
-          `Shopped at ${name} and was thoroughly delighted! The ${tags || "great collection and helpful staff"} made finding what I needed so effortless.${note ? ` Loved the quality of ${note}.` : ""} Will definitely visit again!`,
+          `Had a wonderful experience at ${name}! Really impressed with their ${tags || "great collection and helpful staff"}.${note ? ` Loved the quality of ${note}.` : ""} Finding what I needed was effortless. Will definitely visit again!`,
       },
       detailed: {
         headline: "Impressive Quality & Courteous Service",
         text: (name, tags, note) =>
-          `Had a great retail experience at ${name}. Their curation of products is top quality and reasonably priced. The staff was patient, polite, and guided me to the best options.${note ? ` Really happy with the purchase of ${note}.` : ""} Highly recommended store!`,
+          `Visited ${name} and was thoroughly impressed by their selection and customer service. The staff was patient, polite, and guided me to the best options, with great attention to ${tags || "premium quality and fair pricing"}.${note ? ` Very happy with the purchase of ${note}.` : ""} Highly recommended store!`,
       },
       enthusiastic: {
         headline: "My Favorite Shopping Destination!",
         text: (name, tags, note) =>
-          `5 stars all the way for ${name}! Fantastic variety, authentic quality, and a genuinely warm customer experience.${note ? ` Very pleased with ${note}.` : ""} Must visit!`,
+          `5 stars all the way for ${name}! Fantastic variety, authentic quality, and a genuinely warm customer experience.${note ? ` Very pleased with ${note}.` : ""} One of the best places around for ${tags || "latest trends and great quality"}!`,
       },
     },
   },
@@ -259,65 +259,65 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
   HOTEL_HOSPITALITY: {
     type: "HOTEL_HOSPITALITY",
     label: "Hotels, Resorts & Lodging",
-    tagline: "Comfortable Stay, Clean Rooms & Warm Hospitality",
+    tagline: "Comfortable Stay, Warm Hospitality & Memorable Experiences",
     tags: [
-      "Clean Rooms",
+      "Comfortable Stay",
       "Courteous Staff",
-      "Great Location",
+      "Spotless Rooms",
       "Delicious Breakfast",
-      "Peaceful Stay",
-      "Quick Check-in",
+      "Prime Location",
+      "Smooth Check-in",
     ],
-    placeholder: "Mention room type, stay duration, or amenities (optional)...",
-    keywords: "best hotel stay, clean rooms, hospitable staff, great location, comfortable lodging",
+    placeholder: "Mention room, trip purpose or special amenity (optional)...",
+    keywords: "best hotel stay, comfortable rooms, courteous staff, luxury resort, delicious breakfast",
     reviewDrafts: {
       direct: {
-        headline: "Wonderful & Comfortable Stay!",
+        headline: "Extremely Comfortable Stay!",
         text: (name, tags, note) =>
-          `Enjoyed a great stay at ${name}! The ${tags || "clean rooms and courteous staff"} made our trip memorable and stress-free.${note ? ` Especially appreciated ${note}.` : ""} Highly recommended!`,
+          `Had a memorable stay at ${name}! The ${tags || "spotless rooms and courteous staff"} made us feel right at home.${note ? ` Special shoutout for ${note}.` : ""} Will definitely book again!`,
       },
       detailed: {
-        headline: "Top Hospitality & Spotless Comfort",
+        headline: "Impeccable Hospitality & Clean Rooms",
         text: (name, tags, note) =>
-          `Stayed at ${name} and couldn't be more pleased. The property is well-maintained, check-in was seamless, and the housekeeping team was prompt. Their ${tags || "clean rooms and peaceful vibe"} made it a restful visit.${note ? ` Loved the service for ${note}.` : ""} Will book again!`,
+          `Stayed at ${name} and thoroughly enjoyed the experience. Smooth check-in, spacious and hygienic rooms, and attentive staff who ensured ${tags || "comfort and quick service"}.${note ? ` Great experience with ${note}.` : ""} Highly recommended hotel!`,
       },
       enthusiastic: {
-        headline: "Outstanding 5-Star Hospitality!",
+        headline: "10/10 Hospitality & Wonderful Experience!",
         text: (name, tags, note) =>
-          `10/10 stay at ${name}! From the warm welcome to the spotless rooms and attentive service, everything exceeded our expectations.${note ? ` Thank you for making ${note} so pleasant!` : ""} Highly recommended!`,
+          `A fantastic stay at ${name}! Everything from the reception welcome to the room comfort exceeded expectations.${note ? ` Loved the ${note}.` : ""} Thank you team for making our visit so pleasant!`,
       },
     },
   },
 
   PROFESSIONAL_SERVICES: {
     type: "PROFESSIONAL_SERVICES",
-    label: "Professional Services (Legal, CA, Consulting)",
-    tagline: "Expert Advice, Transparent Process & Reliable Execution",
+    label: "Legal, Tax & Consulting",
+    tagline: "Trusted Advisory, Legal Guidance & Financial Solutions",
     tags: [
       "Expert Advice",
-      "Transparent Process",
+      "Transparent Guidance",
       "Prompt Communication",
-      "Timely Execution",
+      "Hassle-Free Process",
       "Trustworthy",
-      "Clear Guidance",
+      "Professional Team",
     ],
-    placeholder: "Mention service, consultation or case handled (optional)...",
-    keywords: "expert consultant, trustworthy advisor, prompt response, professional service, transparent guidance",
+    placeholder: "Mention service or consultation area (optional)...",
+    keywords: "trusted consultant, expert legal advice, tax advisor, transparent financial guidance, professional team",
     reviewDrafts: {
       direct: {
-        headline: "Highly Professional & Reliable!",
+        headline: "Trustworthy & Highly Professional!",
         text: (name, tags, note) =>
-          `Consulted with ${name} and was extremely impressed with their professionalism. Their ${tags || "expert advice and prompt communication"} solved our requirements seamlessly.${note ? ` Handled ${note} with great competence.` : ""} Highly recommended!`,
+          `Great experience consulting with ${name}. Their ${tags || "expert advice and transparent guidance"} simplified everything.${note ? ` Handled our matter regarding ${note} very well.` : ""} Highly recommended professional service!`,
       },
       detailed: {
-        headline: "Thorough, Knowledgeable & Dedicated",
+        headline: "Clear Guidance & Seamless Execution",
         text: (name, tags, note) =>
-          `The team at ${name} is exceptionally knowledgeable and transparent. They took the time to understand our situation and provided sound, practical solutions without delays.${note ? ` Very pleased with their execution on ${note}.` : ""} A truly dependable professional firm.`,
+          `Approached ${name} for consultation and was thoroughly impressed by their expertise and patience. They explained every detail clearly and ensured ${tags || "prompt communication and hassle-free processing"}.${note ? ` Very thankful for their assistance with ${note}.` : ""} Truly dependable professionals.`,
       },
       enthusiastic: {
-        headline: "Exceptional Service & Complete Peace of Mind!",
+        headline: "Top-Tier Professional Advisory!",
         text: (name, tags, note) =>
-          `5 stars! ${name} is the gold standard for client service and expertise. Trustworthy guidance, clear milestones, and responsive follow-up.${note ? ` Thank you for your work on ${note}!` : ""} Would recommend to anyone!`,
+          `5-star rating for ${name}! Finding a consultant with such high integrity, domain knowledge, and prompt execution is rare.${note ? ` Outstanding support on ${note}.` : ""} Will always consult them!`,
       },
     },
   },
@@ -325,286 +325,332 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
-    tagline: "Dedicated Service, High Quality & Customer Satisfaction",
+    tagline: "Reliable Quality, Friendly Service & Great Value",
     tags: [
+      "Great Service",
       "Friendly Staff",
-      "Prompt Service",
+      "Prompt Response",
       "High Quality",
       "Fair Pricing",
-      "Professional Approach",
-      "Great Experience",
+      "Highly Recommended",
     ],
-    placeholder: "Mention any specific service, staff, or experience (optional)...",
-    keywords: "excellent service, highly recommended, prompt response, great quality, professional staff",
+    placeholder: "Mention any specific highlight or experience (optional)...",
+    keywords: "great customer service, reliable business, friendly staff, fair pricing, highly recommended",
     reviewDrafts: {
       direct: {
-        headline: "Outstanding Experience!",
+        headline: "Great Service & Experience!",
         text: (name, tags, note) =>
-          `Had an amazing experience with ${name}! The ${tags || "prompt service and high quality"} really stood out.${note ? ` Especially appreciated: ${note}.` : ""} Highly recommend their services to everyone!`,
+          `Very satisfied with ${name}! The ${tags || "great service and friendly staff"} made the visit pleasant.${note ? ` Appreciated the help with ${note}.` : ""} Definitely recommend!`,
       },
       detailed: {
         headline: "Consistently Top-Tier & Professional",
         text: (name, tags, note) =>
-          `From start to finish, ${name} exceeded all expectations. You can really feel their commitment to customer satisfaction, especially regarding ${tags || "professionalism and fair pricing"}.${note ? ` Great handling of ${note}.` : ""} Truly a 5-star team that deserves all the praise.`,
+          `From start to finish, ${name} delivered a wonderful experience. You can really feel their commitment to customer satisfaction, especially regarding ${tags || "professionalism and fair pricing"}.${note ? ` Great handling of ${note}.` : ""} Truly a 5-star team that deserves praise.`,
       },
       enthusiastic: {
         headline: "5 Stars All the Way!",
         text: (name, tags, note) =>
-          `Such a great discovery! ${name} is simply top notch. Love their ${tags || "attentive support and dedication to quality"}.${note ? ` Especially impressed with ${note}.` : ""} 10/10 recommend to friends and family!`,
+          `Such a great experience with ${name}! Love their ${tags || "attentive support and dedication to quality"}.${note ? ` Especially impressed with ${note}.` : ""} 10/10 recommend to friends and family!`,
       },
     },
   },
 };
 
 /**
- * Intelligent detector that inspects business name, category, tagline and keywords
- * to accurately identify the industry vertical.
+ * Intelligent, deterministic industry classifier.
+ * Uses exact word boundary matching and prioritizes the merchant's explicit CATEGORY,
+ * then NAME, then TAGLINE to avoid substring collisions (e.g. "treatment" -> "eat" or "mobile app" -> "mobile").
  */
 export function detectIndustry(
   name: string = "",
   category: string = "",
   tagline: string = ""
 ): IndustryConfig {
-  const combined = `${name} ${category} ${tagline}`.toLowerCase();
+  const normCat = (" " + category + " ").toLowerCase();
+  const normName = (" " + name + " ").toLowerCase();
+  const normTag = (" " + tagline + " ").toLowerCase();
+
+  const hasWord = (str: string, word: string): boolean => {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i");
+    return regex.test(str);
+  };
 
   // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 1: Food & Dining (Most common merchant vertical)
-  // Check FIRST to prevent "Cloud Kitchen" matching SOFTWARE_IT via "cloud",
-  // "Digital Cafe" matching via "digital", etc.
+  // STEP 1: CATEGORY-FIRST MATCHING (Highest Confidence)
   // ═══════════════════════════════════════════════════════════════════════
   if (
-    combined.includes("restaurant") ||
-    combined.includes("cafe") ||
-    combined.includes("café") ||
-    combined.includes("bistro") ||
-    combined.includes("bakery") ||
-    combined.includes("kitchen") ||
-    combined.includes("food") ||
-    combined.includes("biryani") ||
-    combined.includes("spice") ||
-    combined.includes("sweet") ||
-    combined.includes("dhaba") ||
-    combined.includes("mess") ||
-    combined.includes("tiffin") ||
-    combined.includes("tea") ||
-    combined.includes("chai") ||
-    combined.includes("coffee") ||
-    combined.includes("dine") ||
-    combined.includes("dining") ||
-    combined.includes("grill") ||
-    combined.includes("pizza") ||
-    combined.includes("burger") ||
-    combined.includes("chicken") ||
-    combined.includes("juice") ||
-    combined.includes("yummy") ||
-    combined.includes("tasty") ||
-    combined.includes("delicious") ||
-    combined.includes("cook") ||
-    combined.includes("catering") ||
-    combined.includes("snack") ||
-    combined.includes("ice cream") ||
-    combined.includes("sweets") ||
-    combined.includes("chaat") ||
-    combined.includes("pani puri") ||
-    combined.includes("dosa") ||
-    combined.includes("idli") ||
-    combined.includes("noodle") ||
-    combined.includes("chinese") ||
-    combined.includes("mughlai") ||
-    combined.includes("north indian") ||
-    combined.includes("south indian") ||
-    combined.includes("fast food") ||
-    combined.includes("cloud kitchen") ||
-    combined.includes("eat") ||
-    combined.includes("meals") ||
-    combined.includes("lunch") ||
-    combined.includes("dinner") ||
-    combined.includes("breakfast")
+    hasWord(normCat, "software") ||
+    hasWord(normCat, "it solutions") ||
+    hasWord(normCat, "information technology") ||
+    hasWord(normCat, "technology") ||
+    hasWord(normCat, "tech") ||
+    hasWord(normCat, "developer") ||
+    hasWord(normCat, "coding") ||
+    hasWord(normCat, "programming") ||
+    normCat.includes("training institute") ||
+    normCat.includes("web dev") ||
+    normCat.includes("app dev") ||
+    normCat.includes("cloud computing")
+  ) {
+    return INDUSTRY_CONFIGS.SOFTWARE_IT;
+  }
+
+  if (
+    hasWord(normCat, "dental") ||
+    hasWord(normCat, "clinic") ||
+    hasWord(normCat, "doctor") ||
+    hasWord(normCat, "hospital") ||
+    hasWord(normCat, "healthcare") ||
+    hasWord(normCat, "physio") ||
+    hasWord(normCat, "medical") ||
+    hasWord(normCat, "pharma") ||
+    hasWord(normCat, "pharmacy") ||
+    hasWord(normCat, "ayurveda") ||
+    hasWord(normCat, "homeopathy") ||
+    hasWord(normCat, "diagnostic")
+  ) {
+    return INDUSTRY_CONFIGS.HEALTHCARE_CLINIC;
+  }
+
+  if (
+    hasWord(normCat, "kitchen") ||
+    hasWord(normCat, "restaurant") ||
+    hasWord(normCat, "cafe") ||
+    hasWord(normCat, "café") ||
+    hasWord(normCat, "food") ||
+    hasWord(normCat, "bakery") ||
+    hasWord(normCat, "bistro") ||
+    hasWord(normCat, "catering") ||
+    hasWord(normCat, "dining") ||
+    normCat.includes("cloud kitchen") ||
+    hasWord(normCat, "sweets") ||
+    hasWord(normCat, "tiffin") ||
+    hasWord(normCat, "mess") ||
+    hasWord(normCat, "fast food")
   ) {
     return INDUSTRY_CONFIGS.RESTAURANT_FOOD;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 2: Retail & Stores (Second most common local merchant vertical)
-  // Check before SOFTWARE_IT to prevent "Digital Store" → tech misclassification
-  // ═══════════════════════════════════════════════════════════════════════
   if (
-    combined.includes("store") ||
-    combined.includes("shop") ||
-    combined.includes("boutique") ||
-    combined.includes("jewel") ||
-    combined.includes("fashion") ||
-    combined.includes("clothing") ||
-    combined.includes("garment") ||
-    combined.includes("textile") ||
-    combined.includes("fabric") ||
-    combined.includes("tailor") ||
-    combined.includes("stitch") ||
-    combined.includes("optics") ||
-    combined.includes("optical") ||
-    combined.includes("electronics") ||
-    combined.includes("mobile") ||
-    combined.includes("mall") ||
-    combined.includes("mart") ||
-    combined.includes("supermarket") ||
-    combined.includes("kirana") ||
-    combined.includes("general store") ||
-    combined.includes("readymade") ||
-    combined.includes("saree") ||
-    combined.includes("sari") ||
-    combined.includes("kurta") ||
-    combined.includes("studio") && (combined.includes("fashion") || combined.includes("photo") || combined.includes("design"))
+    hasWord(normCat, "fashion") ||
+    hasWord(normCat, "clothing") ||
+    hasWord(normCat, "garment") ||
+    hasWord(normCat, "garments") ||
+    hasWord(normCat, "apparel") ||
+    hasWord(normCat, "tailor") ||
+    hasWord(normCat, "tailoring") ||
+    hasWord(normCat, "textile") ||
+    hasWord(normCat, "textiles") ||
+    hasWord(normCat, "boutique") ||
+    hasWord(normCat, "saree") ||
+    hasWord(normCat, "sarees") ||
+    hasWord(normCat, "retail") ||
+    hasWord(normCat, "jewellery") ||
+    hasWord(normCat, "jewelry") ||
+    hasWord(normCat, "optical") ||
+    hasWord(normCat, "optics") ||
+    hasWord(normCat, "store") ||
+    hasWord(normCat, "shop") ||
+    hasWord(normCat, "supermarket") ||
+    hasWord(normCat, "mart")
   ) {
     return INDUSTRY_CONFIGS.RETAIL_SHOP;
   }
 
+  if (
+    hasWord(normCat, "salon") ||
+    hasWord(normCat, "spa") ||
+    hasWord(normCat, "beauty") ||
+    hasWord(normCat, "hair") ||
+    hasWord(normCat, "parlour") ||
+    hasWord(normCat, "parlor") ||
+    hasWord(normCat, "makeover")
+  ) {
+    return INDUSTRY_CONFIGS.SALON_BEAUTY;
+  }
+
+  if (
+    hasWord(normCat, "garage") ||
+    hasWord(normCat, "auto") ||
+    hasWord(normCat, "automobile") ||
+    hasWord(normCat, "mechanic") ||
+    hasWord(normCat, "bike service") ||
+    hasWord(normCat, "two wheeler") ||
+    hasWord(normCat, "car service")
+  ) {
+    return INDUSTRY_CONFIGS.AUTO_GARAGE;
+  }
+
+  if (
+    hasWord(normCat, "gym") ||
+    hasWord(normCat, "fitness") ||
+    hasWord(normCat, "crossfit") ||
+    hasWord(normCat, "workout") ||
+    hasWord(normCat, "yoga") ||
+    hasWord(normCat, "pilates")
+  ) {
+    return INDUSTRY_CONFIGS.FITNESS_GYM;
+  }
+
+  if (
+    hasWord(normCat, "hotel") ||
+    hasWord(normCat, "resort") ||
+    hasWord(normCat, "lodge") ||
+    hasWord(normCat, "lodging") ||
+    hasWord(normCat, "hospitality") ||
+    hasWord(normCat, "guest house") ||
+    hasWord(normCat, "stay")
+  ) {
+    return INDUSTRY_CONFIGS.HOTEL_HOSPITALITY;
+  }
+
+  if (
+    hasWord(normCat, "legal") ||
+    hasWord(normCat, "law") ||
+    hasWord(normCat, "advocate") ||
+    hasWord(normCat, "tax") ||
+    hasWord(normCat, "audit") ||
+    hasWord(normCat, "accounting") ||
+    hasWord(normCat, "financial") ||
+    hasWord(normCat, "properties") ||
+    hasWord(normCat, "realtor")
+  ) {
+    return INDUSTRY_CONFIGS.PROFESSIONAL_SERVICES;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 3: Hotel & Lodging
-  // Check before SOFTWARE_IT to prevent "Hotel Digital" → tech misclassification
+  // STEP 2: BUSINESS NAME MATCHING (If category was generic/unspecified)
   // ═══════════════════════════════════════════════════════════════════════
   if (
-    combined.includes("hotel") ||
-    combined.includes("resort") ||
-    combined.includes("lodge") ||
-    combined.includes("lodging") ||
-    combined.includes("stay") ||
-    combined.includes("inn ") ||
-    combined.includes("suites") ||
-    combined.includes("guest house") ||
-    combined.includes("motel") ||
-    combined.includes("homestay")
+    hasWord(normName, "technologies") ||
+    hasWord(normName, "technology") ||
+    hasWord(normName, "infotech") ||
+    hasWord(normName, "software") ||
+    (hasWord(normName, "solutions") && (normName.includes("tech") || normName.includes("it")))
+  ) {
+    return INDUSTRY_CONFIGS.SOFTWARE_IT;
+  }
+
+  if (
+    hasWord(normName, "dental") ||
+    hasWord(normName, "clinic") ||
+    hasWord(normName, "hospital") ||
+    hasWord(normName, "doctor") ||
+    hasWord(normName, "diagnostic")
+  ) {
+    return INDUSTRY_CONFIGS.HEALTHCARE_CLINIC;
+  }
+
+  if (
+    hasWord(normName, "kitchen") ||
+    hasWord(normName, "restaurant") ||
+    hasWord(normName, "cafe") ||
+    hasWord(normName, "café") ||
+    hasWord(normName, "food") ||
+    hasWord(normName, "biryani") ||
+    hasWord(normName, "bakery") ||
+    hasWord(normName, "bakes") ||
+    hasWord(normName, "sweets") ||
+    hasWord(normName, "dhaba") ||
+    hasWord(normName, "tiffin") ||
+    hasWord(normName, "mess") ||
+    hasWord(normName, "yummy") ||
+    hasWord(normName, "pizza") ||
+    hasWord(normName, "burger")
+  ) {
+    return INDUSTRY_CONFIGS.RESTAURANT_FOOD;
+  }
+
+  if (
+    hasWord(normName, "fashions") ||
+    hasWord(normName, "fashion") ||
+    hasWord(normName, "silks") ||
+    hasWord(normName, "boutique") ||
+    hasWord(normName, "textiles") ||
+    hasWord(normName, "sarees") ||
+    hasWord(normName, "dresses") ||
+    hasWord(normName, "garments") ||
+    hasWord(normName, "clothing") ||
+    (hasWord(normName, "studio") &&
+      (normName.includes("fashion") ||
+        normTag.includes("designer") ||
+        normTag.includes("tailor") ||
+        normTag.includes("wear")))
+  ) {
+    return INDUSTRY_CONFIGS.RETAIL_SHOP;
+  }
+
+  if (
+    hasWord(normName, "salon") ||
+    hasWord(normName, "spa") ||
+    hasWord(normName, "beauty") ||
+    hasWord(normName, "hair")
+  ) {
+    return INDUSTRY_CONFIGS.SALON_BEAUTY;
+  }
+
+  if (
+    hasWord(normName, "garage") ||
+    hasWord(normName, "motors") ||
+    hasWord(normName, "mechanic") ||
+    hasWord(normName, "automotive")
+  ) {
+    return INDUSTRY_CONFIGS.AUTO_GARAGE;
+  }
+
+  if (hasWord(normName, "gym") || hasWord(normName, "fitness")) {
+    return INDUSTRY_CONFIGS.FITNESS_GYM;
+  }
+
+  if (
+    hasWord(normName, "hotel") ||
+    hasWord(normName, "resort") ||
+    hasWord(normName, "residency") ||
+    hasWord(normName, "lodge")
   ) {
     return INDUSTRY_CONFIGS.HOTEL_HOSPITALITY;
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 4: Clinics, Doctors & Dental
+  // STEP 3: TAGLINE CONTEXTUAL MATCHING (Precise multi-word phrases)
   // ═══════════════════════════════════════════════════════════════════════
   if (
-    combined.includes("clinic") ||
-    combined.includes("dental") ||
-    combined.includes("doctor") ||
-    combined.includes("hospital") ||
-    combined.includes("physio") ||
-    combined.includes("ortho") ||
-    combined.includes("pharma") ||
-    combined.includes("diagnostic") ||
-    combined.includes("healthcare") ||
-    combined.includes("medic") ||
-    combined.includes("derma") ||
-    combined.includes("eye care") ||
-    combined.includes("ayurved") ||
-    combined.includes("homeopath") ||
-    combined.includes("lab")
-  ) {
-    return INDUSTRY_CONFIGS.HEALTHCARE_CLINIC;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 5: Salons, Spas & Beauty
-  // ═══════════════════════════════════════════════════════════════════════
-  if (
-    combined.includes("salon") ||
-    combined.includes("spa") ||
-    combined.includes("beauty") ||
-    combined.includes("hair") ||
-    combined.includes("makeover") ||
-    combined.includes("barber") ||
-    combined.includes("parlour") ||
-    combined.includes("parlor") ||
-    combined.includes("nails") ||
-    combined.includes("skincare") ||
-    combined.includes("cosmetic") ||
-    combined.includes("mehndi") ||
-    combined.includes("henna") ||
-    combined.includes("bridal")
-  ) {
-    return INDUSTRY_CONFIGS.SALON_BEAUTY;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 6: Automobile & Bikes
-  // ═══════════════════════════════════════════════════════════════════════
-  if (
-    combined.includes("garage") ||
-    combined.includes("auto") ||
-    combined.includes("motors") ||
-    combined.includes("mechanic") ||
-    combined.includes("car ") ||
-    combined.includes("bike ") ||
-    combined.includes("tyre") ||
-    combined.includes("tire") ||
-    combined.includes("detailing") ||
-    combined.includes("vehicle") ||
-    combined.includes("wheel") ||
-    combined.includes("two wheeler") ||
-    combined.includes("scooter")
-  ) {
-    return INDUSTRY_CONFIGS.AUTO_GARAGE;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 7: Gym & Fitness
-  // ═══════════════════════════════════════════════════════════════════════
-  if (
-    combined.includes("gym") ||
-    combined.includes("fitness") ||
-    combined.includes("workout") ||
-    combined.includes("crossfit") ||
-    combined.includes("yoga") ||
-    combined.includes("pilates") ||
-    combined.includes("sports") ||
-    combined.includes("martial") ||
-    combined.includes("boxing") ||
-    combined.includes("zumba")
-  ) {
-    return INDUSTRY_CONFIGS.FITNESS_GYM;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 8: Software / IT / Tech
-  // Now SAFE to check — all ambiguous terms (cloud, digital, solutions, studio)
-  // have been pre-filtered by food/retail/hotel above.
-  // ═══════════════════════════════════════════════════════════════════════
-  if (
-    combined.includes("technology") ||
-    combined.includes("technologies") ||
-    combined.includes("software") ||
-    combined.includes("tech") ||
-    combined.includes("digital") ||
-    combined.includes("solutions") ||
-    combined.includes("developer") ||
-    combined.includes("cloud") ||
-    combined.includes("it ") ||
-    combined.includes("infotech") ||
-    combined.includes("systems") ||
-    combined.includes("consulting") ||
-    combined.includes("cyber") ||
-    combined.includes("ai ") ||
-    combined.includes("app ") ||
-    combined.includes("saas") ||
-    combined.includes("startup")
+    hasWord(normTag, "software") ||
+    normTag.includes("app development") ||
+    normTag.includes("web development") ||
+    normTag.includes("cloud solutions") ||
+    normTag.includes("tech solutions")
   ) {
     return INDUSTRY_CONFIGS.SOFTWARE_IT;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // PRIORITY 9: Professional Services (Legal, Tax, Finance)
-  // ═══════════════════════════════════════════════════════════════════════
   if (
-    combined.includes("advocate") ||
-    combined.includes("legal") ||
-    combined.includes("law") ||
-    combined.includes("tax") ||
-    combined.includes("ca ") ||
-    combined.includes("audit") ||
-    combined.includes("realt") ||
-    combined.includes("properties") ||
-    combined.includes("financial") ||
-    combined.includes("insurance") ||
-    combined.includes("chartered")
+    normTag.includes("teeth") ||
+    normTag.includes("dental") ||
+    normTag.includes("patient care") ||
+    normTag.includes("treatment")
   ) {
-    return INDUSTRY_CONFIGS.PROFESSIONAL_SERVICES;
+    return INDUSTRY_CONFIGS.HEALTHCARE_CLINIC;
+  }
+
+  if (
+    normTag.includes("biryani") ||
+    normTag.includes("dining") ||
+    normTag.includes("delicious food") ||
+    normTag.includes("tasty food") ||
+    normTag.includes("fresh food")
+  ) {
+    return INDUSTRY_CONFIGS.RESTAURANT_FOOD;
+  }
+
+  if (
+    normTag.includes("designer wear") ||
+    normTag.includes("clothing") ||
+    normTag.includes("tailoring") ||
+    normTag.includes("shopping")
+  ) {
+    return INDUSTRY_CONFIGS.RETAIL_SHOP;
   }
 
   return INDUSTRY_CONFIGS.GENERAL;
