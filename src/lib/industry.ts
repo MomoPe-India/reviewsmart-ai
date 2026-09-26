@@ -367,7 +367,205 @@ export function detectIndustry(
 ): IndustryConfig {
   const combined = `${name} ${category} ${tagline}`.toLowerCase();
 
-  // 1. Software / IT / Tech
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 1: Food & Dining (Most common merchant vertical)
+  // Check FIRST to prevent "Cloud Kitchen" matching SOFTWARE_IT via "cloud",
+  // "Digital Cafe" matching via "digital", etc.
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("restaurant") ||
+    combined.includes("cafe") ||
+    combined.includes("café") ||
+    combined.includes("bistro") ||
+    combined.includes("bakery") ||
+    combined.includes("kitchen") ||
+    combined.includes("food") ||
+    combined.includes("biryani") ||
+    combined.includes("spice") ||
+    combined.includes("sweet") ||
+    combined.includes("dhaba") ||
+    combined.includes("mess") ||
+    combined.includes("tiffin") ||
+    combined.includes("tea") ||
+    combined.includes("chai") ||
+    combined.includes("coffee") ||
+    combined.includes("dine") ||
+    combined.includes("dining") ||
+    combined.includes("grill") ||
+    combined.includes("pizza") ||
+    combined.includes("burger") ||
+    combined.includes("chicken") ||
+    combined.includes("juice") ||
+    combined.includes("yummy") ||
+    combined.includes("tasty") ||
+    combined.includes("delicious") ||
+    combined.includes("cook") ||
+    combined.includes("catering") ||
+    combined.includes("snack") ||
+    combined.includes("ice cream") ||
+    combined.includes("sweets") ||
+    combined.includes("chaat") ||
+    combined.includes("pani puri") ||
+    combined.includes("dosa") ||
+    combined.includes("idli") ||
+    combined.includes("noodle") ||
+    combined.includes("chinese") ||
+    combined.includes("mughlai") ||
+    combined.includes("north indian") ||
+    combined.includes("south indian") ||
+    combined.includes("fast food") ||
+    combined.includes("cloud kitchen") ||
+    combined.includes("eat") ||
+    combined.includes("meals") ||
+    combined.includes("lunch") ||
+    combined.includes("dinner") ||
+    combined.includes("breakfast")
+  ) {
+    return INDUSTRY_CONFIGS.RESTAURANT_FOOD;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 2: Retail & Stores (Second most common local merchant vertical)
+  // Check before SOFTWARE_IT to prevent "Digital Store" → tech misclassification
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("store") ||
+    combined.includes("shop") ||
+    combined.includes("boutique") ||
+    combined.includes("jewel") ||
+    combined.includes("fashion") ||
+    combined.includes("clothing") ||
+    combined.includes("garment") ||
+    combined.includes("textile") ||
+    combined.includes("fabric") ||
+    combined.includes("tailor") ||
+    combined.includes("stitch") ||
+    combined.includes("optics") ||
+    combined.includes("optical") ||
+    combined.includes("electronics") ||
+    combined.includes("mobile") ||
+    combined.includes("mall") ||
+    combined.includes("mart") ||
+    combined.includes("supermarket") ||
+    combined.includes("kirana") ||
+    combined.includes("general store") ||
+    combined.includes("readymade") ||
+    combined.includes("saree") ||
+    combined.includes("sari") ||
+    combined.includes("kurta") ||
+    combined.includes("studio") && (combined.includes("fashion") || combined.includes("photo") || combined.includes("design"))
+  ) {
+    return INDUSTRY_CONFIGS.RETAIL_SHOP;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 3: Hotel & Lodging
+  // Check before SOFTWARE_IT to prevent "Hotel Digital" → tech misclassification
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("hotel") ||
+    combined.includes("resort") ||
+    combined.includes("lodge") ||
+    combined.includes("lodging") ||
+    combined.includes("stay") ||
+    combined.includes("inn ") ||
+    combined.includes("suites") ||
+    combined.includes("guest house") ||
+    combined.includes("motel") ||
+    combined.includes("homestay")
+  ) {
+    return INDUSTRY_CONFIGS.HOTEL_HOSPITALITY;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 4: Clinics, Doctors & Dental
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("clinic") ||
+    combined.includes("dental") ||
+    combined.includes("doctor") ||
+    combined.includes("hospital") ||
+    combined.includes("physio") ||
+    combined.includes("ortho") ||
+    combined.includes("pharma") ||
+    combined.includes("diagnostic") ||
+    combined.includes("healthcare") ||
+    combined.includes("medic") ||
+    combined.includes("derma") ||
+    combined.includes("eye care") ||
+    combined.includes("ayurved") ||
+    combined.includes("homeopath") ||
+    combined.includes("lab")
+  ) {
+    return INDUSTRY_CONFIGS.HEALTHCARE_CLINIC;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 5: Salons, Spas & Beauty
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("salon") ||
+    combined.includes("spa") ||
+    combined.includes("beauty") ||
+    combined.includes("hair") ||
+    combined.includes("makeover") ||
+    combined.includes("barber") ||
+    combined.includes("parlour") ||
+    combined.includes("parlor") ||
+    combined.includes("nails") ||
+    combined.includes("skincare") ||
+    combined.includes("cosmetic") ||
+    combined.includes("mehndi") ||
+    combined.includes("henna") ||
+    combined.includes("bridal")
+  ) {
+    return INDUSTRY_CONFIGS.SALON_BEAUTY;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 6: Automobile & Bikes
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("garage") ||
+    combined.includes("auto") ||
+    combined.includes("motors") ||
+    combined.includes("mechanic") ||
+    combined.includes("car ") ||
+    combined.includes("bike ") ||
+    combined.includes("tyre") ||
+    combined.includes("tire") ||
+    combined.includes("detailing") ||
+    combined.includes("vehicle") ||
+    combined.includes("wheel") ||
+    combined.includes("two wheeler") ||
+    combined.includes("scooter")
+  ) {
+    return INDUSTRY_CONFIGS.AUTO_GARAGE;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 7: Gym & Fitness
+  // ═══════════════════════════════════════════════════════════════════════
+  if (
+    combined.includes("gym") ||
+    combined.includes("fitness") ||
+    combined.includes("workout") ||
+    combined.includes("crossfit") ||
+    combined.includes("yoga") ||
+    combined.includes("pilates") ||
+    combined.includes("sports") ||
+    combined.includes("martial") ||
+    combined.includes("boxing") ||
+    combined.includes("zumba")
+  ) {
+    return INDUSTRY_CONFIGS.FITNESS_GYM;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 8: Software / IT / Tech
+  // Now SAFE to check — all ambiguous terms (cloud, digital, solutions, studio)
+  // have been pre-filtered by food/retail/hotel above.
+  // ═══════════════════════════════════════════════════════════════════════
   if (
     combined.includes("technology") ||
     combined.includes("technologies") ||
@@ -383,132 +581,16 @@ export function detectIndustry(
     combined.includes("consulting") ||
     combined.includes("cyber") ||
     combined.includes("ai ") ||
-    combined.includes("app ")
+    combined.includes("app ") ||
+    combined.includes("saas") ||
+    combined.includes("startup")
   ) {
     return INDUSTRY_CONFIGS.SOFTWARE_IT;
   }
 
-  // 2. Clinics, Doctors & Dental
-  if (
-    combined.includes("clinic") ||
-    combined.includes("dental") ||
-    combined.includes("doctor") ||
-    combined.includes("hospital") ||
-    combined.includes("physio") ||
-    combined.includes("ortho") ||
-    combined.includes("pharma") ||
-    combined.includes("diagnostic") ||
-    combined.includes("healthcare") ||
-    combined.includes("medic") ||
-    combined.includes("derma") ||
-    combined.includes("eye ") ||
-    combined.includes("care ")
-  ) {
-    return INDUSTRY_CONFIGS.HEALTHCARE_CLINIC;
-  }
-
-  // 3. Salons, Spas & Beauty
-  if (
-    combined.includes("salon") ||
-    combined.includes("spa") ||
-    combined.includes("beauty") ||
-    combined.includes("hair") ||
-    combined.includes("makeover") ||
-    combined.includes("barber") ||
-    combined.includes("parlour") ||
-    combined.includes("parlor") ||
-    combined.includes("nails") ||
-    combined.includes("skincare") ||
-    combined.includes("cosmetic")
-  ) {
-    return INDUSTRY_CONFIGS.SALON_BEAUTY;
-  }
-
-  // 4. Automobile & Bikes
-  if (
-    combined.includes("garage") ||
-    combined.includes("auto") ||
-    combined.includes("motors") ||
-    combined.includes("mechanic") ||
-    combined.includes("car ") ||
-    combined.includes("bike ") ||
-    combined.includes("tyre") ||
-    combined.includes("tire") ||
-    combined.includes("detailing") ||
-    combined.includes("wash") ||
-    combined.includes("wheel")
-  ) {
-    return INDUSTRY_CONFIGS.AUTO_GARAGE;
-  }
-
-  // 5. Gym & Fitness
-  if (
-    combined.includes("gym") ||
-    combined.includes("fitness") ||
-    combined.includes("workout") ||
-    combined.includes("crossfit") ||
-    combined.includes("yoga") ||
-    combined.includes("pilates") ||
-    combined.includes("sports") ||
-    combined.includes("martial") ||
-    combined.includes("boxing")
-  ) {
-    return INDUSTRY_CONFIGS.FITNESS_GYM;
-  }
-
-  // 6. Food & Dining
-  if (
-    combined.includes("restaurant") ||
-    combined.includes("cafe") ||
-    combined.includes("bistro") ||
-    combined.includes("bakery") ||
-    combined.includes("kitchen") ||
-    combined.includes("food") ||
-    combined.includes("biryani") ||
-    combined.includes("spice") ||
-    combined.includes("sweet") ||
-    combined.includes("dhaba") ||
-    combined.includes("hotel") && (combined.includes("mess") || combined.includes("tiffin")) ||
-    combined.includes("tea") ||
-    combined.includes("chai") ||
-    combined.includes("coffee") ||
-    combined.includes("dine") ||
-    combined.includes("grill") ||
-    combined.includes("pizza") ||
-    combined.includes("burger")
-  ) {
-    return INDUSTRY_CONFIGS.RESTAURANT_FOOD;
-  }
-
-  // 7. Hotel & Lodging
-  if (
-    combined.includes("hotel") ||
-    combined.includes("resort") ||
-    combined.includes("lodge") ||
-    combined.includes("stay") ||
-    combined.includes("inn ") ||
-    combined.includes("suites")
-  ) {
-    return INDUSTRY_CONFIGS.HOTEL_HOSPITALITY;
-  }
-
-  // 8. Retail & Stores
-  if (
-    combined.includes("store") ||
-    combined.includes("shop") ||
-    combined.includes("boutique") ||
-    combined.includes("jewel") ||
-    combined.includes("fashion") ||
-    combined.includes("optics") ||
-    combined.includes("electronics") ||
-    combined.includes("mall") ||
-    combined.includes("mart") ||
-    combined.includes("supermarket")
-  ) {
-    return INDUSTRY_CONFIGS.RETAIL_SHOP;
-  }
-
-  // 9. Professional Services
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRIORITY 9: Professional Services (Legal, Tax, Finance)
+  // ═══════════════════════════════════════════════════════════════════════
   if (
     combined.includes("advocate") ||
     combined.includes("legal") ||
@@ -518,7 +600,9 @@ export function detectIndustry(
     combined.includes("audit") ||
     combined.includes("realt") ||
     combined.includes("properties") ||
-    combined.includes("financial")
+    combined.includes("financial") ||
+    combined.includes("insurance") ||
+    combined.includes("chartered")
   ) {
     return INDUSTRY_CONFIGS.PROFESSIONAL_SERVICES;
   }
