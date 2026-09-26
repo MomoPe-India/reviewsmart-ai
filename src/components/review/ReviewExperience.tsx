@@ -375,17 +375,14 @@ export default function ReviewExperience({ business }: { business: BusinessData 
       }),
     }).catch(() => {});
 
-    // START 3-2-1 COUNTDOWN
+    // START 2-1 COUNTDOWN (snappier, faster redirect)
     if (countdownRef.current) clearTimeout(countdownRef.current);
-    setModalCountdown(3);
+    setModalCountdown(2);
     countdownRef.current = setTimeout(() => {
-      setModalCountdown(2);
+      setModalCountdown(1);
       countdownRef.current = setTimeout(() => {
-        setModalCountdown(1);
-        countdownRef.current = setTimeout(() => {
-          setModalCountdown(0);
-          googleLinkRef.current?.click();
-        }, 1000);
+        setModalCountdown(0);
+        googleLinkRef.current?.click();
       }, 1000);
     }, 1000);
   };
