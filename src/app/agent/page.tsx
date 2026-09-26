@@ -29,7 +29,14 @@ import {
   Eye,
   EyeOff,
   Mic,
+  ChevronDown,
+  ChevronUp,
+  Building2,
+  Clock,
+  BadgeCheck,
+  AlertCircle,
 } from "lucide-react";
+
 import QRCode from "qrcode";
 import { getAppUrl } from "@/lib/utils";
 
@@ -59,6 +66,24 @@ interface AgentSession {
     totalCommission: number;
     pendingDeals: number;
   } | null;
+}
+
+interface MyDeal {
+  paymentId: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  amount: number;
+  agentCommission: number;
+  createdAt: string;
+  businessName: string;
+  businessSlug: string;
+  businessCategory: string;
+  businessAddress: string;
+  businessLogoUrl: string | null;
+  isPaid: boolean;
+  googleReviewUrl: string;
+  merchantName: string;
+  merchantPhone: string;
+  merchantUserId: string;
 }
 
 export default function AgentPosPage() {
@@ -93,6 +118,26 @@ export default function AgentPosPage() {
   const [createdDeal, setCreatedDeal] = useState<any | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // My Merchants Portfolio
+  const [myDeals, setMyDeals] = useState<MyDeal[]>([]);
+  const [isLoadingDeals, setIsLoadingDeals] = useState(false);
+  const [showMyDeals, setShowMyDeals] = useState(false);
+
+  const fetchMyDeals = async () => {
+    setIsLoadingDeals(true);
+    try {
+      const res = await fetch("/api/agent/my-deals");
+      if (res.ok) {
+        const data = await res.json();
+        setMyDeals(data.deals || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch my deals:", e);
+    } finally {
+      setIsLoadingDeals(false);
+    }
+  };
 
   // Live Review Pitch Preview
   const [pitchDrafts, setPitchDrafts] = useState<any[]>([]);
@@ -132,10 +177,12 @@ export default function AgentPosPage() {
           router.push("/login");
         } else {
           setAgent(data.user);
+          fetchMyDeals(); // Load deal history on mount
         }
       })
       .catch(() => router.push("/login"))
       .finally(() => setAuthLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const [showEarnings, setShowEarnings] = useState(false);
@@ -311,6 +358,8 @@ export default function AgentPosPage() {
       }
 
       setCreatedDeal(data.deal);
+      fetchMyDeals(); // Refresh portfolio after new deal
+
     } catch {
       setDealError("Network error while submitting deal. Please try again.");
     } finally {
@@ -1100,6 +1149,186 @@ export default function AgentPosPage() {
             </button>
           </form>
         )}
+
+        {/* ── MY MERCHANTS PORTFOLIO PANEL ────────────────────── */}
+        <div className="mt-2">
+          {/* Collapsible Header */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowMyDeals((prev) => !prev);
+              if (!showMyDeals && myDeals.length === 0) fetchMyDeals();
+            }}
+            className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/40 transition group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">
+                <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-black text-white">My Merchants</span>
+                <span className="ml-2 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-1.5 py-0.5 rounded-full border border-indigo-800">
+                  {myDeals.length}
+                </span>
+              </div>
+              {myDeals.some((d) => d.status === "PENDING") && (
+                <span className="text-[9px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
+                  <Clock className="w-2.5 h-2.5" />
+                  {myDeals.filter((d) => d.status === "PENDING").length} Pending
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {isLoadingDeals && <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin" />}
+              {showMyDeals ? (
+                <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
+              )}
+            </div>
+          </button>
+
+          {/* Expanded Deal Cards */}
+          {showMyDeals && (
+            <div className="mt-2 space-y-2 animate-fadeIn">
+              {isLoadingDeals && myDeals.length === 0 ? (
+                <div className="py-8 text-center space-y-2">
+                  <Loader2 className="w-5 h-5 text-indigo-400 animate-spin mx-auto" />
+                  <p className="text-xs text-slate-400">Loading your merchants...</p>
+                </div>
+              ) : myDeals.length === 0 ? (
+                <div className="py-8 text-center space-y-2 bg-slate-900/60 rounded-2xl border border-slate-800">
+                  <Building2 className="w-8 h-8 text-slate-600 mx-auto" />
+                  <p className="text-xs font-bold text-slate-400">No merchants yet</p>
+                  <p className="text-[11px] text-slate-500">Close your first deal above to see it here!</p>
+                </div>
+              ) : (
+                myDeals.map((deal) => {
+                  const base = typeof window !== "undefined" ? window.location.origin : "https://reviewsmart-ai.vercel.app";
+                  const credsMsg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login: ${base}/login\n👤 User ID: ${deal.merchantUserId}\n\nYour review page: ${base}/r/${deal.businessSlug}\n\n⭐ Share this with your customers to get 5-star reviews instantly!`;
+
+                  return (
+                    <div
+                      key={deal.paymentId}
+                      className={`p-3.5 rounded-2xl border transition ${
+                        deal.status === "APPROVED"
+                          ? "bg-slate-900 border-emerald-500/25"
+                          : deal.status === "REJECTED"
+                          ? "bg-slate-900 border-red-500/20"
+                          : "bg-slate-900 border-amber-500/25"
+                      }`}
+                    >
+                      {/* Deal Header Row */}
+                      <div className="flex items-start justify-between gap-2 mb-2.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {/* Logo / Initial */}
+                          <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {deal.businessLogoUrl ? (
+                              <img src={deal.businessLogoUrl} alt={deal.businessName} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-black text-indigo-300">
+                                {deal.businessName.slice(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-black text-white truncate">{deal.businessName}</div>
+                            <div className="text-[10px] text-slate-400 truncate">
+                              {deal.businessCategory || "Business"} · {new Date(deal.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status Pill */}
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black flex-shrink-0 ${
+                          deal.status === "APPROVED"
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            : deal.status === "REJECTED"
+                            ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                            : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                        }`}>
+                          {deal.status === "APPROVED" ? (
+                            <BadgeCheck className="w-3 h-3" />
+                          ) : deal.status === "REJECTED" ? (
+                            <AlertCircle className="w-3 h-3" />
+                          ) : (
+                            <Clock className="w-3 h-3" />
+                          )}
+                          {deal.status}
+                        </div>
+                      </div>
+
+                      {/* Amount & Commission Row */}
+                      <div className="flex items-center gap-2 mb-2.5 text-[10px]">
+                        <div className="flex-1 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
+                          <span className="text-slate-400 block">Deal Amount</span>
+                          <span className="font-black text-white">₹{deal.amount.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className={`flex-1 p-2 rounded-xl border ${
+                          deal.status === "APPROVED"
+                            ? "bg-emerald-500/10 border-emerald-500/20"
+                            : "bg-slate-800/60 border-slate-700/60"
+                        }`}>
+                          <span className="text-slate-400 block">
+                            {deal.status === "APPROVED" ? "Earned" : "Est. Commission"}
+                          </span>
+                          <span className={`font-black ${deal.status === "APPROVED" ? "text-emerald-400" : "text-slate-300"}`}>
+                            ₹{deal.agentCommission.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                        <div className="flex-1 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
+                          <span className="text-slate-400 block">Login ID</span>
+                          <span className="font-mono font-bold text-white text-[9px]">{deal.merchantUserId}</span>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            window.open(
+                              `https://wa.me/91${deal.merchantPhone.replace(/\D/g, "")}?text=${encodeURIComponent(credsMsg)}`,
+                              "_blank"
+                            )
+                          }
+                          className="py-2 px-2 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
+                        >
+                          <Share2 className="w-3 h-3" />
+                          Share Creds
+                        </button>
+                        <a
+                          href={`/r/${deal.businessSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-2 px-2 rounded-xl bg-indigo-600/15 hover:bg-indigo-600/25 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Preview Review
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Refresh button */}
+              {myDeals.length > 0 && (
+                <button
+                  type="button"
+                  onClick={fetchMyDeals}
+                  disabled={isLoadingDeals}
+                  className="w-full py-2 text-[10px] font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isLoadingDeals ? "animate-spin" : ""}`} />
+                  {isLoadingDeals ? "Refreshing..." : "Refresh Status"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+        {/* ── END MY MERCHANTS PANEL ───────────────────────────── */}
+
       </main>
     </div>
   );
