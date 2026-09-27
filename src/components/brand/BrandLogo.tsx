@@ -154,14 +154,14 @@ export default function BrandLogo({
             }`}
           >
             Review
-            <span className="text-indigo-500">Smart</span>
+            <span className={isDark ? "text-indigo-400" : "text-blue-600"}>Smart</span>
           </span>
 
           <span
-            className={`font-black uppercase tracking-widest rounded-md border ${badgeSizes[size]} ${
+            className={`font-black uppercase tracking-widest rounded-full border ${badgeSizes[size]} ${
               isDark
                 ? "bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 border-amber-300/60 shadow-sm"
-                : "bg-indigo-50 text-indigo-700 border-indigo-200"
+                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-500 shadow-sm"
             }`}
           >
             AI
