@@ -112,6 +112,62 @@ const LUXURY_THEMES = [
 
 type LuxuryThemeId = (typeof LUXURY_THEMES)[number]["id"];
 
+export function GoogleGIcon({ className = "w-6 h-6" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+      <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+    </svg>
+  );
+}
+
+const drawGoogleGBadgeOnCanvas = async (
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  diameter: number,
+  accentColor: string
+) => {
+  const radius = diameter / 2;
+  ctx.save();
+  // Crisp circular white plate
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Metallic / theme accent outer border
+  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = Math.max(3, Math.round(diameter * 0.04));
+  ctx.stroke();
+
+  // Subtle inner ring
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius - 2, 0, Math.PI * 2);
+  ctx.stroke();
+
+  const googleSvgDataUrl =
+    "data:image/svg+xml;charset=utf-8," +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" /><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" /><path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" /><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" /></svg>`
+    );
+
+  const gImg = new Image();
+  await new Promise<void>((resolve, reject) => {
+    gImg.onload = () => resolve();
+    gImg.onerror = reject;
+    gImg.src = googleSvgDataUrl;
+  });
+
+  const gSize = diameter * 0.58;
+  ctx.drawImage(gImg, centerX - gSize / 2, centerY - gSize / 2, gSize, gSize);
+  ctx.restore();
+};
+
 export default function PrintStudioClient({
   business,
   reviewUrl,
@@ -125,6 +181,7 @@ export default function PrintStudioClient({
   const [staffId, setStaffId] = useState("");
   const [showLanyardSlot, setShowLanyardSlot] = useState(false);
   const [luxuryTheme, setLuxuryTheme] = useState<LuxuryThemeId>("royal-gold");
+  const [badgeType, setBadgeType] = useState<"GOOGLE_G" | "MERCHANT_LOGO">("GOOGLE_G");
   const [logoUrl, setLogoUrl] = useState<string | null>(business.logoUrl || null);
   const [logoStyle, setLogoStyle] = useState<"auto" | "badge" | "banner">("auto");
   const [logoPlate, setLogoPlate] = useState<"white" | "frost" | "none">("white");
@@ -450,19 +507,23 @@ export default function PrintStudioClient({
         ctx.textBaseline = "middle";
         ctx.fillText("★ 5.0 GOOGLE EXCELLENCE AWARD ★", 600, 127);
 
-        // Brand Logo (Adaptive framing)
-        await drawAdaptiveLogoOnCanvas(
-          ctx,
-          logoUrl,
-          business.name,
-          600,
-          260,
-          480,
-          150,
-          logoStyle,
-          logoPlate,
-          activeTheme.accent
-        );
+        // Brand Logo or Official Google "G" Badge
+        if (badgeType === "GOOGLE_G") {
+          await drawGoogleGBadgeOnCanvas(ctx, 600, 260, 160, activeTheme.accent);
+        } else {
+          await drawAdaptiveLogoOnCanvas(
+            ctx,
+            logoUrl,
+            business.name,
+            600,
+            260,
+            480,
+            150,
+            logoStyle,
+            logoPlate,
+            activeTheme.accent
+          );
+        }
 
         // Business Name
         ctx.fillStyle = activeTheme.text;
@@ -614,19 +675,23 @@ export default function PrintStudioClient({
           ctx.textBaseline = "middle";
           ctx.fillText(ribbonText, 342, 118);
 
-          // Brand Logo (Adaptive framing)
-          await drawAdaptiveLogoOnCanvas(
-            ctx,
-            logoUrl,
-            business.name,
-            342,
-            195,
-            300,
-            84,
-            logoStyle,
-            logoPlate,
-            activeTheme.accent
-          );
+          // Brand Logo or Official Google "G" Badge
+          if (badgeType === "GOOGLE_G") {
+            await drawGoogleGBadgeOnCanvas(ctx, 342, 195, 100, activeTheme.accent);
+          } else {
+            await drawAdaptiveLogoOnCanvas(
+              ctx,
+              logoUrl,
+              business.name,
+              342,
+              195,
+              300,
+              84,
+              logoStyle,
+              logoPlate,
+              activeTheme.accent
+            );
+          }
 
           // Business Name
           ctx.fillStyle = activeTheme.text;
@@ -905,19 +970,23 @@ export default function PrintStudioClient({
         ctx.textBaseline = "middle";
         ctx.fillText("★ 5.0 GOOGLE EXCELLENCE AWARD ★", 1240, 230);
 
-        // Brand Logo (Adaptive framing)
-        await drawAdaptiveLogoOnCanvas(
-          ctx,
-          logoUrl,
-          business.name,
-          1240,
-          480,
-          900,
-          240,
-          logoStyle,
-          logoPlate,
-          activeTheme.accent
-        );
+        // Brand Logo or Official Google "G" Badge
+        if (badgeType === "GOOGLE_G") {
+          await drawGoogleGBadgeOnCanvas(ctx, 1240, 480, 280, activeTheme.accent);
+        } else {
+          await drawAdaptiveLogoOnCanvas(
+            ctx,
+            logoUrl,
+            business.name,
+            1240,
+            480,
+            900,
+            240,
+            logoStyle,
+            logoPlate,
+            activeTheme.accent
+          );
+        }
 
         // Business Name
         ctx.fillStyle = activeTheme.text;
@@ -1314,117 +1383,198 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
           </div>
         )}
 
-        {/* Adaptive Merchant Logo & Details */}
+        {/* Standee & Display Touchpoint Badge */}
         <div className="bg-white p-5 rounded-3xl border border-slate-200/70 shadow-sm space-y-4">
-          <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <Palette className="w-4 h-4 text-indigo-600" />
-            Adaptive Logo &amp; Brand Framing
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Brand Touchpoint Badge
+            </label>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              {badgeType === "GOOGLE_G" ? "★ Google Authentic" : "Custom Brand"}
+            </span>
+          </div>
 
-          {/* Logo Uploader / Switcher */}
-          <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-sm overflow-hidden flex-shrink-0">
-              {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
-              ) : (
-                <span className="text-[11px] font-black text-amber-600">
-                  {business.name.slice(0, 2).toUpperCase()}
+          {/* Badge Switcher Tabs */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setBadgeType("GOOGLE_G")}
+              className={`p-3 rounded-2xl border text-left transition flex flex-col gap-1.5 ${
+                badgeType === "GOOGLE_G"
+                  ? "border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 text-slate-900 shadow-sm ring-1 ring-amber-400"
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-7 h-7 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center p-1">
+                  <GoogleGIcon className="w-full h-full" />
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-amber-700 bg-amber-200/70 px-1.5 py-0.5 rounded">
+                  Recommended
                 </span>
-              )}
-            </div>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900">Official Google &ldquo;G&rdquo;</div>
+                <div className="text-[10px] text-slate-500 leading-snug">
+                  Uniform &amp; authentic circle badge across all businesses. 100% scan trust.
+                </div>
+              </div>
+            </button>
 
-            <div className="flex-1">
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-slate-800 text-xs font-bold cursor-pointer shadow-sm transition">
-                <Camera className="w-3.5 h-3.5 text-amber-600" />
-                <span>{logoUrl ? "Change Logo" : "Upload Brand Logo"}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                />
-              </label>
-              {logoUrl && (
-                <button
-                  type="button"
-                  onClick={() => setLogoUrl(null)}
-                  className="text-[10px] font-bold text-red-600 ml-2 hover:underline"
-                >
-                  Reset
-                </button>
-              )}
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                Preserves transparent PNGs &amp; original aspect ratio.
+            <button
+              type="button"
+              onClick={() => setBadgeType("MERCHANT_LOGO")}
+              className={`p-3 rounded-2xl border text-left transition flex flex-col gap-1.5 ${
+                badgeType === "MERCHANT_LOGO"
+                  ? "border-indigo-500 bg-indigo-50/80 text-indigo-950 shadow-sm ring-1 ring-indigo-400"
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-7 h-7 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center overflow-hidden">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Store logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <Camera className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                </div>
+                <span className="text-[9px] font-bold text-slate-400">
+                  Custom
+                </span>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900">Store Brand Logo</div>
+                <div className="text-[10px] text-slate-500 leading-snug">
+                  Upload merchant&apos;s own business emblem or crest image.
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* When Google G is active, show the authenticity guarantee */}
+          {badgeType === "GOOGLE_G" ? (
+            <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/70 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-white border border-amber-300 flex items-center justify-center p-1 shrink-0">
+                  <GoogleGIcon className="w-full h-full" />
+                </div>
+                <span className="text-xs font-extrabold text-slate-800">
+                  Uniform Google Partner Standard
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-600 leading-relaxed">
+                Customers immediately recognize the official Google &ldquo;G&rdquo; circle badge. Your store name <strong className="text-slate-900">&ldquo;{business.name}&rdquo;</strong> is prominently showcased directly underneath it.
               </p>
             </div>
-          </div>
+          ) : (
+            /* When Merchant Logo is active, show the uploader and layout controls */
+            <div className="space-y-3 pt-1">
+              <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-sm overflow-hidden flex-shrink-0">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-[11px] font-black text-amber-600">
+                      {business.name.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                </div>
 
-          {/* Flexible Logo Style Switcher */}
-          <div className="space-y-2 pt-1">
-            <label className="block text-[10px] font-bold text-slate-700">
-              Logo Framing Layout
-            </label>
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setLogoStyle("auto")}
-                className={`py-1.5 px-2 rounded-xl border text-center transition ${
-                  logoStyle === "auto"
-                    ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
-                }`}
-              >
-                <div className="text-[10px]">Auto-Fit</div>
-                <div className="text-[8px] text-slate-400">Aspect-Safe</div>
-              </button>
+                <div className="flex-1">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-amber-300 hover:bg-amber-100 text-slate-800 text-xs font-bold cursor-pointer shadow-sm transition">
+                    <Camera className="w-3.5 h-3.5 text-amber-600" />
+                    <span>{logoUrl ? "Change Logo" : "Upload Brand Logo"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {logoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setLogoUrl(null)}
+                      className="text-[10px] font-bold text-red-600 ml-2 hover:underline"
+                    >
+                      Reset
+                    </button>
+                  )}
+                  <p className="text-[10px] text-slate-500 mt-0.5">
+                    Preserves transparent PNGs &amp; original aspect ratio.
+                  </p>
+                </div>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setLogoStyle("badge")}
-                className={`py-1.5 px-2 rounded-xl border text-center transition ${
-                  logoStyle === "badge"
-                    ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
-                }`}
-              >
-                <div className="text-[10px]">Badge / Crest</div>
-                <div className="text-[8px] text-slate-400">Square/Circle</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLogoStyle("banner")}
-                className={`py-1.5 px-2 rounded-xl border text-center transition ${
-                  logoStyle === "banner"
-                    ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
-                }`}
-              >
-                <div className="text-[10px]">Wide Banner</div>
-                <div className="text-[8px] text-slate-400">Typography</div>
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-[10px] text-slate-600 font-medium">Logo Contrast Shield:</span>
-              <div className="flex gap-1">
-                {(["white", "frost", "none"] as const).map((plate) => (
+              {/* Flexible Logo Style Switcher */}
+              <div className="space-y-2 pt-1">
+                <label className="block text-[10px] font-bold text-slate-700">
+                  Logo Framing Layout
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
                   <button
-                    key={plate}
                     type="button"
-                    onClick={() => setLogoPlate(plate)}
-                    className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border transition ${
-                      logoPlate === plate
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                    onClick={() => setLogoStyle("auto")}
+                    className={`py-1.5 px-2 rounded-xl border text-center transition ${
+                      logoStyle === "auto"
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
                     }`}
                   >
-                    {plate === "white" ? "Solid White" : plate === "frost" ? "Frosted Glass" : "Transparent"}
+                    <div className="text-[10px]">Auto-Fit</div>
+                    <div className="text-[8px] text-slate-400">Aspect-Safe</div>
                   </button>
-                ))}
+
+                  <button
+                    type="button"
+                    onClick={() => setLogoStyle("badge")}
+                    className={`py-1.5 px-2 rounded-xl border text-center transition ${
+                      logoStyle === "badge"
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
+                    }`}
+                  >
+                    <div className="text-[10px]">Badge / Crest</div>
+                    <div className="text-[8px] text-slate-400">Square/Circle</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLogoStyle("banner")}
+                    className={`py-1.5 px-2 rounded-xl border text-center transition ${
+                      logoStyle === "banner"
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
+                    }`}
+                  >
+                    <div className="text-[10px]">Wide Banner</div>
+                    <div className="text-[8px] text-slate-400">Typography</div>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-slate-600 font-medium">Logo Contrast Shield:</span>
+                  <div className="flex gap-1">
+                    {(["white", "frost", "none"] as const).map((plate) => (
+                      <button
+                        key={plate}
+                        type="button"
+                        onClick={() => setLogoPlate(plate)}
+                        className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border transition ${
+                          logoPlate === plate
+                            ? "bg-slate-900 text-white border-slate-900"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        {plate === "white" ? "Solid White" : plate === "frost" ? "Frosted Glass" : "Transparent"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 mb-1">
@@ -1629,8 +1779,12 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
 
             {/* Stand Header: Logo & Store Name */}
             <div className="flex flex-col items-center mt-1 z-10 w-full px-4">
-              {/* Adaptive Logo */}
-              {logoUrl ? (
+              {/* Brand Badge (Google G or Merchant Logo) */}
+              {badgeType === "GOOGLE_G" ? (
+                <div className="w-16 h-16 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-3 shadow-lg mb-1 ring-2 ring-amber-400/20">
+                  <GoogleGIcon className="w-full h-full" />
+                </div>
+              ) : logoUrl ? (
                 <div
                   className={`p-1.5 flex items-center justify-center mb-1 overflow-hidden transition-all ${
                     logoStyle === "banner"
@@ -1799,8 +1953,12 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
 
                   {/* Store Info */}
                   <div className="flex flex-col items-center z-10 -mt-1 w-full px-2">
-                    {/* Adaptive Logo */}
-                    {logoUrl ? (
+                    {/* Brand Badge (Google G or Merchant Logo) */}
+                    {badgeType === "GOOGLE_G" ? (
+                      <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-2.5 shadow-md mb-1 ring-2 ring-amber-400/20">
+                        <GoogleGIcon className="w-full h-full" />
+                      </div>
+                    ) : logoUrl ? (
                       <div
                         className={`p-1 flex items-center justify-center mb-1 overflow-hidden transition-all ${
                           logoStyle === "banner"
@@ -2142,8 +2300,12 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
 
             {/* Header: Logo & Store Name */}
             <div className="flex flex-col items-center mt-1 z-10 w-full px-4">
-              {/* Adaptive Logo */}
-              {logoUrl ? (
+              {/* Brand Badge (Google G or Merchant Logo) */}
+              {badgeType === "GOOGLE_G" ? (
+                <div className="w-16 h-16 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-3.5 shadow-lg mb-1 ring-2 ring-amber-400/20">
+                  <GoogleGIcon className="w-full h-full" />
+                </div>
+              ) : logoUrl ? (
                 <div
                   className={`p-1.5 flex items-center justify-center mb-1 overflow-hidden transition-all ${
                     logoStyle === "banner"

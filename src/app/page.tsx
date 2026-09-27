@@ -980,17 +980,14 @@ export default function HomePage() {
                           </span>
                         </div>
 
-                        {/* Merchant Logo */}
-                        <div className="w-14 h-14 rounded-2xl bg-white/95 p-1 mx-auto mb-2 flex items-center justify-center shadow-md">
-                          {activeDemo.logo ? (
-                            <img
-                              src={activeDemo.logo}
-                              alt={activeDemo.name}
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <Store className="w-7 h-7 text-slate-800" />
-                          )}
+                        {/* Official Google "G" Circular Badge */}
+                        <div className="w-14 h-14 rounded-full bg-white border-2 border-amber-400 p-3 mx-auto mb-2 flex items-center justify-center shadow-lg ring-2 ring-amber-400/20">
+                          <svg className="w-full h-full" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+                            <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+                          </svg>
                         </div>
 
                         <h4 className="text-sm font-black text-white truncate px-2">{activeDemo.name}</h4>
@@ -1066,17 +1063,14 @@ export default function HomePage() {
                           </span>
                         </div>
 
-                        {/* Store Logo */}
-                        <div className="w-12 h-12 rounded-xl bg-white/95 p-1 mx-auto mb-2 flex items-center justify-center shadow-md">
-                          {activeDemo.logo ? (
-                            <img
-                              src={activeDemo.logo}
-                              alt={activeDemo.name}
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <Store className="w-6 h-6 text-slate-800" />
-                          )}
+                        {/* Official Google "G" Circular Badge */}
+                        <div className="w-12 h-12 rounded-full bg-white border-2 border-amber-400 p-2.5 mx-auto mb-2 flex items-center justify-center shadow-md ring-2 ring-amber-400/20">
+                          <svg className="w-full h-full" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+                            <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+                          </svg>
                         </div>
 
                         <h4 className="text-xs font-black text-white truncate px-1">{activeDemo.name}</h4>
@@ -1132,17 +1126,14 @@ export default function HomePage() {
                         <h4 className="text-sm font-black text-white leading-tight">WE VALUE YOUR FEEDBACK</h4>
                       </div>
 
-                      {/* Store Logo */}
-                      <div className="w-12 h-12 rounded-xl bg-white/95 p-1 mx-auto mb-2 flex items-center justify-center shadow-md">
-                        {activeDemo.logo ? (
-                          <img
-                            src={activeDemo.logo}
-                            alt={activeDemo.name}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        ) : (
-                          <Store className="w-6 h-6 text-slate-800" />
-                        )}
+                      {/* Official Google "G" Circular Badge */}
+                      <div className="w-12 h-12 rounded-full bg-white border-2 border-amber-400 p-2.5 mx-auto mb-2 flex items-center justify-center shadow-md ring-2 ring-amber-400/20">
+                        <svg className="w-full h-full" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+                          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+                          <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+                          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+                        </svg>
                       </div>
 
                       <div className="text-xs font-black text-white truncate">{activeDemo.name}</div>
