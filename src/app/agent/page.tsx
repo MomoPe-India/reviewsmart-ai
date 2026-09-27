@@ -35,6 +35,12 @@ import {
   Clock,
   BadgeCheck,
   AlertCircle,
+  BookOpen,
+  HelpCircle,
+  X,
+  Maximize2,
+  Filter,
+  Volume2,
 } from "lucide-react";
 
 import QRCode from "qrcode";
@@ -86,6 +92,14 @@ interface MyDeal {
   merchantUserId: string;
 }
 
+const KADAPA_PRESETS = [
+  "Sri Guru Fashions Kadapa",
+  "Kadapa Clothing Store",
+  "Kadapa Restaurant",
+  "Kadapa Photo Studio",
+  "Kadapa Salon",
+];
+
 export default function AgentPosPage() {
   const router = useRouter();
   const [agent, setAgent] = useState<AgentSession | null>(null);
@@ -119,10 +133,16 @@ export default function AgentPosPage() {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Modals & Enhanced Features
+  const [showPitchModal, setShowPitchModal] = useState(false);
+  const [showStandeeModal, setShowStandeeModal] = useState(false);
+
   // My Merchants Portfolio
   const [myDeals, setMyDeals] = useState<MyDeal[]>([]);
   const [isLoadingDeals, setIsLoadingDeals] = useState(false);
   const [showMyDeals, setShowMyDeals] = useState(false);
+  const [portfolioFilter, setPortfolioFilter] = useState<"ALL" | "APPROVED" | "PENDING">("ALL");
+  const [portfolioSearch, setPortfolioSearch] = useState("");
 
   const fetchMyDeals = async () => {
     setIsLoadingDeals(true);
@@ -142,11 +162,9 @@ export default function AgentPosPage() {
   // Live Review Pitch Preview
   const [pitchDrafts, setPitchDrafts] = useState<any[]>([]);
   const [loadingPitchDrafts, setLoadingPitchDrafts] = useState(false);
-  const [showPitchPreview, setShowPitchPreview] = useState(false);
 
   const handleGeneratePitchReviews = async (place: GoogleSearchResult) => {
     setLoadingPitchDrafts(true);
-    setShowPitchPreview(true);
     try {
       const res = await fetch("/api/ai/generate-review", {
         method: "POST",
@@ -182,10 +200,9 @@ export default function AgentPosPage() {
       })
       .catch(() => router.push("/login"))
       .finally(() => setAuthLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  const [showEarnings, setShowEarnings] = useState(false);
+  const [showEarnings, setShowEarnings] = useState(true);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -241,8 +258,9 @@ export default function AgentPosPage() {
   };
 
   // Immediate manual Search Handler
-  const handleSearch = async () => {
-    if (!searchQuery.trim() || searchQuery.trim().length < 2) return;
+  const handleSearch = async (overrideQuery?: string) => {
+    const q = (overrideQuery || searchQuery).trim();
+    if (!q || q.length < 2) return;
     if (searchDebounceRef.current) {
       clearTimeout(searchDebounceRef.current);
     }
@@ -250,7 +268,7 @@ export default function AgentPosPage() {
     setIsDropdownOpen(true);
     try {
       const res = await fetch(
-        `/api/business/search-google?query=${encodeURIComponent(searchQuery.trim())}`
+        `/api/business/search-google?query=${encodeURIComponent(q)}`
       );
       const data = await res.json();
       if (res.ok && data.results) {
@@ -298,8 +316,11 @@ export default function AgentPosPage() {
     if (!createdDeal) return;
     setNextDealCountdown(30);
     const interval = setInterval(() => {
-      setNextDealCountdown(prev => {
-        if (prev <= 1) { clearInterval(interval); return 0; }
+      setNextDealCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
@@ -359,7 +380,6 @@ export default function AgentPosPage() {
 
       setCreatedDeal(data.deal);
       fetchMyDeals(); // Refresh portfolio after new deal
-
     } catch {
       setDealError("Network error while submitting deal. Please try again.");
     } finally {
@@ -390,41 +410,58 @@ export default function AgentPosPage() {
   const activeStep = createdDeal ? 3 : selectedPlace ? (merchantPhone.length === 10 ? 3 : 2) : 1;
 
   const formatPhone = (val: string) => {
-    if (!val) return '';
+    if (!val) return "";
     const match = val.match(/^(\d{0,4})(\d{0,3})(\d{0,3})$/);
     if (!match) return val;
-    return !match[2] ? match[1] : `${match[1]} ${match[2]}` + (match[3] ? ` ${match[3]}` : '');
+    return !match[2] ? match[1] : `${match[1]} ${match[2]}` + (match[3] ? ` ${match[3]}` : "");
   };
 
+  // Filter deals
+  const filteredDeals = myDeals.filter((d) => {
+    if (portfolioFilter === "APPROVED" && d.status !== "APPROVED") return false;
+    if (portfolioFilter === "PENDING" && d.status !== "PENDING") return false;
+    if (portfolioSearch.trim()) {
+      const q = portfolioSearch.toLowerCase();
+      return (
+        d.businessName.toLowerCase().includes(q) ||
+        d.merchantPhone.includes(q) ||
+        d.merchantUserId.includes(q)
+      );
+    }
+    return true;
+  });
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
-      {/* Top Mobile Bar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+      {/* ─── TOP MOBILE BAR ────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black text-sm shadow-md">
             POS
           </div>
           <div>
             <h1 className="text-sm font-black text-white flex items-center gap-1.5">
-              <span>{agent?.name?.split(' ')[0] || "Agent"}</span>
+              <span>{agent?.name?.split(" ")[0] || "Agent"}</span>
               <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30">
                 {agent?.agentCode || "MKT-REP"}
               </span>
             </h1>
-            <p className="text-[10px] text-slate-400 truncate max-w-[160px]">
-              Agent Closer
-            </p>
+            <p className="text-[10px] text-slate-400">ReviewSmart Field Closer</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-800/80 border border-slate-700 shadow-inner">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
-            <span className="text-[9px] font-black text-slate-300">LIVE</span>
-          </div>
+        <div className="flex items-center gap-2">
+          {/* Pitch & Objection Helper Button */}
+          <button
+            type="button"
+            onClick={() => setShowPitchModal(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold transition shadow-sm"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Pitch Script</span>
+            <span className="sm:hidden">Script</span>
+          </button>
+
           <button
             onClick={handleLogout}
             className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition shadow-sm"
@@ -435,8 +472,8 @@ export default function AgentPosPage() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 py-5 space-y-5">
-        {/* Agent Performance & Earnings Bar */}
+      <main className="max-w-md mx-auto px-4 py-4 space-y-4">
+        {/* ─── AGENT PERFORMANCE & EARNINGS HUD ──────────────────────────── */}
         {agent?.agentStats ? (
           <div className="grid grid-cols-3 gap-2 p-3 bg-slate-900 rounded-2xl border border-slate-800 text-center shadow-lg">
             <div className="p-2 rounded-xl bg-slate-950/60 border-b-2 border-indigo-500">
@@ -450,7 +487,7 @@ export default function AgentPosPage() {
               title={showEarnings ? "Hide Earnings" : "Tap to View Earnings"}
             >
               <div className="flex items-center justify-center gap-1">
-                <span className="text-[9px] font-semibold text-slate-400">Earnings</span>
+                <span className="text-[9px] font-semibold text-slate-400">Commission</span>
                 {showEarnings ? (
                   <EyeOff className="w-2.5 h-2.5 text-slate-500 group-hover:text-slate-300" />
                 ) : (
@@ -458,37 +495,37 @@ export default function AgentPosPage() {
                 )}
               </div>
               {showEarnings ? (
-                <span className="text-base font-black text-emerald-400 tracking-wider inline-block animate-in zoom-in duration-200">
+                <span className="text-base font-black text-emerald-400 tracking-wider inline-block">
                   ₹{agent.agentStats.totalCommission.toLocaleString("en-IN")}
                 </span>
               ) : (
-                <span className="text-base font-black text-emerald-400/50 tracking-wider inline-block animate-pulse">
+                <span className="text-base font-black text-emerald-400/50 tracking-wider inline-block">
                   ••••
                 </span>
               )}
             </button>
-            <div className="p-2 rounded-xl bg-slate-950/60 border-b-2 border-amber-500 group cursor-help" title="Pending admin verification — check back soon">
-              <span className="text-[9px] font-semibold text-slate-400 block">Pending Verify</span>
+            <div
+              className="p-2 rounded-xl bg-slate-950/60 border-b-2 border-amber-500 cursor-pointer"
+              onClick={() => {
+                setShowMyDeals(true);
+                setPortfolioFilter("PENDING");
+              }}
+              title="Filter pending deals"
+            >
+              <span className="text-[9px] font-semibold text-slate-400 block">Pending</span>
               <span className="text-base font-black text-amber-400">{agent.agentStats.pendingDeals}</span>
             </div>
           </div>
-        ) : (
-          <div className="p-4 bg-gradient-to-r from-indigo-900/40 to-violet-900/40 rounded-2xl border border-indigo-500/30 text-center shadow-lg">
-            <p className="text-sm font-bold text-indigo-200 flex items-center justify-center gap-2">
-              <span>🚀</span> Close your first deal below to start earning!
-            </p>
-          </div>
-        )}
+        ) : null}
 
-        {/* SUCCESS VIEW: Deal Closed & Dynamic UPI QR */}
+        {/* ─── SUCCESS VIEW: DEAL CLOSED & DYNAMIC UPI QR ─────────────────── */}
         {createdDeal ? (
           <div className="bg-slate-900 rounded-3xl p-5 border border-emerald-500/40 shadow-2xl space-y-4 animate-fadeIn">
             <div className="text-center space-y-1">
-              <div className="text-4xl mb-2 animate-bounce">🎉</div>
-              <h2 className="text-lg font-black text-white">Deal Closed! ₹{createdDeal.negotiatedAmount} Earned!</h2>
-              
-              <div className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                Your commission: ₹{Math.floor(createdDeal.negotiatedAmount * 0.4).toLocaleString('en-IN')}
+              <div className="text-4xl mb-1 animate-bounce">🎉</div>
+              <h2 className="text-lg font-black text-white">Deal Closed Successfully!</h2>
+              <div className="inline-block mt-1 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                Your Commission: ₹{Math.floor(createdDeal.negotiatedAmount * 0.4).toLocaleString("en-IN")} (40%)
               </div>
             </div>
 
@@ -511,7 +548,6 @@ export default function AgentPosPage() {
                   </span>
                 </div>
               </div>
-
               <div className="text-[11px] text-slate-300">
                 <span className="text-slate-400">Store:</span> <strong>{createdDeal.businessName}</strong>
               </div>
@@ -520,7 +556,7 @@ export default function AgentPosPage() {
             {/* Dynamic UPI Payment Card */}
             <div className="p-5 rounded-2xl bg-white text-slate-900 text-center space-y-3 shadow-lg">
               <div className="flex items-center justify-between border-b pb-2 text-xs">
-                <span className="font-semibold text-slate-500">Negotiated Total:</span>
+                <span className="font-semibold text-slate-500">Agreed Price:</span>
                 <span className="text-base font-black text-slate-900">
                   ₹{createdDeal.negotiatedAmount}
                 </span>
@@ -537,10 +573,10 @@ export default function AgentPosPage() {
                 ) : (
                   <div className="w-48 h-48 bg-slate-100 animate-pulse rounded-xl" />
                 )}
-                <span className="text-[11px] font-bold text-slate-600 mt-2">
+                <span className="text-[11px] font-bold text-slate-700 mt-2">
                   Scan with PhonePe, GPay, or Paytm
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[10px] text-slate-500 font-mono">
                   Direct to: {createdDeal.upiId}
                 </span>
               </div>
@@ -550,16 +586,15 @@ export default function AgentPosPage() {
               </div>
             </div>
 
-
             {/* Offline Standee Handover Checklist */}
             <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs text-left">
               <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-amber-400" /> Offline Physical Asset Handover:
+                <Award className="w-3.5 h-3.5 text-amber-400" /> Physical Standee Handover:
               </span>
               <p className="text-[11px] text-slate-300 leading-relaxed">
-                ✓ Hand over 1x Flipkart 4"×6" (A6) Portrait Acrylic Standee<br />
-                ✓ Apply SmartReview AI NFC / QR Counter Sticker<br />
-                ✓ Educate merchant on checking Google reviews
+                ✓ Hand over 1x 4"×6" Acrylic Counter Standee<br />
+                ✓ Apply NFC &amp; Laser QR Sticker<br />
+                ✓ Test customer scan live on merchant's phone
               </p>
             </div>
 
@@ -569,13 +604,13 @@ export default function AgentPosPage() {
                 type="button"
                 onClick={() => {
                   const base = getAppUrl();
-                  const msg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login Link: ${base}/login\n👤 User ID: ${createdDeal.merchantUserId}\n🔑 PIN: ${createdDeal.merchantPin}\n\nLive Review URL: ${base}/r/${createdDeal.businessSlug}`;
+                  const msg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login Link: ${base}/login\n👤 User ID: ${createdDeal.merchantUserId}\n🔑 PIN: ${createdDeal.merchantPin}\n\nLive Review URL: ${base}/r/${createdDeal.businessSlug}\n\n⭐ Your customers can tap or scan to give 5-star Google reviews in 15 seconds!`;
                   window.open(
                     `https://wa.me/91${createdDeal.merchantUserId}?text=${encodeURIComponent(msg)}`,
                     "_blank"
                   );
                 }}
-                className="w-full py-4 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition"
+                className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition"
               >
                 <Share2 className="w-5 h-5" />
                 Share Credentials via WhatsApp
@@ -592,17 +627,17 @@ export default function AgentPosPage() {
                   setUtrNumber("");
                 }}
                 className={`w-full py-3 rounded-2xl font-bold text-xs text-center transition ${
-                  nextDealCountdown > 0 
-                  ? "bg-slate-800/50 text-slate-500 cursor-not-allowed" 
-                  : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                  nextDealCountdown > 0
+                    ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-200"
                 }`}
               >
-                {nextDealCountdown > 0 ? `Opening next deal in ${nextDealCountdown}s...` : "+ Close Another Deal"}
+                {nextDealCountdown > 0 ? `Closing in ${nextDealCountdown}s...` : "+ Close Another Deal"}
               </button>
             </div>
           </div>
         ) : (
-          /* FORM VIEW: 10-Second Demo & Onboarding */
+          /* ─── FORM VIEW: 3-STEP DEAL CLOSING FLOW ───────────────────────── */
           <form onSubmit={handleRegisterDeal} className="space-y-4">
             {dealError && (
               <div className="p-3.5 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-semibold">
@@ -610,46 +645,75 @@ export default function AgentPosPage() {
               </div>
             )}
 
-            {/* Progress Bar */}
-            <div className="flex items-center gap-1 mb-4 mt-2">
+            {/* Progress Step Header */}
+            <div className="flex items-center gap-1 mb-2 mt-1">
               {[1, 2, 3].map((step) => (
                 <React.Fragment key={step}>
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all ${
-                    step < activeStep ? 'bg-emerald-500 border-emerald-500 text-white' :
-                    step === activeStep ? 'bg-indigo-600 border-indigo-500 text-white scale-110 shadow-lg shadow-indigo-500/30' :
-                    'bg-slate-800 border-slate-700 text-slate-500'
-                  }`}>
-                    {step < activeStep ? '✓' : step}
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all ${
+                      step < activeStep
+                        ? "bg-emerald-500 border-emerald-500 text-white"
+                        : step === activeStep
+                        ? "bg-indigo-600 border-indigo-500 text-white scale-110 shadow-lg shadow-indigo-500/30"
+                        : "bg-slate-800 border-slate-700 text-slate-500"
+                    }`}
+                  >
+                    {step < activeStep ? "✓" : step}
                   </div>
-                  {step < 3 && <div className={`flex-1 h-0.5 rounded transition-all ${
-                    step < activeStep ? 'bg-emerald-500' : 'bg-slate-700'
-                  }`} />}
+                  {step < 3 && (
+                    <div
+                      className={`flex-1 h-0.5 rounded transition-all ${
+                        step < activeStep ? "bg-emerald-500" : "bg-slate-700"
+                      }`}
+                    />
+                  )}
                 </React.Fragment>
               ))}
             </div>
-            <div className="flex justify-between text-[9px] font-bold text-slate-400 px-1 -mt-2 mb-3">
-              <span className={activeStep >= 1 ? 'text-indigo-400' : ''}>Search Business</span>
-              <span className={activeStep >= 2 ? 'text-indigo-400 text-center' : 'text-center'}>Merchant Details</span>
-              <span className={activeStep >= 3 ? 'text-emerald-400 text-right' : 'text-right'}>Payment & Close</span>
+            <div className="flex justify-between text-[9px] font-bold text-slate-400 px-1 -mt-1 mb-2">
+              <span className={activeStep >= 1 ? "text-indigo-400" : ""}>1. Search Store</span>
+              <span className={activeStep >= 2 ? "text-indigo-400 text-center" : "text-center"}>
+                2. Merchant Details
+              </span>
+              <span className={activeStep >= 3 ? "text-emerald-400 text-right" : "text-right"}>
+                3. Agreed Price &amp; QR
+              </span>
             </div>
 
-            {/* STEP 1: Search & Demo Generator (LIVE TYPEAHEAD AUTOCOMPLETE) */}
+            {/* STEP 1: Search & Demo Generator */}
             <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3 relative z-30">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Store className="w-4 h-4 text-indigo-400" />
-                  Step 1: Search Merchant's Google Business
+                  Step 1: Search Merchant's Google Profile
                   {selectedPlace && <CheckCircle2 className="w-4 h-4 text-emerald-500 animate-in zoom-in" />}
                 </label>
                 <span className="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-800 flex items-center gap-1">
                   <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
-                  Live Typeahead
+                  Live Google Maps
                 </span>
+              </div>
+
+              {/* Quick Search Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {KADAPA_PRESETS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery(preset);
+                      handleSearch(preset);
+                    }}
+                    className="text-[10px] font-medium px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-indigo-950/60 text-slate-300 hover:text-indigo-300 border border-slate-700 transition"
+                  >
+                    + {preset}
+                  </button>
+                ))}
               </div>
 
               <div ref={searchContainerRef} className="relative">
                 <div className="relative flex items-center">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 z-10 pointer-events-none" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 z-10 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -658,23 +722,19 @@ export default function AgentPosPage() {
                       if (searchResults.length > 0) setIsDropdownOpen(true);
                     }}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
-                    placeholder="Type store name or paste Google Maps share link (maps.app.goo.gl)..."
-                    className="w-full text-sm pl-10 pr-28 py-3.5 rounded-2xl bg-slate-800/90 border-2 border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold shadow-inner"
+                    placeholder="Type store name or paste Google Maps link..."
+                    className="w-full text-xs pl-10 pr-24 py-3 rounded-2xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold"
                   />
-                  <div className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1.5">
-                    <button type="button" className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-700 transition" title="Paste Google Maps share link here">
-                      <Mic className="w-4 h-4" />
-                    </button>
+                  <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
                     {isSearching ? (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-2 py-1.5 rounded-xl border border-indigo-800 animate-pulse">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-2 py-1 rounded-xl border border-indigo-800 animate-pulse">
                         <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
-                        <span>Wait...</span>
                       </span>
                     ) : searchQuery.length >= 2 ? (
                       <button
                         type="button"
-                        onClick={handleSearch}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold shadow-sm transition"
+                        onClick={() => handleSearch()}
+                        className="px-3 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold transition"
                       >
                         Search
                       </button>
@@ -682,18 +742,13 @@ export default function AgentPosPage() {
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5 px-1">
-                  <span className="text-amber-400 font-bold">⚡ Pro Tip:</span>
-                  Ask merchant to WhatsApp their Google Maps location &mdash; paste the share link (<span className="text-indigo-300 font-mono">maps.app.goo.gl/...</span>) here for 100% instant auto-fill &amp; direct 5-star review modal!
-                </p>
-
-                {/* Floating Live Autocomplete Dropdown */}
+                {/* Floating Autocomplete Dropdown */}
                 {isDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 rounded-2xl border-2 border-indigo-500/40 shadow-2xl z-50 overflow-hidden divide-y divide-slate-800 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[340px] overflow-y-auto">
+                  <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 rounded-2xl border-2 border-indigo-500/40 shadow-2xl z-50 overflow-hidden divide-y divide-slate-800 max-h-[300px] overflow-y-auto">
                     <div className="p-2 bg-slate-800/90 flex items-center justify-between sticky top-0 z-20 backdrop-blur-md">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1">
                         <Sparkles className="w-3 h-3 text-indigo-400" />
-                        {isSearching ? "Searching Google Maps..." : `Matching Google Stores (${searchResults.length})`}
+                        {isSearching ? "Searching Google..." : `Matching Stores (${searchResults.length})`}
                       </span>
                       <button
                         type="button"
@@ -704,61 +759,37 @@ export default function AgentPosPage() {
                       </button>
                     </div>
 
-                    {isSearching && searchResults.length === 0 && (
-                      <div className="p-5 text-center space-y-2">
-                        <Loader2 className="w-5 h-5 text-indigo-400 animate-spin mx-auto" />
-                        <p className="text-xs font-bold text-slate-200">Finding Google Maps profiles...</p>
-                        <p className="text-[10px] text-slate-400">Locating verified branches &amp; addresses</p>
-                      </div>
-                    )}
-
                     {searchResults.map((r, idx) => (
                       <div
                         key={r.placeId || idx}
                         onClick={() => handleSelectBusiness(r)}
                         className="p-3 hover:bg-indigo-950/40 cursor-pointer transition flex items-start gap-2.5 group"
                       >
-                        {/* Store Icon */}
-                        <div className="w-9 h-9 rounded-xl bg-indigo-900/60 border border-indigo-700/50 flex items-center justify-center text-white font-bold flex-shrink-0 mt-0.5 group-hover:scale-105 transition-transform overflow-hidden">
+                        <div className="w-8 h-8 rounded-xl bg-indigo-900/60 border border-indigo-700/50 flex items-center justify-center text-white font-bold shrink-0 mt-0.5">
                           {r.logoUrl ? (
-                            <img src={r.logoUrl} alt={r.name} className="w-full h-full object-cover" />
+                            <img src={r.logoUrl} alt={r.name} className="w-full h-full object-cover rounded-xl" />
                           ) : (
                             <MapPin className="w-4 h-4 text-indigo-300" />
                           )}
                         </div>
 
-                        {/* Store Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs font-bold text-white group-hover:text-indigo-300 transition">
                               {r.name}
                             </span>
-                            {r.branchName && (
-                              <span className="text-[9px] font-bold text-indigo-300 bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-800">
-                                📍 {r.branchName}
-                              </span>
-                            )}
                             {r.rating && (
                               <span className="text-[9px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
-                                ★ {r.rating} {r.reviewCount && `(${r.reviewCount})`}
+                                ★ {r.rating}
                               </span>
                             )}
                           </div>
                           <div className="text-[10px] text-slate-400 truncate mt-0.5">{r.address}</div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[8px] font-semibold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
-                              {r.category}
-                            </span>
-                            <span className="text-[8px] font-semibold text-emerald-400 flex items-center gap-0.5">
-                              <CheckCircle2 className="w-2.5 h-2.5" /> Google Verified
-                            </span>
-                          </div>
                         </div>
 
-                        {/* Select Pill */}
                         <button
                           type="button"
-                          className="px-2.5 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 text-[10px] font-bold group-hover:bg-indigo-600 group-hover:text-white transition flex-shrink-0 self-center"
+                          className="px-2 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 text-[10px] font-bold group-hover:bg-indigo-600 group-hover:text-white transition shrink-0"
                         >
                           Select ➔
                         </button>
@@ -768,12 +799,12 @@ export default function AgentPosPage() {
                 )}
               </div>
 
-              {/* Selected Business Preview Badge */}
+              {/* Selected Business Preview */}
               {selectedPlace && (
                 <div className="space-y-3 pt-2">
                   <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 border border-amber-400 flex items-center justify-center font-bold text-white overflow-hidden flex-shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-slate-900 border border-amber-400 flex items-center justify-center font-bold text-white overflow-hidden shrink-0">
                         {selectedPlace.logoUrl ? (
                           <img
                             src={selectedPlace.logoUrl}
@@ -781,7 +812,9 @@ export default function AgentPosPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-amber-400 font-bold">{selectedPlace.name.slice(0, 2).toUpperCase()}</span>
+                          <span className="text-amber-400 font-bold">
+                            {selectedPlace.name.slice(0, 2).toUpperCase()}
+                          </span>
                         )}
                       </div>
                       <div className="min-w-0">
@@ -790,175 +823,64 @@ export default function AgentPosPage() {
                         </div>
                         <div className="text-[10px] text-amber-400 flex items-center gap-1">
                           <Star className="w-3 h-3 fill-amber-400" />
-                          <span>Google 5.0 Live Stand Ready</span>
+                          <span>Google Standee Ready</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Verified Status Badge */}
-                    <div className="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold flex items-center gap-1 flex-shrink-0">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>Verified</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Standee Demo Button */}
+                      <button
+                        type="button"
+                        onClick={() => setShowStandeeModal(true)}
+                        className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[10px] font-bold flex items-center gap-1 transition"
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                        <span>Show Merchant</span>
+                      </button>
                     </div>
                   </div>
 
-                  {/* LIVE 4"x6" COUNTERTOP ACRYLIC STAND DEMO ON AGENT'S PHONE */}
-                  <div className="p-4 rounded-3xl bg-slate-950 border-2 border-amber-400/80 shadow-2xl relative overflow-hidden text-center select-none">
-                    <div className="absolute inset-1.5 rounded-2xl border border-amber-400/40 pointer-events-none" />
-
-                    <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-[9px] font-black uppercase tracking-wider mb-2 shadow-sm">
-                      <Award className="w-3 h-3" />
-                      <span>5.0 Google Excellence Award</span>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-1.5 overflow-hidden">
-                        {selectedPlace.logoUrl ? (
-                          <img
-                            src={selectedPlace.logoUrl}
-                            alt={selectedPlace.name}
-                            className="w-full h-full object-contain rounded-full"
-                          />
-                        ) : (
-                          <span className="text-xs font-black text-amber-600">
-                            {selectedPlace.name.slice(0, 2).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-xs font-black text-white max-w-[240px] truncate">
-                        {selectedPlace.name}
-                      </h4>
-                      <p className="text-[9px] text-slate-400 max-w-[220px] truncate mt-0.5">
-                        📍 {selectedPlace.address}
-                      </p>
-                      
-                      {selectedPlace.rating && (
-                        <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-amber-200 to-amber-400 text-amber-900 shadow-md border border-amber-100">
-                          <Star className="w-3.5 h-3.5 fill-amber-900" />
-                          <span className="text-[11px] font-black">{selectedPlace.rating}</span>
-                          <span className="text-[9px] font-bold opacity-80">
-                            ({selectedPlace.reviewCount} reviews)
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* QR Code Inset Box */}
-                    <div className="my-2.5 mx-auto w-32 h-32 bg-white rounded-xl border-2 border-amber-400 flex flex-col items-center justify-center shadow-lg relative p-2">
-                      <QrCode className="w-24 h-24 text-slate-900" />
-                      <div className="absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[8px] font-black border border-white flex items-center gap-0.5">
-                        <Radio className="w-2.5 h-2.5" />
-                        <span>NFC TAP</span>
-                      </div>
-                    </div>
-
-                    <div className="text-[8px] font-bold text-amber-300 py-1 bg-white/5 rounded-lg border border-white/10 mb-1">
-                      ① Scan QR &bull; ② Pick AI Compliments &bull; ③ Post in 5 Sec
-                    </div>
-
-                    <span className="text-[8px] font-medium text-slate-500 block mb-3">
-                      Flipkart 4"×6" (A6) Portrait Acrylic Standee Fit
-                    </span>
-                    
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPlace(null);
-                        setSearchQuery("");
-                      }}
-                      className="text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg transition border border-slate-700"
-                    >
-                      Change Business
-                    </button>
-                  </div>
-
-                  {/* LIVE AI REVIEWS PITCH DEMO FOR AGENTS */}
-                  <div className="p-4 rounded-3xl bg-slate-900/90 border border-amber-400/40 shadow-xl space-y-3">
+                  {/* Pitch Review Drafts generated for merchant */}
+                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                        <Sparkles className="w-4 h-4 text-amber-400" />
-                        <span>AI Review Pitch Demo</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                        {selectedPlace.category || "Domain AI"}
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> AI Compliments Tailored for Store:
                       </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-300">
-                      Show this to the merchant: When their customers scan the QR, ReviewSmart AI generates these tailored 5-star reviews:
-                    </p>
-
-                    {/* Compliment Chips */}
-                    {selectedPlace.suggestedTags && selectedPlace.suggestedTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {selectedPlace.suggestedTags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700"
-                          >
-                            ✓ {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Review Drafts Cards */}
-                    {loadingPitchDrafts ? (
-                      <div className="py-6 text-center text-xs text-slate-400 space-y-2">
-                        <Loader2 className="w-5 h-5 text-amber-400 animate-spin mx-auto" />
-                        <p>Drafting tailored 5-star reviews for {selectedPlace.name}...</p>
-                      </div>
-                    ) : pitchDrafts.length > 0 ? (
-                      <div className="space-y-2 pt-1">
-                        {pitchDrafts.map((d) => (
-                          <div
-                            key={d.id}
-                            className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-left space-y-1"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-white flex items-center gap-1">
-                                <span className="text-amber-400">★</span> {d.headline}
-                              </span>
-                              <span className="text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">
-                                {d.tone}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                              "{d.text}"
-                            </p>
-                          </div>
-                        ))}
-                        <div className="text-center pt-1">
-                          <button
-                            type="button"
-                            onClick={() => handleGeneratePitchReviews(selectedPlace)}
-                            className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center justify-center gap-1 mx-auto"
-                          >
-                            <Sparkles className="w-3 h-3" />
-                            Regenerate Fresh AI Reviews
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
                       <button
                         type="button"
                         onClick={() => handleGeneratePitchReviews(selectedPlace)}
-                        className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
+                        className="text-[9px] text-slate-400 hover:text-white flex items-center gap-0.5"
                       >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Generate Live AI Reviews for Merchant
+                        <RefreshCw className="w-2.5 h-2.5" /> Redo
                       </button>
-                    )}
+                    </div>
+
+                    {loadingPitchDrafts ? (
+                      <div className="py-4 text-center text-xs text-slate-400">
+                        <Loader2 className="w-4 h-4 text-amber-400 animate-spin mx-auto mb-1" />
+                        Generating store-specific review drafts...
+                      </div>
+                    ) : pitchDrafts.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {pitchDrafts.slice(0, 2).map((d, i) => (
+                          <div key={i} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
+                            <span className="text-amber-400 font-bold">★ {d.headline}: </span>
+                            "{d.text}"
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* STEP 2: Merchant Contact & Login PIN */}
+            {/* STEP 2: Merchant Mobile & PIN */}
             <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3">
               <label className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Smartphone className="w-4 h-4 text-indigo-400" />
-                Step 2: Merchant Mobile &amp; 4-Digit Random PIN
+                Step 2: Merchant Mobile &amp; 4-Digit Login PIN
                 {merchantPhone.length === 10 && <CheckCircle2 className="w-4 h-4 text-emerald-500 animate-in zoom-in" />}
               </label>
 
@@ -988,10 +910,10 @@ export default function AgentPosPage() {
                       onClick={handleGenerateNewPin}
                       className="text-[9px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-0.5"
                     >
-                      <RefreshCw className="w-2.5 h-2.5" /> Roll New
+                      <RefreshCw className="w-2.5 h-2.5" /> Roll
                     </button>
                   </div>
-                  
+
                   <div className="relative">
                     <input
                       type="text"
@@ -1003,8 +925,8 @@ export default function AgentPosPage() {
                     />
                     <div className="flex gap-1.5 h-[38px]">
                       {[0, 1, 2, 3].map((index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={index}
                           className="flex-1 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 font-mono font-bold text-sm pointer-events-none"
                         >
                           {merchantPin[index] || ""}
@@ -1014,63 +936,28 @@ export default function AgentPosPage() {
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-500">
-                🔐 Random 4-digit PIN is auto-generated.
-                <br />
-                <span className="text-amber-400 font-medium">💡 Tell merchant: This is your 4-digit secret PIN to login to your dashboard</span>
-              </p>
-
-              <div>
-                <label className="block text-[10px] text-slate-400 font-semibold mb-1">
-                  Direct Google Review Link (Optional &mdash; for instant 5-star modal)
-                </label>
-                <input
-                  type="url"
-                  value={customReviewUrl}
-                  onChange={(e) => setCustomReviewUrl(e.target.value)}
-                  onBlur={async () => {
-                    const val = customReviewUrl.trim();
-                    if (val && (val.includes("maps.app.goo.gl") || val.includes("share.google") || val.includes("g.co/") || val.includes("goo.gl/"))) {
-                      try {
-                        const res = await fetch(`/api/business/search-google?query=${encodeURIComponent(val)}`);
-                        const data = await res.json();
-                        if (data.results && data.results[0]?.googleReviewUrl) {
-                          setCustomReviewUrl(data.results[0].googleReviewUrl);
-                        }
-                      } catch (e) {
-                        console.error(e);
-                      }
-                    }
-                  }}
-                  placeholder="Paste from Google Maps Share or Ask for reviews"
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <p className="text-[9px] text-slate-500 mt-1">
-                  💡 Tip: In Google Maps, tap Share &rarr; Copy Link, or use Google Business &ldquo;Ask for reviews&rdquo; link so customers open the 5-star review box directly!
-                </p>
-              </div>
             </div>
 
-            {/* STEP 3: Negotiated Amount & Deal Submission */}
+            {/* STEP 3: Agreed Price & Deal Submission */}
             <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-4">
               <label className="text-xs font-bold text-white flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <DollarSign className="w-4 h-4 text-emerald-400" />
-                  Step 3: Agreed Negotiated Amount
+                  Step 3: Agreed Price &amp; Commission
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">Min floor: ₹499</span>
+                <span className="text-[10px] text-slate-400 font-normal">Min: ₹499</span>
               </label>
 
               {/* Quick Presets */}
               <div className="grid grid-cols-4 gap-1.5 text-center">
-                {[999, 1499, 1999, 2499].map((amt) => (
+                {[999, 1499, 1999, 2999].map((amt) => (
                   <button
                     key={amt}
                     type="button"
                     onClick={() => setNegotiatedPrice(amt)}
-                    className={`py-3 px-1 rounded-xl text-xs font-black border transition-all ${
+                    className={`py-2.5 px-1 rounded-xl text-xs font-black border transition-all ${
                       negotiatedPrice === amt
-                        ? "bg-indigo-600 text-white border-indigo-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-indigo-500 scale-105 shadow-lg shadow-indigo-500/20"
+                        ? "bg-indigo-600 text-white border-indigo-500 ring-2 ring-indigo-500 scale-105 shadow-lg shadow-indigo-500/20"
                         : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
                     }`}
                   >
@@ -1080,16 +967,17 @@ export default function AgentPosPage() {
               </div>
 
               {/* Commission badge */}
-              <div className="flex justify-end -mt-1 mb-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                  Your commission: ₹{Math.floor(negotiatedPrice * 0.4).toLocaleString('en-IN')} (40%)
+              <div className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
+                <span className="text-slate-300">Your Agent Cut (40%):</span>
+                <span className="font-black text-emerald-400">
+                  ₹{Math.floor(negotiatedPrice * 0.4).toLocaleString("en-IN")}
                 </span>
               </div>
 
               {/* Custom Negotiated Amount Input */}
               <div>
                 <label className="block text-[10px] text-slate-400 font-semibold mb-1">
-                  Custom Final Price (₹)
+                  Custom Price (₹)
                 </label>
                 <input
                   type="number"
@@ -1101,25 +989,10 @@ export default function AgentPosPage() {
                 />
               </div>
 
-              {/* Package Summary & Merchant Reassurance */}
-              <div className="p-3 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" /> 1-Year Pro Plan Included
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Instant Activation
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-snug">
-                  Includes 1x Physical Acrylic Standee, NFC chip, custom QR code, AI review response generator, and negative feedback shield.
-                </p>
-              </div>
-
-              {/* Optional UTR Reference Number */}
+              {/* Optional UTR Ref */}
               <div>
                 <label className="block text-[10px] text-slate-400 font-semibold mb-1">
-                  12-Digit UPI UTR Ref No. (Optional or enter after payment)
+                  12-Digit UPI UTR Ref No. (Optional or enter after merchant pays)
                 </label>
                 <input
                   type="text"
@@ -1136,7 +1009,7 @@ export default function AgentPosPage() {
             <button
               type="submit"
               disabled={isSubmittingDeal}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] animate-[shimmer_2s_linear_infinite] hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.4)] ring-2 ring-indigo-500/50 ring-offset-2 ring-offset-slate-950 transition-all disabled:opacity-50"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/30 transition-all disabled:opacity-50"
             >
               {isSubmittingDeal ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -1150,9 +1023,8 @@ export default function AgentPosPage() {
           </form>
         )}
 
-        {/* ── MY MERCHANTS PORTFOLIO PANEL ────────────────────── */}
-        <div className="mt-2">
-          {/* Collapsible Header */}
+        {/* ─── MY MERCHANTS PORTFOLIO PANEL ──────────────────────────────── */}
+        <div className="mt-4">
           <button
             type="button"
             onClick={() => {
@@ -1166,17 +1038,11 @@ export default function AgentPosPage() {
                 <Building2 className="w-3.5 h-3.5 text-indigo-400" />
               </div>
               <div className="text-left">
-                <span className="text-xs font-black text-white">My Merchants</span>
+                <span className="text-xs font-black text-white">My Onboarded Merchants</span>
                 <span className="ml-2 text-[10px] font-bold text-indigo-300 bg-indigo-950 px-1.5 py-0.5 rounded-full border border-indigo-800">
                   {myDeals.length}
                 </span>
               </div>
-              {myDeals.some((d) => d.status === "PENDING") && (
-                <span className="text-[9px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
-                  <Clock className="w-2.5 h-2.5" />
-                  {myDeals.filter((d) => d.status === "PENDING").length} Pending
-                </span>
-              )}
             </div>
             <div className="flex items-center gap-2">
               {isLoadingDeals && <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin" />}
@@ -1190,20 +1056,41 @@ export default function AgentPosPage() {
 
           {/* Expanded Deal Cards */}
           {showMyDeals && (
-            <div className="mt-2 space-y-2 animate-fadeIn">
-              {isLoadingDeals && myDeals.length === 0 ? (
-                <div className="py-8 text-center space-y-2">
-                  <Loader2 className="w-5 h-5 text-indigo-400 animate-spin mx-auto" />
-                  <p className="text-xs text-slate-400">Loading your merchants...</p>
+            <div className="mt-2 space-y-2.5 animate-fadeIn">
+              {/* Portfolio Filter & Search */}
+              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                <div className="flex gap-1">
+                  {(["ALL", "APPROVED", "PENDING"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setPortfolioFilter(tab)}
+                      className={`px-3 py-1 rounded-xl text-[10px] font-bold transition ${
+                        portfolioFilter === tab
+                          ? "bg-indigo-600 text-white"
+                          : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
                 </div>
-              ) : myDeals.length === 0 ? (
-                <div className="py-8 text-center space-y-2 bg-slate-900/60 rounded-2xl border border-slate-800">
-                  <Building2 className="w-8 h-8 text-slate-600 mx-auto" />
-                  <p className="text-xs font-bold text-slate-400">No merchants yet</p>
-                  <p className="text-[11px] text-slate-500">Close your first deal above to see it here!</p>
+
+                <input
+                  type="text"
+                  placeholder="Search store name or phone..."
+                  value={portfolioSearch}
+                  onChange={(e) => setPortfolioSearch(e.target.value)}
+                  className="w-full text-[11px] px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none"
+                />
+              </div>
+
+              {filteredDeals.length === 0 ? (
+                <div className="py-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800 text-slate-400 text-xs">
+                  No matching merchants found.
                 </div>
               ) : (
-                myDeals.map((deal) => {
+                filteredDeals.map((deal) => {
                   const base = typeof window !== "undefined" ? window.location.origin : "https://reviewsmart-ai.vercel.app";
                   const credsMsg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login: ${base}/login\n👤 User ID: ${deal.merchantUserId}\n\nYour review page: ${base}/r/${deal.businessSlug}\n\n⭐ Share this with your customers to get 5-star reviews instantly!`;
 
@@ -1218,11 +1105,9 @@ export default function AgentPosPage() {
                           : "bg-slate-900 border-amber-500/25"
                       }`}
                     >
-                      {/* Deal Header Row */}
-                      <div className="flex items-start justify-between gap-2 mb-2.5">
+                      <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          {/* Logo / Initial */}
-                          <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
                             {deal.businessLogoUrl ? (
                               <img src={deal.businessLogoUrl} alt={deal.businessName} className="w-full h-full object-cover" />
                             ) : (
@@ -1234,55 +1119,41 @@ export default function AgentPosPage() {
                           <div className="min-w-0">
                             <div className="text-xs font-black text-white truncate">{deal.businessName}</div>
                             <div className="text-[10px] text-slate-400 truncate">
-                              {deal.businessCategory || "Business"} · {new Date(deal.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                              {deal.businessCategory || "Store"} · {new Date(deal.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                             </div>
                           </div>
                         </div>
 
-                        {/* Status Pill */}
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black flex-shrink-0 ${
-                          deal.status === "APPROVED"
-                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                            : deal.status === "REJECTED"
-                            ? "bg-red-500/15 text-red-400 border border-red-500/30"
-                            : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                        }`}>
-                          {deal.status === "APPROVED" ? (
-                            <BadgeCheck className="w-3 h-3" />
-                          ) : deal.status === "REJECTED" ? (
-                            <AlertCircle className="w-3 h-3" />
-                          ) : (
-                            <Clock className="w-3 h-3" />
-                          )}
+                        <span
+                          className={`px-2 py-0.5 rounded-lg text-[9px] font-black shrink-0 ${
+                            deal.status === "APPROVED"
+                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                              : deal.status === "REJECTED"
+                              ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                              : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                          }`}
+                        >
                           {deal.status}
-                        </div>
+                        </span>
                       </div>
 
-                      {/* Amount & Commission Row */}
-                      <div className="flex items-center gap-2 mb-2.5 text-[10px]">
+                      <div className="flex items-center gap-2 mb-2 text-[10px]">
                         <div className="flex-1 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
-                          <span className="text-slate-400 block">Deal Amount</span>
+                          <span className="text-slate-400 block">Amount</span>
                           <span className="font-black text-white">₹{deal.amount.toLocaleString("en-IN")}</span>
                         </div>
-                        <div className={`flex-1 p-2 rounded-xl border ${
-                          deal.status === "APPROVED"
-                            ? "bg-emerald-500/10 border-emerald-500/20"
-                            : "bg-slate-800/60 border-slate-700/60"
-                        }`}>
-                          <span className="text-slate-400 block">
-                            {deal.status === "APPROVED" ? "Earned" : "Est. Commission"}
-                          </span>
-                          <span className={`font-black ${deal.status === "APPROVED" ? "text-emerald-400" : "text-slate-300"}`}>
+                        <div className="flex-1 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <span className="text-slate-400 block">Commission</span>
+                          <span className="font-black text-emerald-400">
                             ₹{deal.agentCommission.toLocaleString("en-IN")}
                           </span>
                         </div>
                         <div className="flex-1 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
-                          <span className="text-slate-400 block">Login ID</span>
+                          <span className="text-slate-400 block">User ID</span>
                           <span className="font-mono font-bold text-white text-[9px]">{deal.merchantUserId}</span>
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
                       <div className="grid grid-cols-2 gap-1.5">
                         <button
                           type="button"
@@ -1304,32 +1175,142 @@ export default function AgentPosPage() {
                           className="py-2 px-2 rounded-xl bg-indigo-600/15 hover:bg-indigo-600/25 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
                         >
                           <ExternalLink className="w-3 h-3" />
-                          Preview Review
+                          Review Card
                         </a>
                       </div>
                     </div>
                   );
                 })
               )}
-
-              {/* Refresh button */}
-              {myDeals.length > 0 && (
-                <button
-                  type="button"
-                  onClick={fetchMyDeals}
-                  disabled={isLoadingDeals}
-                  className="w-full py-2 text-[10px] font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition"
-                >
-                  <RefreshCw className={`w-3 h-3 ${isLoadingDeals ? "animate-spin" : ""}`} />
-                  {isLoadingDeals ? "Refreshing..." : "Refresh Status"}
-                </button>
-              )}
             </div>
           )}
         </div>
-        {/* ── END MY MERCHANTS PANEL ───────────────────────────── */}
-
       </main>
+
+      {/* ─── SALES PITCH & OBJECTION HANDLER MODAL ───────────────────────── */}
+      {showPitchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-md max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-amber-400" />
+                <h3 className="font-black text-white text-base">Field Pitch &amp; Scripts</h3>
+              </div>
+              <button
+                onClick={() => setShowPitchModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 30-Sec Pitch Script */}
+            <div className="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                ⚡ 30-Second Elevator Pitch (Telugu / English):
+              </span>
+              <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                "Sir/Madam, daily 50+ customers walk into your shop, but nobody gives Google reviews. When people search on Maps for stores in Kadapa, your competitor with 4.9★ gets the business. With this 1-tap acrylic standee, customers tap phone or scan QR — our AI drafts a 5-star review in 15 seconds. If anyone is unhappy, their message goes privately to your phone instead of damaging your Google score!"
+              </p>
+            </div>
+
+            {/* Objection Handlers */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
+                Top 3 Merchant Objections:
+              </h4>
+
+              <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
+                <span className="text-xs font-bold text-amber-400 block">
+                  1. "I already have a Google QR code paper on counter."
+                </span>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <strong>Say:</strong> "Sir, regular Google QR forces customer to type everything manually. 90% of people close it because they don't have time. ReviewSmart AI writes the full 5-star review for them in 1 tap!"
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
+                <span className="text-xs font-bold text-amber-400 block">
+                  2. "What if someone writes a negative review?"
+                </span>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <strong>Say:</strong> "That is the biggest superpower of ReviewSmart! Any 1, 2, or 3-star rating is intercepted privately to your WhatsApp. Only 4 and 5 stars go to Google. Your public rating stays 100% protected."
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
+                <span className="text-xs font-bold text-amber-400 block">
+                  3. "Is there any monthly subscription fees?"
+                </span>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <strong>Say:</strong> "No monthly headache! It's a complete 1-year package including physical acrylic standee and NFC chip delivered to your counter."
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowPitchModal(false)}
+              className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+            >
+              Got It, Back to Pitching
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── FULLSCREEN STANDEE DEMO FOR MERCHANT ───────────────────────── */}
+      {showStandeeModal && selectedPlace && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-900 via-slate-950 to-black rounded-3xl p-6 border-2 border-amber-400/90 shadow-2xl text-center space-y-3">
+            <button
+              onClick={() => setShowStandeeModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+              <Award className="w-3.5 h-3.5" /> 5.0 Google Excellence Award
+            </div>
+
+            <div className="w-16 h-16 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 mx-auto overflow-hidden shadow-lg">
+              {selectedPlace.logoUrl ? (
+                <img src={selectedPlace.logoUrl} alt={selectedPlace.name} className="w-full h-full object-contain rounded-full" />
+              ) : (
+                <span className="text-sm font-black text-amber-600">
+                  {selectedPlace.name.slice(0, 2).toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            <h3 className="text-base font-black text-white leading-tight">
+              {selectedPlace.name}
+            </h3>
+            <p className="text-[11px] text-slate-400 truncate">{selectedPlace.address}</p>
+
+            <div className="w-44 h-44 bg-white p-3 rounded-2xl mx-auto border-2 border-amber-400 shadow-xl flex items-center justify-center">
+              <QrCode className="w-full h-full text-slate-950" />
+            </div>
+
+            <div className="flex items-center justify-center gap-1 text-amber-400 text-xs font-black">
+              <span>★ ★ ★ ★ ★</span>
+              <span className="text-white text-[11px] font-semibold ml-1">Tap NFC or Scan to Review</span>
+            </div>
+
+            <p className="text-[10px] text-slate-400">
+              Flipkart 4"×6" (A6) Portrait Acrylic Counter Standee
+            </p>
+
+            <button
+              onClick={() => setShowStandeeModal(false)}
+              className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold"
+            >
+              Close Standee Mode
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,12 +10,13 @@ const prisma = new PrismaClient();
 
 // ── Config ──────────────────────────────────────────────────────────────────
 const MERCHANT_NAME   = "Sri Guru Fashions";
-const MERCHANT_PHONE  = "9000000001";   // placeholder — update after getting real number
+const MERCHANT_PHONE  = "9553666836";
 const RAW_PIN         = "7531";         // 4-digit PIN for merchant login
 const AGENT_CODE      = "MKT-01";
-const NEGOTIATED_PRICE = 999;
-const GOOGLE_SHARE_URL = "https://share.google/3vbXjNShBKbWEudd8";
-const LOGO_URL        = null; // Will be set from uploaded image separately if needed
+const NEGOTIATED_PRICE = 2999;
+const GOOGLE_SHARE_URL = "https://share.google/Klkl0dPQeQxFiHZ4E";
+const GOOGLE_PLACE_ID  = "ChIJ-_3HayRzszsRhE95URiMOqc";
+const LOGO_URL        = "/images/sri-guru-fashions-logo.png";
 
 // ── Resolve Google Share Link ────────────────────────────────────────────────
 async function resolveShareLink(url) {
