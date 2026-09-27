@@ -162,7 +162,7 @@ export default function BillingClient({
               </li>
               <li className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                Print-Ready Stand &amp; NFC Studio (PDF/SVG)
+                Print-Ready Stand &amp; QR Studio (PDF/SVG)
               </li>
               <li className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />

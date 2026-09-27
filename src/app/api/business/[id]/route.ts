@@ -3,6 +3,30 @@ import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 
+async function canUserAccessBusiness(
+  user: { id: string; role: string },
+  business: { id: string; userId: string }
+): Promise<boolean> {
+  if (user.role === "SUPER_ADMIN") return true;
+  if (business.userId === user.id) return true;
+  if (user.role === "MARKETING_AGENT") {
+    const merchantUser = await prisma.user.findUnique({
+      where: { id: business.userId },
+      select: { referredBy: true },
+    });
+    if (merchantUser?.referredBy === user.id) return true;
+
+    const payment = await prisma.upiPayment.findFirst({
+      where: {
+        agentId: user.id,
+        OR: [{ businessId: business.id }, { userId: business.userId }],
+      },
+    });
+    if (payment) return true;
+  }
+  return false;
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -16,16 +40,18 @@ export async function PUT(
     const { id } = params;
     const body = await req.json();
 
-    const business = await prisma.business.findUnique({
-      where: { id },
+    const business = await prisma.business.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
     });
 
     if (!business) {
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
     }
 
-    // Only allow owner or admin
-    if (business.userId !== user.id && user.role !== "SUPER_ADMIN") {
+    const hasAccess = await canUserAccessBusiness(user, business);
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -75,6 +101,13 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  return PUT(req, context);
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -86,8 +119,10 @@ export async function GET(
     }
 
     const { id } = params;
-    const business = await prisma.business.findUnique({
-      where: { id },
+    const business = await prisma.business.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
       include: {
         feedbacks: {
           orderBy: { createdAt: "desc" },
@@ -104,7 +139,8 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    if (business.userId !== user.id && user.role !== "SUPER_ADMIN") {
+    const hasAccess = await canUserAccessBusiness(user, business);
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

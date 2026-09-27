@@ -35,6 +35,10 @@ import {
   ExternalLink,
   ShieldCheck,
   Briefcase,
+  Printer,
+  FileText,
+  Layers,
+  Palette,
 } from "lucide-react";
 import BrandLogo, { BrandIcon } from "@/components/brand/BrandLogo";
 
@@ -117,15 +121,15 @@ const FEATURES = [
     icon: QrCode,
     color: "text-amber-400",
     bg: "bg-amber-500/10 border-amber-500/20",
-    title: "Dual NFC Tap + Laser QR Standee",
-    desc: "Dual technology on premium matte black acrylic. Customers tap their phone or scan with their camera. Zero app install needed.",
+    title: "Smart QR Standee & PVC Display Cards",
+    desc: "3 physical formats: 4\"×6\" Acrylic Standee, Vertical PVC Card, and A4 Wall Poster. Zero app install needed.",
   },
   {
     icon: BarChart2,
     color: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
     title: "Real-Time Scan Analytics",
-    desc: "Track total taps, QR scans, AI reviews drafted, and Google redirects live on your dedicated merchant dashboard.",
+    desc: "Track total QR scans, visitors, AI reviews drafted, and Google redirects live on your dedicated merchant dashboard.",
   },
   {
     icon: Zap,
@@ -146,8 +150,8 @@ const FEATURES = [
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Customer Taps or Scans",
-    desc: "Customer taps the acrylic standee with NFC or scans the laser QR. Your branded review card opens instantly.",
+    title: "Customer Scans QR Code",
+    desc: "Customer points their phone camera at your counter standee, card, or poster. Your branded review card opens instantly.",
     icon: QrCode,
     color: "from-indigo-600 to-indigo-500",
   },
@@ -174,6 +178,49 @@ const STATS = [
   { value: "100%", label: "Bad reviews shielded privately" },
 ];
 
+const DISPLAY_THEMES = {
+  "royal-gold": {
+    name: "Royal Gold",
+    badge: "bg-amber-400 text-slate-950",
+    border: "border-amber-400/80 shadow-amber-400/20",
+    cardBg: "from-slate-950 via-slate-900 to-black",
+    accent: "text-amber-400",
+    accentBg: "bg-amber-400/10 border-amber-400/30",
+    gradient: "from-amber-400 to-yellow-500",
+    dot: "#f59e0b",
+  },
+  "emerald-luxe": {
+    name: "Emerald Luxe",
+    badge: "bg-emerald-400 text-slate-950",
+    border: "border-emerald-500/80 shadow-emerald-500/20",
+    cardBg: "from-emerald-950 via-slate-950 to-black",
+    accent: "text-emerald-400",
+    accentBg: "bg-emerald-400/10 border-emerald-400/30",
+    gradient: "from-emerald-400 to-teal-500",
+    dot: "#10b981",
+  },
+  "midnight-sapphire": {
+    name: "Midnight Sapphire",
+    badge: "bg-cyan-400 text-slate-950",
+    border: "border-cyan-400/80 shadow-cyan-400/20",
+    cardBg: "from-blue-950 via-slate-950 to-black",
+    accent: "text-cyan-400",
+    accentBg: "bg-cyan-400/10 border-cyan-400/30",
+    gradient: "from-cyan-400 to-blue-500",
+    dot: "#06b6d4",
+  },
+  "rose-platinum": {
+    name: "Rose Platinum",
+    badge: "bg-rose-400 text-slate-950",
+    border: "border-rose-400/80 shadow-rose-400/20",
+    cardBg: "from-rose-950 via-slate-950 to-black",
+    accent: "text-rose-400",
+    accentBg: "bg-rose-400/10 border-rose-400/30",
+    gradient: "from-rose-400 to-pink-500",
+    dot: "#f43f5e",
+  },
+};
+
 export default function HomePage() {
   const [selectedDemoIndex, setSelectedDemoIndex] = useState(0);
   const [demoStars, setDemoStars] = useState(5);
@@ -181,6 +228,8 @@ export default function HomePage() {
   const [demoGenerated, setDemoGenerated] = useState(true);
   const [copiedDraft, setCopiedDraft] = useState(false);
   const [dailyCustomers, setDailyCustomers] = useState(50);
+  const [mockupFormat, setMockupFormat] = useState<"stand" | "pvc-vertical" | "poster-a4">("stand");
+  const [mockupTheme, setMockupTheme] = useState<"royal-gold" | "emerald-luxe" | "midnight-sapphire" | "rose-platinum">("royal-gold");
 
   const activeDemo = DEMO_MERCHANTS[selectedDemoIndex];
 
@@ -248,7 +297,7 @@ export default function HomePage() {
               href="#hardware"
               className="text-xs font-semibold text-slate-400 hover:text-white transition"
             >
-              NFC Standee
+              Display Kits
             </a>
             <a
               href="#calculator"
@@ -593,9 +642,9 @@ export default function HomePage() {
                     <Smartphone className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white mb-0.5">1. Instant NFC Tap &amp; Laser QR</h4>
+                    <h4 className="text-sm font-bold text-white mb-0.5">1. Instant Camera QR Scan</h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Customers tap their phone to your counter acrylic standee or scan with their camera. Works on both iPhone and Android instantly without installing any app.
+                      Customers open their default camera app and scan the high-density QR code on your acrylic standee or vertical PVC card. Opens instantly on all phones without installing any app.
                     </p>
                   </div>
                 </div>
@@ -788,97 +837,413 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── PHYSICAL HARDWARE STANDEE SHOWCASE ───────────────────────────── */}
+      {/* ─── PHYSICAL HARDWARE & DISPLAY FORMATS SHOWCASE ───────────────────── */}
       <section id="hardware" className="py-20 px-4 sm:px-6 bg-slate-900/60 border-b border-white/5 scroll-mt-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            {/* Visual Hardware Standee Card Mockup */}
-            <div className="relative flex justify-center">
-              <div className="w-72 sm:w-80 rounded-3xl bg-gradient-to-b from-slate-900 via-slate-950 to-black p-6 border-2 border-amber-500/50 shadow-2xl shadow-amber-500/10 text-center relative overflow-hidden">
-                {/* Gold corner accent */}
-                <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-amber-500/20 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-bold mb-3">
+              <Printer className="w-3.5 h-3.5" /> 3 Physical Display Formats · Zero App Required
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+              Turn Every Counter, Table &amp; Door Into a 5-Star Review Station
+            </h2>
+            <p className="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
+              Every business is different. Choose from 4&quot;×6&quot; Acrylic Standees for counters, Vertical PVC cards for pocket/wallets, and A4 printable posters for walls and entrance doors.
+            </p>
 
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-3 text-amber-400">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div className="text-[10px] font-black tracking-widest text-amber-400 uppercase mb-1">
-                  TAP NFC OR SCAN QR
-                </div>
-                <h3 className="font-black text-white text-base sm:text-lg mb-1">
-                  Matte Acrylic Counter Standee
-                </h3>
-                <p className="text-[11px] text-slate-400 mb-4">
-                  High-durability acrylic designed for your reception desk, cash billing counter, or dining tables.
-                </p>
+            {/* Format Selector Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setMockupFormat("stand")}
+                className={`px-4 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition ${
+                  mockupFormat === "stand"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-105"
+                    : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
+                }`}
+              >
+                <Printer className="w-4 h-4" />
+                <span>4&quot;×6&quot; Acrylic Standee</span>
+              </button>
 
-                {/* Laser QR Visual */}
-                <div className="w-40 h-40 bg-white p-3 rounded-2xl mx-auto mb-4 shadow-xl flex items-center justify-center">
-                  <QrCode className="w-full h-full text-slate-950" />
-                </div>
+              <button
+                type="button"
+                onClick={() => setMockupFormat("pvc-vertical")}
+                className={`px-4 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition ${
+                  mockupFormat === "pvc-vertical"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-105"
+                    : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Vertical PVC Card (CR80)</span>
+              </button>
 
-                <div className="flex items-center justify-center gap-1 text-amber-400 text-xs font-black mb-2">
-                  <span>★ ★ ★ ★ ★</span>
-                  <span className="text-white text-[11px] font-semibold ml-1">Review Us on Google</span>
-                </div>
-
-                <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-[10px] text-slate-300 font-medium">
-                  Dual-Tech: Tap phone for NFC · Scan for QR
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setMockupFormat("poster-a4")}
+                className={`px-4 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition ${
+                  mockupFormat === "poster-a4"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-105"
+                    : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>A4 Wall &amp; Door Poster</span>
+              </button>
             </div>
 
-            {/* Standee Specs & Benefits */}
-            <div className="space-y-5">
+            {/* Theme Selector Pills */}
+            <div className="flex items-center justify-center gap-1.5 mt-3">
+              <span className="text-[11px] font-bold text-slate-400 mr-1 flex items-center gap-1">
+                <Palette className="w-3 h-3 text-indigo-400" /> Theme:
+              </span>
+              {(Object.keys(DISPLAY_THEMES) as Array<keyof typeof DISPLAY_THEMES>).map((tKey) => {
+                const item = DISPLAY_THEMES[tKey];
+                const isActive = mockupTheme === tKey;
+                return (
+                  <button
+                    key={tKey}
+                    type="button"
+                    onClick={() => setMockupTheme(tKey)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1.5 transition ${
+                      isActive
+                        ? "bg-slate-800 text-white border border-slate-600 shadow-sm"
+                        : "bg-slate-900/60 text-slate-500 hover:text-slate-300"
+                    }`}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: item.dot }}
+                    />
+                    <span>{item.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Visual 3D Realistic Mockup Container */}
+            <div className="lg:col-span-6 flex flex-col items-center justify-center">
+              {(() => {
+                const currentTheme = DISPLAY_THEMES[mockupTheme];
+
+                if (mockupFormat === "stand") {
+                  return (
+                    <div
+                      className="relative flex flex-col items-center justify-center p-4 py-8 w-full max-w-sm"
+                      style={{ perspective: "1200px" }}
+                    >
+                      {/* 3D Acrylic Standee Face */}
+                      <div
+                        className={`relative w-64 sm:w-72 rounded-3xl bg-gradient-to-b ${currentTheme.cardBg} p-5 border-2 ${currentTheme.border} text-center transition-all duration-500 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.95)]`}
+                        style={{
+                          transform: "rotateY(-7deg) rotateX(4deg)",
+                          transformStyle: "preserve-3d",
+                        }}
+                      >
+                        {/* Glossy Reflection Sheen */}
+                        <div
+                          className="absolute inset-0 rounded-3xl pointer-events-none overflow-hidden"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.03) 40%, transparent 60%)",
+                          }}
+                        />
+
+                        {/* Top Header */}
+                        <div className="flex items-center justify-between gap-2 mb-2.5">
+                          <span className="text-[8px] font-black uppercase tracking-wider text-slate-400">
+                            SMARTREVIEW
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${currentTheme.badge}`}>
+                            ★ 5.0 Google
+                          </span>
+                        </div>
+
+                        {/* Merchant Logo */}
+                        <div className="w-14 h-14 rounded-2xl bg-white/95 p-1 mx-auto mb-2 flex items-center justify-center shadow-md">
+                          {activeDemo.logo ? (
+                            <img
+                              src={activeDemo.logo}
+                              alt={activeDemo.name}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <Store className="w-7 h-7 text-slate-800" />
+                          )}
+                        </div>
+
+                        <h4 className="text-sm font-black text-white truncate px-2">{activeDemo.name}</h4>
+                        <p className="text-[10px] text-slate-400 truncate mb-3">{activeDemo.category} · Kadapa</p>
+
+                        {/* QR Code Container */}
+                        <div className="w-36 h-36 bg-white p-2.5 rounded-2xl mx-auto shadow-2xl flex items-center justify-center relative border border-white/20 mb-3">
+                          <QrCode className="w-full h-full text-slate-950" />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-8 h-8 rounded-lg bg-indigo-600 border-2 border-white flex items-center justify-center shadow-lg">
+                              <Sparkles className="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-1 text-amber-400 text-xs font-black mb-1">
+                          <span>★ ★ ★ ★ ★</span>
+                        </div>
+                        <p className="text-[11px] font-bold text-white tracking-wide">
+                          SCAN TO REVIEW WITH CAMERA
+                        </p>
+                        <p className="text-[9px] text-slate-400 mt-0.5">
+                          Fast Google Maps Redirect · Zero App Install
+                        </p>
+                      </div>
+
+                      {/* Acrylic Base L-Stand Foot */}
+                      <div
+                        className="w-56 sm:w-64 h-5 rounded-b-2xl bg-gradient-to-r from-white/25 via-white/40 to-white/20 backdrop-blur-md border border-white/40 shadow-[0_20px_40px_rgba(0,0,0,0.8)] -mt-2.5"
+                        style={{
+                          transform: "rotateY(-7deg) rotateX(28deg)",
+                        }}
+                      />
+                      <div className="w-64 sm:w-72 h-4 bg-black/70 blur-xl rounded-full mt-2" />
+                    </div>
+                  );
+                }
+
+                if (mockupFormat === "pvc-vertical") {
+                  return (
+                    <div
+                      className="relative flex flex-col items-center justify-center p-4 py-8 w-full max-w-sm"
+                      style={{ perspective: "1200px" }}
+                    >
+                      {/* Vertical CR80 PVC Card */}
+                      <div
+                        className={`relative w-56 sm:w-60 rounded-2xl bg-gradient-to-b ${currentTheme.cardBg} p-5 border-2 ${currentTheme.border} text-center transition-all duration-500 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.95)]`}
+                        style={{
+                          aspectRatio: "54 / 85.6",
+                          transform: "rotateY(7deg) rotateX(4deg)",
+                          transformStyle: "preserve-3d",
+                        }}
+                      >
+                        {/* Metallic card sheen */}
+                        <div
+                          className="absolute inset-0 rounded-2xl pointer-events-none"
+                          style={{
+                            background:
+                              "linear-gradient(120deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 30%, transparent 60%)",
+                          }}
+                        />
+
+                        {/* Card Header */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-1.5">
+                            <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="text-[8px] font-black uppercase tracking-wider text-slate-400">
+                              CR80 PVC
+                            </span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full text-[8px] font-black ${currentTheme.badge}`}>
+                            REVIEW PASS
+                          </span>
+                        </div>
+
+                        {/* Store Logo */}
+                        <div className="w-12 h-12 rounded-xl bg-white/95 p-1 mx-auto mb-2 flex items-center justify-center shadow-md">
+                          {activeDemo.logo ? (
+                            <img
+                              src={activeDemo.logo}
+                              alt={activeDemo.name}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <Store className="w-6 h-6 text-slate-800" />
+                          )}
+                        </div>
+
+                        <h4 className="text-xs font-black text-white truncate px-1">{activeDemo.name}</h4>
+                        <p className="text-[9px] text-slate-400 truncate mb-2.5">Official Customer Review Card</p>
+
+                        {/* High Density QR */}
+                        <div className="w-28 h-28 bg-white p-2 rounded-xl mx-auto shadow-xl flex items-center justify-center border border-white/20 mb-2.5">
+                          <QrCode className="w-full h-full text-slate-950" />
+                        </div>
+
+                        <div className="flex items-center justify-center gap-0.5 text-amber-400 text-[10px] font-black mb-1">
+                          <span>★ ★ ★ ★ ★</span>
+                        </div>
+                        <p className="text-[10px] font-black text-white tracking-wider uppercase">
+                          POINT CAMERA &amp; REVIEW
+                        </p>
+                        <p className="text-[8px] text-slate-400 mt-0.5 font-mono">
+                          PAN CARD SIZE · 54×85.6 MM
+                        </p>
+                      </div>
+
+                      <div className="w-52 h-4 bg-black/70 blur-lg rounded-full mt-4" />
+                    </div>
+                  );
+                }
+
+                // A4 Poster
+                return (
+                  <div
+                    className="relative flex flex-col items-center justify-center p-4 py-8 w-full max-w-sm"
+                    style={{ perspective: "1200px" }}
+                  >
+                    {/* A4 Poster in Wall Frame */}
+                    <div
+                      className={`relative w-64 sm:w-72 rounded-2xl bg-gradient-to-b ${currentTheme.cardBg} p-5 border-4 border-slate-700/80 text-center transition-all duration-500 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95)] ring-1 ${currentTheme.border}`}
+                      style={{
+                        aspectRatio: "210 / 297",
+                        transform: "rotateY(-4deg) rotateX(2deg)",
+                        transformStyle: "preserve-3d",
+                      }}
+                    >
+                      {/* Corner screw caps */}
+                      <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-slate-400 shadow-sm border border-slate-600" />
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-slate-400 shadow-sm border border-slate-600" />
+                      <div className="absolute bottom-2 left-2 w-2 h-2 rounded-full bg-slate-400 shadow-sm border border-slate-600" />
+                      <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-slate-400 shadow-sm border border-slate-600" />
+
+                      {/* Header */}
+                      <div className="mb-2">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                          OFFICIAL CUSTOMER NOTICE
+                        </span>
+                        <h4 className="text-sm font-black text-white leading-tight">WE VALUE YOUR FEEDBACK</h4>
+                      </div>
+
+                      {/* Store Logo */}
+                      <div className="w-12 h-12 rounded-xl bg-white/95 p-1 mx-auto mb-2 flex items-center justify-center shadow-md">
+                        {activeDemo.logo ? (
+                          <img
+                            src={activeDemo.logo}
+                            alt={activeDemo.name}
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        ) : (
+                          <Store className="w-6 h-6 text-slate-800" />
+                        )}
+                      </div>
+
+                      <div className="text-xs font-black text-white truncate">{activeDemo.name}</div>
+                      <div className="flex items-center justify-center gap-1 text-amber-400 text-xs my-1">
+                        <span>★ ★ ★ ★ ★</span>
+                      </div>
+
+                      {/* Big Poster QR */}
+                      <div className="w-32 h-32 bg-white p-2.5 rounded-2xl mx-auto shadow-2xl flex items-center justify-center border border-white/20 my-2">
+                        <QrCode className="w-full h-full text-slate-950" />
+                      </div>
+
+                      {/* 3 Step Visual Guide */}
+                      <div className="grid grid-cols-3 gap-1 pt-1.5 text-[8px] text-slate-300 border-t border-white/10 mt-1">
+                        <div className="p-1 rounded bg-white/5">
+                          <span className="font-black text-amber-400 block">1. SCAN</span>
+                          <span>Camera QR</span>
+                        </div>
+                        <div className="p-1 rounded bg-white/5">
+                          <span className="font-black text-indigo-400 block">2. AI DRAFT</span>
+                          <span>1-Tap Words</span>
+                        </div>
+                        <div className="p-1 rounded bg-white/5">
+                          <span className="font-black text-emerald-400 block">3. POST</span>
+                          <span>Google Maps</span>
+                        </div>
+                      </div>
+
+                      <p className="text-[8px] text-slate-500 mt-2 font-mono">
+                        A4 PRINTABLE · 210×297 MM · 300 DPI
+                      </p>
+                    </div>
+
+                    <div className="w-60 h-4 bg-black/70 blur-xl rounded-full mt-3" />
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Display Format Specs & Details */}
+            <div className="lg:col-span-6 space-y-5">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-xs font-bold">
-                <Award className="w-3.5 h-3.5 text-amber-400" /> Counter-Ready Hardware
+                <Award className="w-3.5 h-3.5 text-amber-400" />
+                {mockupFormat === "stand"
+                  ? "4\"×6\" (A6) Portrait Acrylic Standee"
+                  : mockupFormat === "pvc-vertical"
+                  ? "Vertical PVC Card (CR80 PAN Size)"
+                  : "A4 Printable Wall & Door Poster"}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-                Turn Every Cash Counter Visit Into a 5-Star Review Spot
-              </h2>
+
+              <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                {mockupFormat === "stand" && "Durable Crystal Acrylic for Your Billing Counter"}
+                {mockupFormat === "pvc-vertical" && "Pocket-Sized Card for Counters, Registers & Wallets"}
+                {mockupFormat === "poster-a4" && "Eye-Level High-Visibility Poster for Entrances & Walls"}
+              </h3>
+
               <p className="text-slate-300 text-sm leading-relaxed">
-                Our acrylic counter standees remove 100% of the friction while customers wait for their bill or packaging. Just tap or scan!
+                {mockupFormat === "stand" &&
+                  "Crafted from premium heavy crystal acrylic with brilliant UV back-printing. Designed to sit elegantly on reception counters, billing desks, and dining tables."}
+                {mockupFormat === "pvc-vertical" &&
+                  "Standard PAN card / CR80 ID dimensions (54mm × 85.6mm) on thick 30mil PVC plastic. Scratch-resistant matte lamination ensures flawless camera scans every time."}
+                {mockupFormat === "poster-a4" &&
+                  "Full-bleed 210×297mm poster at 300 DPI (2480 × 3508 px). Merchants can download instantly, print at any local xerox or photo shop, and mount on entrance doors, mirrors, or waiting lounges."}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
                 <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
                   <div className="font-bold text-white text-xs mb-1 flex items-center gap-1.5">
-                    <Smartphone className="w-4 h-4 text-indigo-400" />
-                    <span>NFC Tap-to-Review</span>
+                    <Camera className="w-4 h-4 text-indigo-400" />
+                    <span>Instant Camera Scan</span>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Built-in NTAG213 high-speed chip. Works instantly with iPhone &amp; Android.
+                    Works natively on iPhone Camera and Android Google Lens. Zero app download required.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
                   <div className="font-bold text-white text-xs mb-1 flex items-center gap-1.5">
                     <QrCode className="w-4 h-4 text-amber-400" />
-                    <span>High-Density Laser QR</span>
+                    <span>High-Density Dynamic QR</span>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Works on all phone cameras. Never scratches or fades.
+                    High error-correction code with your store logo embedded at the center. Never fails to scan.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
                   <div className="font-bold text-white text-xs mb-1 flex items-center gap-1.5">
                     <Shield className="w-4 h-4 text-emerald-400" />
-                    <span>Waterproof &amp; Spill-Proof</span>
+                    <span>Waterproof &amp; UV Protected</span>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Stands up to busy restaurant tables, water spills, and salon counters.
+                    Resistant to water splashes, sanitizers, UV sunlight fading, and daily store handling.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
                   <div className="font-bold text-white text-xs mb-1 flex items-center gap-1.5">
                     <Truck className="w-4 h-4 text-purple-400" />
-                    <span>Free Doorstep Courier</span>
+                    <span>Instant PDF &amp; Courier Kit</span>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Custom printed with your store name and dispatched straight to your address.
+                    Instant 300 DPI vector PDF export in your dashboard + physical standee delivery options.
                   </p>
                 </div>
+              </div>
+
+              <div className="pt-2">
+                <a
+                  href={whatsappInquiryUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition transform active:scale-95"
+                >
+                  <MessageCircle className="w-4 h-4 fill-slate-950" />
+                  <span>Order Custom Store Display Kit on WhatsApp</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
               </div>
             </div>
           </div>
@@ -1042,7 +1407,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Print-Ready High-Res Table Tent PDF</span>
+                    <span>Print-Ready High-Res A4 Poster &amp; PVC Card PDF</span>
                   </div>
                 </div>
               </div>
@@ -1058,7 +1423,7 @@ export default function HomePage() {
               </a>
             </div>
 
-            {/* Card 2: Physical Acrylic Standee Bundle (Popular) */}
+            {/* Card 2: Turnkey Physical Display Kit Bundle (Popular) */}
             <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-purple-950/60 border-2 border-indigo-500/50 space-y-5 flex flex-col justify-between relative shadow-2xl shadow-indigo-950/50">
               <div className="absolute -top-3 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg">
                 Most Popular ★
@@ -1066,25 +1431,25 @@ export default function HomePage() {
 
               <div>
                 <span className="text-[10px] font-bold tracking-widest text-amber-400 uppercase">
-                  COUNTER HARDWARE BUNDLE
+                  COUNTER &amp; DISPLAY HARDWARE BUNDLE
                 </span>
-                <h3 className="text-xl font-black text-white mt-1 mb-2">Acrylic Standee + NFC</h3>
+                <h3 className="text-xl font-black text-white mt-1 mb-2">Turnkey Physical Display Kit</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Complete turnkey solution with premium physical hardware ready for your billing counter or dining tables.
+                  Complete turnkey package with 4&quot;×6&quot; Acrylic Standee, Vertical PVC Pocket Card, and A4 Wall Poster.
                 </p>
 
                 <div className="pt-4 border-t border-indigo-500/20 space-y-2.5 text-xs text-slate-200">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">Premium Matte Black Acrylic Standee</strong> included</span>
+                    <span><strong className="text-white">4&quot;×6&quot; Portrait Acrylic Standee</strong> with UV crystal gloss</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">Built-in NFC Chip</strong> (Tap phone to review)</span>
+                    <span><strong className="text-white">Vertical PVC Card (CR80)</strong> with scratch-proof lamination</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">Laser-printed High-Density QR</strong> with your Logo</span>
+                    <span><strong className="text-white">A4 Wall &amp; Door Poster</strong> (300 DPI high-res print)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -1092,7 +1457,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">Free Express Courier Delivery</strong> to your shop</span>
+                    <span><strong className="text-white">Free Doorstep Courier Delivery</strong> to your shop</span>
                   </div>
                 </div>
               </div>
@@ -1104,7 +1469,7 @@ export default function HomePage() {
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/40 transition active:scale-98"
               >
                 <MessageCircle className="w-4 h-4" />
-                Order Standee on WhatsApp
+                Order Display Kit on WhatsApp
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>

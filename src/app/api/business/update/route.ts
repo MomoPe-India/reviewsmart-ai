@@ -5,21 +5,65 @@ import { prisma } from '@/lib/prisma';
 export async function PATCH(req: NextRequest) {
   try {
     const user = await getSessionUser();
-    if (!user || user.role !== 'BUSINESS_OWNER') {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
-    const { tagline, primaryColor, tagChips, reviewPromptTone, whatsapp, instagram, website, phone, minRatingForGoogle } = body;
+    const {
+      businessId,
+      name,
+      tagline,
+      category,
+      primaryColor,
+      tagChips,
+      reviewPromptTone,
+      whatsapp,
+      instagram,
+      website,
+      phone,
+      minRatingForGoogle,
+      googleAddress,
+      googleReviewUrl,
+      logoUrl,
+    } = body;
 
-    // Only update the business that belongs to this user
-    const business = await prisma.business.findFirst({ where: { userId: user.id } });
-    if (!business) return NextResponse.json({ error: 'No business found.' }, { status: 404 });
+    let business;
+    if (businessId) {
+      business = await prisma.business.findUnique({ where: { id: businessId } });
+      if (!business) return NextResponse.json({ error: 'No business found.' }, { status: 404 });
+
+      // Check permission
+      if (user.role === 'SUPER_ADMIN') {
+        // permitted
+      } else if (user.role === 'MARKETING_AGENT') {
+        const merchantUser = await prisma.user.findUnique({
+          where: { id: business.userId },
+          select: { referredBy: true },
+        });
+        const payment = await prisma.upiPayment.findFirst({
+          where: {
+            agentId: user.id,
+            OR: [{ businessId: business.id }, { userId: business.userId }],
+          },
+        });
+        if (merchantUser?.referredBy !== user.id && !payment) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+      } else if (business.userId !== user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else {
+      business = await prisma.business.findFirst({ where: { userId: user.id } });
+      if (!business) return NextResponse.json({ error: 'No business found.' }, { status: 404 });
+    }
 
     const updated = await prisma.business.update({
       where: { id: business.id },
       data: {
+        ...(name !== undefined && { name }),
         ...(tagline !== undefined && { tagline }),
+        ...(category !== undefined && { category }),
         ...(primaryColor !== undefined && { primaryColor }),
         ...(tagChips !== undefined && { tagChips }),
         ...(reviewPromptTone !== undefined && { reviewPromptTone }),
@@ -27,6 +71,9 @@ export async function PATCH(req: NextRequest) {
         ...(instagram !== undefined && { instagram }),
         ...(website !== undefined && { website }),
         ...(phone !== undefined && { phone }),
+        ...(googleAddress !== undefined && { googleAddress }),
+        ...(googleReviewUrl !== undefined && { googleReviewUrl }),
+        ...(logoUrl !== undefined && { logoUrl }),
         ...(minRatingForGoogle !== undefined && { minRatingForGoogle: Number(minRatingForGoogle) }),
       },
     });

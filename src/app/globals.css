@@ -172,7 +172,7 @@ input[type="email"] {
     display: flex !important;
   }
 
-  /* For table tent A4 layout */
+  /* For A4 poster layout */
   #print-target.table-tent-sheet {
     position: relative !important;
     top: auto !important;

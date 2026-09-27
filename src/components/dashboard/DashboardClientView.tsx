@@ -305,7 +305,7 @@ export default function DashboardClientView({
               {metrics.totalViews}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">NFC taps &amp; QR visitors</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">QR scans &amp; web visitors</p>
         </div>
 
         {/* AI Reviews Drafted */}

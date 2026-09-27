@@ -375,7 +375,7 @@ export default function SettingsClient({ business }: { business: BusinessData })
             </p>
             <p className="text-[11px] text-slate-500">
               {isOnline
-                ? "Upgrade to receive our crystal acrylic standee with embedded NFC chip."
+                ? "Upgrade to receive our crystal acrylic standee and vertical PVC card display kit."
                 : "Customize your standee layout, colors, and download print-ready files."}
             </p>
           </div>

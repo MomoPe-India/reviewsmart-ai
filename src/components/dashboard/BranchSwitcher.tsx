@@ -320,7 +320,7 @@ export default function BranchSwitcher({
                     Add 1 Extra Branch Location
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Connect your second outlet with its own dedicated Google Maps link, NFC/QR stand, and private manager shield.
+                    Connect your second outlet with its own dedicated Google Maps link, custom QR stand, and private manager shield.
                   </p>
                 </div>
 

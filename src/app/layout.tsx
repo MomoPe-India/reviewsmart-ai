@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "ReviewSmart AI - Smart Google Review Cards & AI Reputation Platform",
   description:
-    "Empower local businesses to capture 5-star Google reviews with AI-powered draft suggestions, smart NFC/QR cards, and a private negative review shield.",
+    "Empower local businesses to capture 5-star Google reviews with AI-powered draft suggestions, smart QR display cards, and a private negative review shield.",
   applicationName: "ReviewSmart AI",
   appleWebApp: {
     capable: true,

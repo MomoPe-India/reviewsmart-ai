@@ -6,7 +6,6 @@ import {
   Printer,
   Copy,
   Check,
-  Radio,
   Sparkles,
   Smartphone,
   Star,
@@ -25,6 +24,10 @@ import {
   IndianRupee,
   HelpCircle,
   CheckCircle2,
+  Share2,
+  FileText,
+  Send,
+  ExternalLink,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { printElement } from "@/lib/print";
@@ -42,6 +45,16 @@ interface BusinessData {
   whatsapp?: string | null;
 }
 
+interface PrintStudioProps {
+  business: BusinessData;
+  reviewUrl: string;
+  agentMode?: boolean;
+  merchantInfo?: {
+    name?: string;
+    phone?: string;
+  };
+}
+
 const LUXURY_THEMES = [
   {
     id: "royal-gold" as const,
@@ -49,49 +62,49 @@ const LUXURY_THEMES = [
     subtitle: "Obsidian Black + Metallic Gold",
     accent: "#d4af37",
     bg: "#0b0f19",
+    innerBorder: "rgba(212, 175, 55, 0.4)",
     text: "#ffffff",
     subtext: "#cbd5e1",
-    innerBorder: "rgba(245, 158, 11, 0.5)",
-    ribbonBg: "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950",
+    ribbonBg: "bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 text-slate-950",
     swatch: "bg-slate-950 border-amber-400 text-amber-300",
     badge: "Most Popular",
   },
   {
+    id: "emerald-velvet" as const,
+    name: "Emerald Velvet",
+    subtitle: "Deep Pine + Mint Gold",
+    accent: "#34d399",
+    bg: "#091317",
+    innerBorder: "rgba(52, 211, 153, 0.4)",
+    text: "#ffffff",
+    subtext: "#94a3b8",
+    ribbonBg: "bg-gradient-to-r from-emerald-600 via-teal-400 to-emerald-600 text-slate-950",
+    swatch: "bg-emerald-950 border-emerald-400 text-emerald-300",
+    badge: "Luxury Retail",
+  },
+  {
     id: "pearl-gold" as const,
     name: "Pearl White & Gold",
-    subtitle: "Clean Ivory White + Metallic Gold",
-    accent: "#d4af37",
+    subtitle: "Clean Alabaster + Warm Gold",
+    accent: "#b45309",
     bg: "#ffffff",
+    innerBorder: "rgba(180, 83, 9, 0.3)",
     text: "#0f172a",
     subtext: "#475569",
-    innerBorder: "rgba(212, 175, 55, 0.4)",
-    ribbonBg: "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-slate-950",
-    swatch: "bg-white border-amber-400 text-slate-900",
-    badge: "Classic",
+    ribbonBg: "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-white",
+    swatch: "bg-white border-amber-400 text-amber-800",
+    badge: "Minimalist",
   },
   {
-    id: "emerald-gold" as const,
-    name: "Imperial Emerald",
-    subtitle: "Royal Deep Green + Metallic Gold",
-    accent: "#f59e0b",
-    bg: "#064e3b",
+    id: "midnight-sapphire" as const,
+    name: "Midnight Sapphire",
+    subtitle: "Imperial Navy + Platinum",
+    accent: "#60a5fa",
+    bg: "#0b1226",
+    innerBorder: "rgba(96, 165, 250, 0.4)",
     text: "#ffffff",
-    subtext: "#a7f3d0",
-    innerBorder: "rgba(245, 158, 11, 0.45)",
-    ribbonBg: "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950",
-    swatch: "bg-emerald-950 border-amber-400 text-amber-300",
-    badge: "Luxury Dining",
-  },
-  {
-    id: "sapphire-gold" as const,
-    name: "Sapphire Navy",
-    subtitle: "Midnight Navy + Metallic Gold",
-    accent: "#f59e0b",
-    bg: "#0a192f",
-    text: "#ffffff",
-    subtext: "#bfdbfe",
-    innerBorder: "rgba(245, 158, 11, 0.45)",
-    ribbonBg: "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950",
+    subtext: "#94a3b8",
+    ribbonBg: "bg-gradient-to-r from-blue-600 via-indigo-400 to-blue-600 text-white",
     swatch: "bg-blue-950 border-amber-400 text-amber-300",
     badge: "Corporate",
   },
@@ -102,11 +115,10 @@ type LuxuryThemeId = (typeof LUXURY_THEMES)[number]["id"];
 export default function PrintStudioClient({
   business,
   reviewUrl,
-}: {
-  business: BusinessData;
-  reviewUrl: string;
-}) {
-  const [format, setFormat] = useState<"stand" | "pvc-vertical" | "nfc" | "tent">("stand");
+  agentMode = false,
+  merchantInfo,
+}: PrintStudioProps) {
+  const [format, setFormat] = useState<"stand" | "pvc-vertical" | "poster-a4">("stand");
   const [pvcSide, setPvcSide] = useState<"front" | "back">("front");
   const [pvcBackMode, setPvcBackMode] = useState<"guide" | "staff" | "dual-upi">("guide");
   const [staffName, setStaffName] = useState("");
@@ -114,12 +126,14 @@ export default function PrintStudioClient({
   const [showLanyardSlot, setShowLanyardSlot] = useState(false);
   const [luxuryTheme, setLuxuryTheme] = useState<LuxuryThemeId>("royal-gold");
   const [logoUrl, setLogoUrl] = useState<string | null>(business.logoUrl || null);
+  const [logoStyle, setLogoStyle] = useState<"auto" | "badge" | "banner">("auto");
+  const [logoPlate, setLogoPlate] = useState<"white" | "frost" | "none">("white");
   const [calloutTitle, setCalloutTitle] = useState("Scan to Review Us on Google");
-  const [calloutSubtitle, setCalloutSubtitle] = useState("Tap your phone or scan with camera");
+  const [calloutSubtitle, setCalloutSubtitle] = useState("Takes only 5 seconds · AI generated reviews");
   const [showCropMarks, setShowCropMarks] = useState(true);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [upiQrDataUrl, setUpiQrDataUrl] = useState<string>("");
-  const [copiedNfc, setCopiedNfc] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   const activeTheme = LUXURY_THEMES.find((t) => t.id === luxuryTheme) || LUXURY_THEMES[0];
@@ -204,28 +218,22 @@ export default function PrintStudioClient({
     } else if (format === "pvc-vertical") {
       printElement(
         "print-target",
-        `${business.name} - Vertical PVC Smart Card (${pvcSide === "front" ? "Front" : "Back"})`,
+        `${business.name} - Vertical PVC Card (${pvcSide === "front" ? "Front" : "Back"})`,
         "@page { size: 2.125in 3.375in; margin: 0; }"
-      );
-    } else if (format === "nfc") {
-      printElement(
-        "print-target",
-        `${business.name} - Smart Card`,
-        "@page { size: 3.375in 2.125in; margin: 0; }"
       );
     } else {
       printElement(
         "print-target",
-        `${business.name} - Table Tent`,
-        "@page { size: A4 portrait; margin: 8mm; }"
+        `${business.name} - A4 Wall Poster (${activeTheme.name})`,
+        "@page { size: A4 portrait; margin: 10mm; }"
       );
     }
   };
 
-  const handleCopyNfcUrl = async () => {
+  const handleCopyReviewUrl = async () => {
     await copyToClipboard(activeReviewUrl);
-    setCopiedNfc(true);
-    setTimeout(() => setCopiedNfc(false), 2500);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   // Helper to draw step box on back of vertical PVC card canvas
@@ -246,22 +254,20 @@ export default function PrintStudioClient({
     ctx.roundRect(x, y, 485, 105, 16);
     ctx.fill();
     ctx.strokeStyle = innerBorderColor;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Step Number Badge
     ctx.fillStyle = accentColor;
     ctx.beginPath();
-    ctx.arc(x + 45, y + 52, 22, 0, Math.PI * 2);
+    ctx.roundRect(x + 18, y + 22, 50, 60, 12);
     ctx.fill();
 
     ctx.fillStyle = "#0b0f19";
-    ctx.font = "900 20px -apple-system, sans-serif";
+    ctx.font = "900 28px -apple-system, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(stepNum, x + 45, y + 52);
+    ctx.fillText(stepNum, x + 43, y + 52);
 
-    // Text
     ctx.textAlign = "left";
     ctx.fillStyle = textColor;
     ctx.font = "bold 19px -apple-system, sans-serif";
@@ -271,6 +277,120 @@ export default function PrintStudioClient({
     ctx.font = "15px -apple-system, sans-serif";
     ctx.fillText(desc, x + 85, y + 70);
     ctx.textBaseline = "alphabetic";
+  };
+
+  // Adaptive Logo Canvas Drawing Helper
+  const drawAdaptiveLogoOnCanvas = async (
+    ctx: CanvasRenderingContext2D,
+    url: string | null,
+    storeName: string,
+    centerX: number,
+    centerY: number,
+    maxW: number,
+    maxH: number,
+    style: "auto" | "badge" | "banner",
+    plate: "white" | "frost" | "none",
+    accentColor: string
+  ) => {
+    if (!url) {
+      // Fallback Initials Badge
+      const radius = Math.min(maxW, maxH) / 2;
+      ctx.fillStyle = plate === "none" ? "rgba(255,255,255,0.1)" : "#ffffff";
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.fillStyle = "#d97706";
+      ctx.font = `900 ${Math.round(radius * 0.7)}px -apple-system, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(storeName.slice(0, 2).toUpperCase() || "RS", centerX, centerY);
+      return;
+    }
+
+    try {
+      const logoImg = new Image();
+      logoImg.crossOrigin = "anonymous";
+      await new Promise((resolve, reject) => {
+        logoImg.onload = resolve;
+        logoImg.onerror = reject;
+        logoImg.src = url;
+      });
+
+      const aspect = logoImg.width / logoImg.height;
+      const isWide = style === "banner" || (style === "auto" && aspect > 1.25);
+
+      if (isWide) {
+        let drawW = Math.min(maxW, maxH * aspect);
+        let drawH = drawW / aspect;
+        if (drawH > maxH) {
+          drawH = maxH;
+          drawW = drawH * aspect;
+        }
+
+        // Draw background plate capsule
+        if (plate === "white") {
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.roundRect(centerX - drawW / 2 - 14, centerY - drawH / 2 - 8, drawW + 28, drawH + 16, 16);
+          ctx.fill();
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else if (plate === "frost") {
+          ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+          ctx.beginPath();
+          ctx.roundRect(centerX - drawW / 2 - 14, centerY - drawH / 2 - 8, drawW + 28, drawH + 16, 16);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.drawImage(logoImg, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+      } else {
+        const radius = Math.min(maxW, maxH) / 2;
+
+        if (plate === "white") {
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius + 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 4;
+          ctx.stroke();
+        } else if (plate === "frost") {
+          ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius + 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        let drawW = radius * 2;
+        let drawH = radius * 2;
+        if (aspect > 1) {
+          drawH = drawW / aspect;
+        } else {
+          drawW = drawH * aspect;
+        }
+        ctx.drawImage(logoImg, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+        ctx.restore();
+      }
+    } catch (e) {
+      console.error("Adaptive logo render error:", e);
+    }
   };
 
   // High Resolution 300 DPI Canvas Exporter (Clean, Unwatermarked for Paid Studio)
@@ -330,57 +450,19 @@ export default function PrintStudioClient({
         ctx.textBaseline = "middle";
         ctx.fillText("★ 5.0 GOOGLE EXCELLENCE AWARD ★", 600, 127);
 
-        // Circular Brand Logo
-        let logoDrawn = false;
-        if (logoUrl) {
-          try {
-            const logoImg = new Image();
-            logoImg.crossOrigin = "anonymous";
-            await new Promise((resolve, reject) => {
-              logoImg.onload = resolve;
-              logoImg.onerror = reject;
-              logoImg.src = logoUrl;
-            });
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(600, 260, 75, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(525, 185, 150, 150);
-            ctx.drawImage(logoImg, 525, 185, 150, 150);
-            ctx.restore();
-
-            // Gold Ring around Logo
-            ctx.strokeStyle = activeTheme.accent;
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.arc(600, 260, 75, 0, Math.PI * 2);
-            ctx.stroke();
-
-            logoDrawn = true;
-          } catch {
-            logoDrawn = false;
-          }
-        }
-
-        if (!logoDrawn) {
-          // Fallback Initials Badge
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(600, 260, 75, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.strokeStyle = activeTheme.accent;
-          ctx.lineWidth = 6;
-          ctx.stroke();
-
-          ctx.fillStyle = "#d97706";
-          ctx.font = "900 52px -apple-system, sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(business.name.slice(0, 2).toUpperCase() || "RS", 600, 260);
-        }
+        // Brand Logo (Adaptive framing)
+        await drawAdaptiveLogoOnCanvas(
+          ctx,
+          logoUrl,
+          business.name,
+          600,
+          260,
+          480,
+          150,
+          logoStyle,
+          logoPlate,
+          activeTheme.accent
+        );
 
         // Business Name
         ctx.fillStyle = activeTheme.text;
@@ -427,22 +509,6 @@ export default function PrintStudioClient({
 
           // Draw QR Code
           ctx.drawImage(qrImg, 350, 580, 500, 500);
-
-          // NFC Tap Badge Corner Pill
-          ctx.fillStyle = "#fbbf24";
-          ctx.beginPath();
-          ctx.roundRect(750, 1070, 160, 60, 30);
-          ctx.fill();
-
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 4;
-          ctx.stroke();
-
-          ctx.fillStyle = "#0b0f19";
-          ctx.font = "900 22px -apple-system, sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("📶 NFC TAP", 830, 1100);
         }
 
         // 3-Step Instruction Pill
@@ -454,7 +520,7 @@ export default function PrintStudioClient({
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = activeTheme.subtext;
+        ctx.fillStyle = activeTheme.text;
         ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -548,40 +614,19 @@ export default function PrintStudioClient({
           ctx.textBaseline = "middle";
           ctx.fillText(ribbonText, 342, 118);
 
-          // Circular Brand Logo
-          let logoDrawn = false;
-          if (logoUrl) {
-            try {
-              const logoImg = new Image();
-              logoImg.crossOrigin = "anonymous";
-              await new Promise((resolve, reject) => {
-                logoImg.onload = resolve;
-                logoImg.onerror = reject;
-                logoImg.src = logoUrl;
-              });
-
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(342, 195, 42, 0, Math.PI * 2);
-              ctx.fillStyle = "#ffffff";
-              ctx.fill();
-              ctx.strokeStyle = activeTheme.accent;
-              ctx.lineWidth = 4;
-              ctx.stroke();
-              ctx.clip();
-              ctx.drawImage(logoImg, 300, 153, 84, 84);
-              ctx.restore();
-              logoDrawn = true;
-            } catch {}
-          }
-
-          if (!logoDrawn) {
-            ctx.fillStyle = activeTheme.accent;
-            ctx.font = "bold 32px -apple-system, sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("🏪", 342, 195);
-          }
+          // Brand Logo (Adaptive framing)
+          await drawAdaptiveLogoOnCanvas(
+            ctx,
+            logoUrl,
+            business.name,
+            342,
+            195,
+            300,
+            84,
+            logoStyle,
+            logoPlate,
+            activeTheme.accent
+          );
 
           // Business Name
           ctx.fillStyle = activeTheme.text;
@@ -618,16 +663,16 @@ export default function PrintStudioClient({
           ctx.fillStyle = activeTheme.text;
           ctx.font = "bold 26px -apple-system, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("Tap or Scan to Review", 342, 750);
+          ctx.fillText("Scan QR to Review Us", 342, 750);
 
           ctx.fillStyle = activeTheme.subtext;
           ctx.font = "19px -apple-system, sans-serif";
           ctx.fillText("Instant 30-sec AI Review on Google", 342, 788);
 
-          // NFC Indicator
+          // Subtitle pill
           ctx.fillStyle = activeTheme.accent;
-          ctx.font = "bold 22px -apple-system, sans-serif";
-          ctx.fillText("📶 NFC Contactless Ready", 342, 855);
+          ctx.font = "bold 20px -apple-system, sans-serif";
+          ctx.fillText("✨ AI Review Assistant Ready", 342, 855);
 
           // Micro Authenticity Footer
           ctx.fillStyle = activeTheme.subtext;
@@ -645,7 +690,7 @@ export default function PrintStudioClient({
             ctx.font = "18px -apple-system, sans-serif";
             ctx.fillText("Fast, authentic & automated", 342, 165);
 
-            drawStepBox(ctx, 100, 215, "1", "📱 Tap or Scan with Camera", "Bring phone close (NFC) or scan QR", activeTheme.accent, activeTheme.innerBorder, activeTheme.text, activeTheme.subtext);
+            drawStepBox(ctx, 100, 215, "1", "📷 Scan QR with Camera", "Point phone camera at QR code", activeTheme.accent, activeTheme.innerBorder, activeTheme.text, activeTheme.subtext);
             drawStepBox(ctx, 100, 350, "2", "⭐ Tap 5 Stars & Compliments", "ReviewSmart AI generates genuine draft", activeTheme.accent, activeTheme.innerBorder, activeTheme.text, activeTheme.subtext);
             drawStepBox(ctx, 100, 485, "3", "📋 Tap Copy & Post on Google", "Review fills in clipboard automatically", activeTheme.accent, activeTheme.innerBorder, activeTheme.text, activeTheme.subtext);
 
@@ -709,7 +754,7 @@ export default function PrintStudioClient({
             ctx.fillStyle = activeTheme.text;
             ctx.font = "bold 22px -apple-system, sans-serif";
             ctx.fillText("“Loved our service today?", 342, 535);
-            ctx.fillText("Please tap or scan my badge", 342, 575);
+            ctx.fillText("Please scan my badge with your camera", 342, 575);
             ctx.fillText("to leave a 5-star Google review!”", 342, 615);
 
             ctx.fillStyle = "#fbbf24";
@@ -728,12 +773,13 @@ export default function PrintStudioClient({
             ctx.fillStyle = activeTheme.accent;
             ctx.font = "bold 28px -apple-system, sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("★ QUICK UPI PAYMENT ★", 342, 130);
+            ctx.fillText("★ SCAN TO PAY & REVIEW ★", 342, 125);
 
-            ctx.fillStyle = activeTheme.subtext;
-            ctx.font = "18px -apple-system, sans-serif";
-            ctx.fillText("Pay via any UPI App", 342, 165);
+            ctx.fillStyle = activeTheme.text;
+            ctx.font = "bold 20px -apple-system, sans-serif";
+            ctx.fillText(business.name, 342, 160);
 
+            // Left: UPI QR
             if (upiQrDataUrl) {
               const upiImg = new Image();
               await new Promise((resolve) => {
@@ -743,74 +789,156 @@ export default function PrintStudioClient({
 
               ctx.fillStyle = "#ffffff";
               ctx.beginPath();
-              ctx.roundRect(167, 210, 350, 350, 24);
+              ctx.roundRect(75, 200, 240, 240, 16);
               ctx.fill();
               ctx.strokeStyle = activeTheme.accent;
-              ctx.lineWidth = 4;
+              ctx.lineWidth = 3;
               ctx.stroke();
 
-              ctx.drawImage(upiImg, 187, 230, 310, 310);
+              ctx.drawImage(upiImg, 87, 212, 216, 216);
+
+              ctx.fillStyle = activeTheme.text;
+              ctx.font = "bold 18px -apple-system, sans-serif";
+              ctx.fillText("₹ Pay with UPI", 195, 475);
+              ctx.fillStyle = activeTheme.subtext;
+              ctx.font = "14px -apple-system, sans-serif";
+              ctx.fillText("Any UPI App", 195, 502);
             }
 
+            // Right: Review QR
+            if (qrDataUrl) {
+              const qrImg = new Image();
+              await new Promise((resolve) => {
+                qrImg.onload = resolve;
+                qrImg.src = qrDataUrl;
+              });
+
+              ctx.fillStyle = "#ffffff";
+              ctx.beginPath();
+              ctx.roundRect(370, 200, 240, 240, 16);
+              ctx.fill();
+              ctx.strokeStyle = activeTheme.accent;
+              ctx.lineWidth = 3;
+              ctx.stroke();
+
+              ctx.drawImage(qrImg, 382, 212, 216, 216);
+
+              ctx.fillStyle = activeTheme.text;
+              ctx.font = "bold 18px -apple-system, sans-serif";
+              ctx.fillText("⭐ Rate on Google", 490, 475);
+              ctx.fillStyle = activeTheme.subtext;
+              ctx.font = "14px -apple-system, sans-serif";
+              ctx.fillText("5-Star AI Review", 490, 502);
+            }
+
+            // Fast checkout banner
+            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.beginPath();
+            ctx.roundRect(75, 545, 535, 120, 16);
+            ctx.fill();
+            ctx.strokeStyle = activeTheme.innerBorder;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
             ctx.fillStyle = activeTheme.text;
-            ctx.font = "bold 26px -apple-system, sans-serif";
-            ctx.fillText("Google Pay • PhonePe • Paytm", 342, 620);
-
-            ctx.fillStyle = activeTheme.subtext;
-            ctx.font = "20px -apple-system, sans-serif";
-            ctx.fillText(`UPI: ${business.name}`, 342, 660);
-
+            ctx.font = "bold 20px -apple-system, sans-serif";
+            ctx.fillText("Instant Billing & 5-Star Feedback", 342, 595);
             ctx.fillStyle = activeTheme.accent;
-            ctx.font = "bold 22px -apple-system, sans-serif";
-            ctx.fillText("🔄 Flip to Front to Leave a 5-Star Review!", 342, 780);
+            ctx.font = "bold 16px -apple-system, sans-serif";
+            ctx.fillText("Fast • 100% Secure • Contactless", 342, 630);
 
             ctx.fillStyle = activeTheme.subtext;
             ctx.font = "16px -apple-system, sans-serif";
-            ctx.fillText("ReviewSmart AI • Dual Merchant Card", 342, 980);
+            ctx.fillText(business.googleAddress || "Kadapa • Bengaluru", 342, 740);
+
+            ctx.fillStyle = activeTheme.accent;
+            ctx.font = "bold 18px -apple-system, sans-serif";
+            ctx.fillText("✨ ReviewSmart AI Dual Counter Card", 342, 980);
           }
         }
-      } else if (format === "nfc") {
-        // Smart Card CR80: 3.375" x 2.125" at 300 DPI = 1012 x 638 px
-        canvas.width = 1012;
-        canvas.height = 638;
+      } else {
+        // A4 Wall Poster: 210mm x 297mm at 300 DPI = 2480 x 3508 px
+        canvas.width = 2480;
+        canvas.height = 3508;
 
+        // Background
         ctx.fillStyle = activeTheme.bg;
-        ctx.fillRect(0, 0, 1012, 638);
+        ctx.fillRect(0, 0, 2480, 3508);
 
-        // Gold border
+        // Outer Metallic Gold Border
         ctx.strokeStyle = activeTheme.accent;
-        ctx.lineWidth = 6;
-        ctx.strokeRect(18, 18, 976, 602);
+        ctx.lineWidth = 16;
+        ctx.beginPath();
+        ctx.roundRect(80, 80, 2320, 3348, 48);
+        ctx.stroke();
 
-        // Left Card Info
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "900 44px -apple-system, sans-serif";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText(business.name, 60, 110);
+        // Inner Delicate Hairline Border
+        ctx.strokeStyle = activeTheme.innerBorder;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(110, 110, 2260, 3288, 36);
+        ctx.stroke();
 
-        ctx.fillStyle = "#fbbf24";
-        ctx.font = "bold 32px sans-serif";
-        ctx.fillText("★★★★★", 60, 165);
-
-        ctx.fillStyle = activeTheme.subtext;
-        ctx.font = "bold 24px -apple-system, sans-serif";
-        ctx.fillText("Google 5.0 Rating", 185, 165);
-
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "bold 34px -apple-system, sans-serif";
-        ctx.fillText("Tap or Scan to Review", 60, 280);
-
-        ctx.fillStyle = activeTheme.subtext;
-        ctx.font = "24px -apple-system, sans-serif";
-        ctx.fillText("Instant 30-sec AI feedback", 60, 325);
-
-        // NFC contactless indicator
+        // Corner Filigree Brackets
+        ctx.font = "bold 72px Georgia, serif";
         ctx.fillStyle = activeTheme.accent;
-        ctx.font = "bold 26px -apple-system, sans-serif";
-        ctx.fillText("📶 NFC Contactless Enabled", 60, 520);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("┌", 160, 160);
+        ctx.fillText("┐", 2320, 160);
+        ctx.fillText("└", 160, 3348);
+        ctx.fillText("┘", 2320, 3348);
 
-        // Draw QR Code on the right in white box
+        // Top Luxury Award Ribbon Badge
+        const ribbonGrad = ctx.createLinearGradient(640, 180, 1840, 180);
+        ribbonGrad.addColorStop(0, "#d97706");
+        ribbonGrad.addColorStop(0.5, "#fbbf24");
+        ribbonGrad.addColorStop(1, "#d97706");
+        ctx.fillStyle = ribbonGrad;
+        ctx.beginPath();
+        ctx.roundRect(640, 180, 1200, 100, 50);
+        ctx.fill();
+
+        ctx.fillStyle = "#0b0f19";
+        ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("★ 5.0 GOOGLE EXCELLENCE AWARD ★", 1240, 230);
+
+        // Brand Logo (Adaptive framing)
+        await drawAdaptiveLogoOnCanvas(
+          ctx,
+          logoUrl,
+          business.name,
+          1240,
+          480,
+          900,
+          240,
+          logoStyle,
+          logoPlate,
+          activeTheme.accent
+        );
+
+        // Business Name
+        ctx.fillStyle = activeTheme.text;
+        ctx.font = "900 96px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(business.name, 1240, 780);
+
+        // Branch Locality Address
+        if (business.googleAddress) {
+          ctx.fillStyle = activeTheme.subtext;
+          ctx.font = "600 48px -apple-system, BlinkMacSystemFont, sans-serif";
+          ctx.fillText(`📍 ${business.googleAddress}`, 1240, 860);
+        }
+
+        // Star Rating & Badge
+        ctx.fillStyle = "#fbbf24";
+        ctx.font = "bold 64px sans-serif";
+        ctx.fillText("★★★★★  5.0 on Google Maps", 1240, 960);
+
+        // Giant Center QR Code
         if (qrDataUrl) {
           const qrImg = new Image();
           await new Promise((resolve) => {
@@ -818,74 +946,58 @@ export default function PrintStudioClient({
             qrImg.src = qrDataUrl;
           });
 
+          // QR White Container
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
-          ctx.roundRect(560, 80, 400, 400, 24);
+          ctx.roundRect(590, 1060, 1300, 1300, 56);
           ctx.fill();
+
+          // Gold Frame
           ctx.strokeStyle = activeTheme.accent;
-          ctx.lineWidth = 4;
+          ctx.lineWidth = 14;
           ctx.stroke();
 
-          ctx.drawImage(qrImg, 580, 100, 360, 360);
+          // Draw QR
+          ctx.drawImage(qrImg, 650, 1120, 1180, 1180);
         }
+
+        // Callout Title
+        ctx.fillStyle = activeTheme.text;
+        ctx.font = "900 84px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(calloutTitle, 1240, 2520);
+
+        // Subtitle
+        ctx.fillStyle = activeTheme.subtext;
+        ctx.font = "500 52px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(calloutSubtitle, 1240, 2620);
+
+        // 3-Step Instruction Pill
+        ctx.fillStyle = activeTheme.id === "pearl-gold" ? "#f1f5f9" : "rgba(0, 0, 0, 0.4)";
+        ctx.beginPath();
+        ctx.roundRect(240, 2720, 2000, 130, 65);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = activeTheme.text;
+        ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("① Scan with Phone Camera  •  ② Pick Instant AI Compliments  •  ③ Post in 5 Sec", 1240, 2785);
+
+        // Verified Partner Footer
+        ctx.fillStyle = activeTheme.accent;
+        ctx.font = "bold 46px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("✨ ReviewSmart AI • Verified Google Partner", 1240, 3280);
 
         if (showCropMarks) {
-          ctx.strokeStyle = "#cbd5e1";
-          ctx.lineWidth = 2;
-          ctx.setLineDash([8, 8]);
-          ctx.strokeRect(10, 10, 992, 618);
+          ctx.strokeStyle = "#94a3b8";
+          ctx.lineWidth = 4;
+          ctx.setLineDash([20, 20]);
+          ctx.strokeRect(40, 40, 2400, 3428);
         }
-      } else {
-        // Table Tent (Square / Foldable)
-        canvas.width = 1200;
-        canvas.height = 1200;
-
-        ctx.fillStyle = activeTheme.bg;
-        ctx.fillRect(0, 0, 1200, 1200);
-
-        ctx.strokeStyle = activeTheme.accent;
-        ctx.lineWidth = 8;
-        ctx.strokeRect(30, 30, 1140, 1140);
-
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "900 52px -apple-system, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(business.name, 600, 140);
-
-        ctx.fillStyle = "#fbbf24";
-        ctx.font = "bold 34px -apple-system, sans-serif";
-        ctx.fillText("★★★★★  5.0 on Google", 600, 200);
-
-        if (qrDataUrl) {
-          const qrImg = new Image();
-          await new Promise((resolve) => {
-            qrImg.onload = resolve;
-            qrImg.src = qrDataUrl;
-          });
-
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.roundRect(340, 260, 520, 520, 32);
-          ctx.fill();
-          ctx.strokeStyle = activeTheme.accent;
-          ctx.lineWidth = 6;
-          ctx.stroke();
-
-          ctx.drawImage(qrImg, 370, 290, 460, 460);
-        }
-
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "bold 44px -apple-system, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(calloutTitle, 600, 880);
-
-        ctx.fillStyle = activeTheme.subtext;
-        ctx.font = "30px -apple-system, sans-serif";
-        ctx.fillText(calloutSubtitle, 600, 940);
-
-        ctx.fillStyle = activeTheme.accent;
-        ctx.font = "bold 24px -apple-system, sans-serif";
-        ctx.fillText("✨ AI Review Assistant • Verified Google Partner", 600, 1100);
       }
 
       const sideSuffix = format === "pvc-vertical" ? `-${targetSide || pvcSide}` : "";
@@ -900,11 +1012,44 @@ export default function PrintStudioClient({
     }
   };
 
+  const shareRecipientPhone = merchantInfo?.phone || business.phone || business.whatsapp || "";
+  const dispatchMessage = `Namaste ${merchantInfo?.name || business.name}! 🙏
+
+Here is your official Google Review QR Display Kit prepared by ReviewSmart AI:
+
+✨ Live Customer Review Portal:
+${reviewUrl}
+
+📁 Available Physical Formats:
+1. 4"×6" Acrylic Counter Standee (${activeTheme.name})
+2. Vertical PVC Staff & Counter Card
+3. A4 Printable Wall / Door Poster
+
+All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if you would like physical acrylic countertop stands delivered to your store!`;
+
+  const waShareUrl = `https://wa.me/91${shareRecipientPhone.replace(/\D/g, "")}?text=${encodeURIComponent(dispatchMessage)}`;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Controls Column (Left) - Hidden on Print */}
       <div className="lg:col-span-5 space-y-4 no-print">
-        {/* Format Selector */}
+        {/* Agent Mode Header Banner if active */}
+        {agentMode && (
+          <div className="p-3.5 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 text-white flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <div>
+                <div className="text-xs font-bold text-indigo-200">Marketing Agent Workspace</div>
+                <div className="text-[10px] text-slate-300">Customizing for: {business.name}</div>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+              Agent Access
+            </span>
+          </div>
+        )}
+
+        {/* Format Selector (3 Practical Physical Formats) */}
         <div className="bg-white p-5 rounded-3xl border border-slate-200/70 shadow-sm space-y-3">
           <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
@@ -912,11 +1057,11 @@ export default function PrintStudioClient({
               Display Template Formats
             </span>
             <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-              Flipkart A6 Ready
+              {format === "stand" ? "Flipkart A6 Ready" : format === "pvc-vertical" ? "CR80 Standard" : "A4 Print Ready"}
             </span>
           </label>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setFormat("stand")}
@@ -927,7 +1072,7 @@ export default function PrintStudioClient({
               }`}
             >
               <div className="text-xs">Acrylic Stand</div>
-              <div className="text-[10px] text-slate-500 font-normal mt-0.5">4" x 6" Flipkart</div>
+              <div className="text-[10px] text-slate-500 font-normal mt-0.5">4" x 6" Counter</div>
             </button>
 
             <button
@@ -940,84 +1085,69 @@ export default function PrintStudioClient({
               }`}
             >
               <div className="text-xs">Vertical PVC</div>
-              <div className="text-[10px] text-slate-500 font-normal mt-0.5">PAN Card (CR80)</div>
+              <div className="text-[10px] text-slate-500 font-normal mt-0.5">PAN Card Size</div>
             </button>
 
             <button
               type="button"
-              onClick={() => setFormat("nfc")}
+              onClick={() => setFormat("poster-a4")}
               className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center ${
-                format === "nfc"
+                format === "poster-a4"
                   ? "border-amber-500 bg-amber-50/80 text-amber-900 font-bold shadow-sm"
                   : "border-slate-200 text-slate-600 hover:bg-slate-50"
               }`}
             >
-              <div className="text-xs">Smart Card</div>
-              <div className="text-[10px] text-slate-500 font-normal mt-0.5">CR80 Wallet</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFormat("tent")}
-              className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center ${
-                format === "tent"
-                  ? "border-amber-500 bg-amber-50/80 text-amber-900 font-bold shadow-sm"
-                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              <div className="text-xs">Table Tent</div>
-              <div className="text-[10px] text-slate-500 font-normal mt-0.5">Foldable A4</div>
+              <div className="text-xs">A4 Wall Poster</div>
+              <div className="text-[10px] text-slate-500 font-normal mt-0.5">Wall &amp; Door</div>
             </button>
           </div>
         </div>
 
         {/* 4 Luxury Themes Selector */}
-        {(format === "stand" || format === "pvc-vertical") && (
-          <div className="bg-white p-5 rounded-3xl border border-slate-200/70 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Crown className="w-4 h-4 text-amber-500" />
-                {format === "stand" ? "4 Luxury Metallic Standee Themes" : "4 Luxury Card Themes"}
-              </label>
-              <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                {format === "stand" ? "L-Shape A6" : "CR80 54×85.6mm"}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {LUXURY_THEMES.map((t) => {
-                const isSelected = luxuryTheme === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setLuxuryTheme(t.id)}
-                    className={`p-3 rounded-2xl border text-left transition relative flex flex-col justify-between ${
-                      isSelected
-                        ? "border-amber-500 bg-amber-50/50 shadow-md ring-2 ring-amber-400"
-                        : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`w-5 h-5 rounded-full border-2 ${t.swatch} flex items-center justify-center text-[10px]`}>
-                          ✓
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
-                          {t.badge}
-                        </span>
-                      </div>
-                      <div className="text-xs font-bold text-slate-900">{t.name}</div>
-                      <div className="text-[10px] text-slate-500 leading-tight mt-0.5">
-                        {t.subtitle}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+        <div className="bg-white p-5 rounded-3xl border border-slate-200/70 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Crown className="w-4 h-4 text-amber-500" />
+              4 Luxury Metallic Themes
+            </label>
+            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              {format === "stand" ? '4"×6" Standee' : format === "pvc-vertical" ? "CR80 54×85.6mm" : "A4 210×297mm"}
+            </span>
           </div>
-        )}
+
+          <div className="grid grid-cols-2 gap-2">
+            {LUXURY_THEMES.map((t) => {
+              const isSelected = luxuryTheme === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setLuxuryTheme(t.id)}
+                  className={`p-3 rounded-2xl border text-left transition relative flex flex-col justify-between ${
+                    isSelected
+                      ? "border-amber-500 bg-amber-50/50 shadow-md ring-2 ring-amber-400"
+                      : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`w-5 h-5 rounded-full border-2 ${t.swatch} flex items-center justify-center text-[10px]`}>
+                        ✓
+                      </span>
+                      <span className="text-[9px] font-bold text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                        {t.badge}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-slate-900">{t.name}</div>
+                    <div className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                      {t.subtitle}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* PVC Card Specific Options */}
         {format === "pvc-vertical" && (
@@ -1178,48 +1308,24 @@ export default function PrintStudioClient({
               />
             </div>
 
-            {/* Pre-Printed Physical NFC PVC Card Order Banner */}
-            <div className="p-3.5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-amber-600" />
-                  Order Ready-Made PVC NFC Cards
-                </span>
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-full">
-                  Doorstep Delivery
-                </span>
-              </div>
-              <p className="text-[11px] text-amber-900/80 leading-relaxed">
-                Want waterproof, scratch-proof glossy PVC cards embedded with an instant NFC tap chip &amp; lanyard slot?
-              </p>
-              <div className="flex items-center gap-2 pt-1">
-                <a
-                  href={`https://wa.me/918639831132?text=${encodeURIComponent(
-                    `Hi ReviewSmart AI, I want to order physical Vertical PVC Smart Review Cards for my business: "${business.name}" (Slug: ${business.slug}). Please share pricing and shipping details.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black text-center shadow-sm transition"
-                >
-                  Order via WhatsApp (from ₹399)
-                </a>
-              </div>
+            <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-[10px] text-slate-500">
+              💡 Standard CR80 PAN Card size (54mm × 85.6mm) — Print using standard ID card printers or PVC card fabricators.
             </div>
           </div>
         )}
 
-        {/* Brand Logo & Details */}
+        {/* Adaptive Merchant Logo & Details */}
         <div className="bg-white p-5 rounded-3xl border border-slate-200/70 shadow-sm space-y-4">
           <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             <Palette className="w-4 h-4 text-indigo-600" />
-            Customization &amp; Logo Framing
+            Adaptive Logo &amp; Brand Framing
           </label>
 
           {/* Logo Uploader / Switcher */}
           <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-sm overflow-hidden flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-sm overflow-hidden flex-shrink-0">
               {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain rounded-full" />
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
               ) : (
                 <span className="text-[11px] font-black text-amber-600">
                   {business.name.slice(0, 2).toUpperCase()}
@@ -1248,8 +1354,75 @@ export default function PrintStudioClient({
                 </button>
               )}
               <p className="text-[10px] text-slate-500 mt-0.5">
-                Automatically framed in metallic gold on stand.
+                Preserves transparent PNGs &amp; original aspect ratio.
               </p>
+            </div>
+          </div>
+
+          {/* Flexible Logo Style Switcher */}
+          <div className="space-y-2 pt-1">
+            <label className="block text-[10px] font-bold text-slate-700">
+              Logo Framing Layout
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setLogoStyle("auto")}
+                className={`py-1.5 px-2 rounded-xl border text-center transition ${
+                  logoStyle === "auto"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
+                }`}
+              >
+                <div className="text-[10px]">Auto-Fit</div>
+                <div className="text-[8px] text-slate-400">Aspect-Safe</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLogoStyle("badge")}
+                className={`py-1.5 px-2 rounded-xl border text-center transition ${
+                  logoStyle === "badge"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
+                }`}
+              >
+                <div className="text-[10px]">Badge / Crest</div>
+                <div className="text-[8px] text-slate-400">Square/Circle</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLogoStyle("banner")}
+                className={`py-1.5 px-2 rounded-xl border text-center transition ${
+                  logoStyle === "banner"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-950 font-bold"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px]"
+                }`}
+              >
+                <div className="text-[10px]">Wide Banner</div>
+                <div className="text-[8px] text-slate-400">Typography</div>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[10px] text-slate-600 font-medium">Logo Contrast Shield:</span>
+              <div className="flex gap-1">
+                {(["white", "frost", "none"] as const).map((plate) => (
+                  <button
+                    key={plate}
+                    type="button"
+                    onClick={() => setLogoPlate(plate)}
+                    className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border transition ${
+                      logoPlate === plate
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    {plate === "white" ? "Solid White" : plate === "frost" ? "Frosted Glass" : "Transparent"}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1285,7 +1458,7 @@ export default function PrintStudioClient({
                 ? 'Show 4"×6" trim / fold guidelines'
                 : format === "pvc-vertical"
                 ? "Show CR80 card bleed cutline"
-                : "Show trim / fold guidelines"}
+                : "Show A4 10mm print margin"}
             </span>
             <input
               type="checkbox"
@@ -1303,13 +1476,11 @@ export default function PrintStudioClient({
               className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-200 transition"
             >
               <Printer className="w-4 h-4 text-slate-950" />
-              {format === "pvc-vertical"
+              {format === "stand"
+                ? 'Print / Save as PDF (4"×6" Flipkart A6)'
+                : format === "pvc-vertical"
                 ? `Print PVC Card (${pvcSide === "front" ? "Front Side" : "Back Side"})`
-                : format === "nfc"
-                ? "Print / Save as PDF (Smart Card)"
-                : format === "tent"
-                ? "Print / Save as PDF (Table Tent)"
-                : "Print / Save as PDF (4\"×6\" Flipkart A6)"}
+                : "Print / Save as PDF (A4 Poster 210×297mm)"}
             </button>
 
             {format === "pvc-vertical" ? (
@@ -1341,7 +1512,9 @@ export default function PrintStudioClient({
                 className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition disabled:opacity-50"
               >
                 <Download className="w-4 h-4 text-amber-400" />
-                {isExporting ? "Generating 300 DPI Export..." : `Download ${activeTheme.name} Stand PNG (300 DPI)`}
+                {isExporting
+                  ? "Generating 300 DPI Export..."
+                  : `Download ${activeTheme.name} ${format === "stand" ? "Stand" : "Poster"} PNG (300 DPI)`}
               </button>
             )}
 
@@ -1367,49 +1540,63 @@ export default function PrintStudioClient({
           </div>
         </div>
 
-        {/* NFC Programming Guide */}
-        <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-5 rounded-3xl text-white shadow-sm space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-500/30 flex items-center justify-center text-indigo-300">
-              <Radio className="w-4 h-4" />
+        {/* WhatsApp Dispatch & Share Suite */}
+        <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-5 rounded-3xl text-white shadow-sm space-y-3 border border-indigo-950">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Share2 className="w-4 h-4" />
+              </div>
+              <h3 className="text-xs font-bold">1-Click WhatsApp Delivery</h3>
             </div>
-            <h3 className="text-xs font-bold">Program Physical NFC Chips</h3>
+            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              Direct to Merchant
+            </span>
           </div>
+
           <p className="text-[11px] text-slate-300 leading-relaxed">
-            Want customers to tap their phone directly on your standee or smart card? Buy inexpensive NTAG213 / NTAG215 stickers or cards on Amazon.
+            Dispatch the live review portal link and ready-to-print kit instructions directly to the merchant via WhatsApp.
           </p>
 
           <div className="space-y-1.5 pt-1">
             <span className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
-              Your Review Portal URL:
+              Live Review Portal Link:
             </span>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 readOnly
-                value={reviewUrl}
+                value={activeReviewUrl}
                 className="w-full text-[11px] font-mono p-2 rounded-lg bg-white/10 border border-white/20 text-indigo-100 truncate"
               />
               <button
                 type="button"
-                onClick={handleCopyNfcUrl}
+                onClick={handleCopyReviewUrl}
                 className="p-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition flex-shrink-0"
-                title="Copy NFC URL"
+                title="Copy Link"
               >
-                {copiedNfc ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>
           </div>
 
-          <p className="text-[10px] text-slate-400">
-            💡 Download the free app <strong className="text-slate-200">"NFC Tools"</strong> on iOS or Android $\rightarrow$ Write $\rightarrow$ Add a record $\rightarrow$ URL $\rightarrow$ Paste this link $\rightarrow$ Tap chip. Done!
-          </p>
+          <div className="pt-1">
+            <a
+              href={waShareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black flex items-center justify-center gap-2 shadow-md transition"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Share Design Kit on WhatsApp</span>
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Live Preview Area (Right) */}
       <div className="lg:col-span-7 flex flex-col items-center justify-center bg-slate-200/50 p-4 sm:p-10 rounded-3xl border border-slate-200 min-h-[620px] relative overflow-hidden">
-        {/* Printable Target Container - Sized & Styled specifically for print */}
+        {/* Acrylic Stand Preview (4" x 6") */}
         {format === "stand" && (
           <div
             id="print-target"
@@ -1441,20 +1628,35 @@ export default function PrintStudioClient({
             </div>
 
             {/* Stand Header: Logo & Store Name */}
-            <div className="flex flex-col items-center mt-1 z-10">
-              <div className="w-14 h-14 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-2 overflow-hidden">
-                {logoUrl ? (
+            <div className="flex flex-col items-center mt-1 z-10 w-full px-4">
+              {/* Adaptive Logo */}
+              {logoUrl ? (
+                <div
+                  className={`p-1.5 flex items-center justify-center mb-1 overflow-hidden transition-all ${
+                    logoStyle === "banner"
+                      ? "w-40 h-11 rounded-xl"
+                      : "w-14 h-14 rounded-full"
+                  } ${
+                    logoPlate === "white"
+                      ? "bg-white border-2 border-amber-400 shadow-sm"
+                      : logoPlate === "frost"
+                      ? "bg-white/15 border border-white/30 backdrop-blur-sm"
+                      : ""
+                  }`}
+                >
                   <img
                     src={logoUrl}
                     alt={business.name}
-                    className="w-full h-full object-contain rounded-full"
+                    className="w-full h-full object-contain"
                   />
-                ) : (
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-1 overflow-hidden">
                   <span className="text-lg font-black text-amber-600">
                     {business.name.slice(0, 2).toUpperCase() || "RS"}
                   </span>
-                )}
-              </div>
+                </div>
+              )}
 
               <h2
                 className="text-base font-black tracking-tight leading-tight max-w-[280px]"
@@ -1498,12 +1700,6 @@ export default function PrintStudioClient({
               ) : (
                 <div className="w-36 h-36 bg-slate-100 animate-pulse rounded-xl" />
               )}
-
-              {/* NFC Contactless Indicator */}
-              <div className="absolute -bottom-2.5 -right-2.5 px-2 py-1 rounded-full text-[9px] font-black shadow-md border-2 border-white flex items-center gap-1 bg-amber-400 text-slate-950">
-                <Radio className="w-3 h-3 animate-pulse" />
-                <span>NFC TAP</span>
-              </div>
             </div>
 
             {/* Micro 3-Step Instruction Guide */}
@@ -1602,20 +1798,35 @@ export default function PrintStudioClient({
                   </div>
 
                   {/* Store Info */}
-                  <div className="flex flex-col items-center z-10 -mt-1">
-                    <div className="w-11 h-11 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-0.5 shadow-md mb-1 overflow-hidden">
-                      {logoUrl ? (
+                  <div className="flex flex-col items-center z-10 -mt-1 w-full px-2">
+                    {/* Adaptive Logo */}
+                    {logoUrl ? (
+                      <div
+                        className={`p-1 flex items-center justify-center mb-1 overflow-hidden transition-all ${
+                          logoStyle === "banner"
+                            ? "w-32 h-9 rounded-lg"
+                            : "w-11 h-11 rounded-full"
+                        } ${
+                          logoPlate === "white"
+                            ? "bg-white border-2 border-amber-400 shadow-sm"
+                            : logoPlate === "frost"
+                            ? "bg-white/15 border border-white/30 backdrop-blur-sm"
+                            : ""
+                        }`}
+                      >
                         <img
                           src={logoUrl}
                           alt={business.name}
-                          className="w-full h-full object-contain rounded-full"
+                          className="w-full h-full object-contain"
                         />
-                      ) : (
+                      </div>
+                    ) : (
+                      <div className="w-11 h-11 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-0.5 shadow-md mb-1 overflow-hidden">
                         <span className="text-xs font-black text-amber-600">
                           {business.name.slice(0, 2).toUpperCase() || "RS"}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     <h2
                       className="text-xs font-black tracking-tight leading-tight max-w-[240px] truncate"
@@ -1659,11 +1870,6 @@ export default function PrintStudioClient({
                     ) : (
                       <div className="w-28 h-28 bg-slate-100 animate-pulse rounded-lg" />
                     )}
-
-                    <div className="absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded-full text-[8px] font-black shadow-md border-2 border-white flex items-center gap-0.5 bg-amber-400 text-slate-950">
-                      <Radio className="w-2.5 h-2.5" />
-                      <span>NFC TAP</span>
-                    </div>
                   </div>
 
                   {/* Staff Attribution Pill if entered */}
@@ -1676,7 +1882,7 @@ export default function PrintStudioClient({
                       className="w-full py-1 px-2 rounded-lg bg-black/25 border border-white/10 text-[8.5px] font-bold z-10 truncate"
                       style={{ color: activeTheme.subtext }}
                     >
-                      Scan QR or Tap NFC to Review in 5 Sec
+                      Scan QR with Camera to Review in 5 Sec
                     </div>
                   )}
 
@@ -1749,10 +1955,10 @@ export default function PrintStudioClient({
                           </div>
                           <div>
                             <div className="text-[10px] font-bold text-white leading-tight">
-                              Scan QR or Tap Phone
+                              Scan QR with Camera
                             </div>
                             <div className="text-[8px] text-slate-400">
-                              Instant camera scan or NFC tap
+                              Instant camera scan, zero app needed
                             </div>
                           </div>
                         </div>
@@ -1903,149 +2109,151 @@ export default function PrintStudioClient({
           </div>
         )}
 
-        {/* Foldable Table Tent (A4 Printable with Fold Guides) */}
-        {format === "tent" && (
+        {/* A4 Printable Wall / Counter / Door Poster (210mm x 297mm) */}
+        {format === "poster-a4" && (
           <div
             id="print-target"
-            className="table-tent-sheet bg-white p-6 rounded-2xl border border-slate-300 w-full max-w-[420px] flex flex-col space-y-4"
-          >
-            {/* Panel 1 (Front Side) */}
-            <div className="border border-slate-200 p-5 rounded-2xl text-center relative flex flex-col items-center">
-              <div
-                className="absolute top-0 left-0 right-0 h-2 rounded-t-2xl"
-                style={{ backgroundColor: activeTheme.accent }}
-              />
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Front Facing Table Side
-              </span>
-              <h3 className="text-sm font-bold text-slate-900">{business.name}</h3>
-              <div className="flex items-center gap-1 my-1">
-                <div className="flex items-center text-amber-400">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <span className="text-[10px] font-bold text-slate-500">5.0 on Google</span>
-              </div>
-              {qrDataUrl && (
-                <img src={qrDataUrl} alt="QR" className="w-28 h-28 my-1 object-contain" />
-              )}
-              <p className="text-xs font-bold text-slate-800">{calloutTitle}</p>
-              <p className="text-[10px] text-slate-500">{calloutSubtitle}</p>
-            </div>
-
-            {/* Fold Guide Line */}
-            <div className="flex items-center justify-center gap-2 py-1 border-t-2 border-b-2 border-dashed border-slate-300 text-[10px] font-mono text-slate-500">
-              <Scissors className="w-3 h-3" /> FOLD HERE (CREASE DOWNWARD) <Scissors className="w-3 h-3" />
-            </div>
-
-            {/* Panel 2 (Back Side) */}
-            <div className="border border-slate-200 p-5 rounded-2xl text-center relative flex flex-col items-center">
-              <div
-                className="absolute top-0 left-0 right-0 h-2 rounded-t-2xl"
-                style={{ backgroundColor: activeTheme.accent }}
-              />
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Back Facing Table Side
-              </span>
-              <h3 className="text-sm font-bold text-slate-900">{business.name}</h3>
-              <div className="flex items-center gap-1 my-1">
-                <div className="flex items-center text-amber-400">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <span className="text-[10px] font-bold text-slate-500">5.0 on Google</span>
-              </div>
-              {qrDataUrl && (
-                <img src={qrDataUrl} alt="QR" className="w-28 h-28 my-1 object-contain" />
-              )}
-              <p className="text-xs font-bold text-slate-800">{calloutTitle}</p>
-              <p className="text-[10px] text-slate-500">{calloutSubtitle}</p>
-            </div>
-
-            {/* Base Flap Guide */}
-            <div className="p-2 bg-slate-50 border border-dashed border-slate-300 rounded-lg text-center text-[9px] text-slate-500 font-mono">
-              FOLD BASE FLAP &amp; TUCK UNDERNEATH FOR TRIANGLE STAND
-            </div>
-          </div>
-        )}
-
-        {/* Smart NFC Card (CR80 Standard Wallet / Badge Size) */}
-        {format === "nfc" && (
-          <div
-            id="print-target"
-            className="rounded-2xl p-6 border-2 border-amber-400 flex items-center justify-between relative transition-all shadow-xl"
+            className="rounded-3xl p-6 sm:p-7 flex flex-col items-center text-center justify-between relative transition-all border-[3px] shadow-2xl select-none overflow-hidden"
             style={{
-              width: "400px",
-              height: "240px",
+              width: "360px",
+              height: "509px",
               backgroundColor: activeTheme.bg,
+              borderColor: activeTheme.accent,
+              boxShadow: "0 25px 40px -10px rgba(0, 0, 0, 0.4)",
             }}
           >
-            {/* Left Card Info */}
-            <div className="flex flex-col justify-between h-full pl-2 max-w-[210px]">
-              <div>
-                <h3
-                  className="text-sm font-black tracking-tight leading-tight"
-                  style={{ color: activeTheme.text }}
+            {/* Inner Hairline Gold Border */}
+            <div
+              className="absolute inset-3 rounded-2xl border pointer-events-none"
+              style={{ borderColor: activeTheme.innerBorder }}
+            />
+
+            {/* Corner Filigree Accents */}
+            <div className="absolute top-4 left-4 text-amber-400 font-serif text-sm pointer-events-none select-none">┌</div>
+            <div className="absolute top-4 right-4 text-amber-400 font-serif text-sm pointer-events-none select-none">┐</div>
+            <div className="absolute bottom-4 left-4 text-amber-400 font-serif text-sm pointer-events-none select-none">└</div>
+            <div className="absolute bottom-4 right-4 text-amber-400 font-serif text-sm pointer-events-none select-none">┘</div>
+
+            {/* Top Luxury Ribbon Badge */}
+            <div className={`px-4 py-1 rounded-full text-[10px] font-black tracking-wider uppercase shadow-md ${activeTheme.ribbonBg} flex items-center gap-1.5 z-10`}>
+              <Award className="w-3.5 h-3.5" />
+              <span>★ 5.0 GOOGLE EXCELLENCE AWARD ★</span>
+            </div>
+
+            {/* Header: Logo & Store Name */}
+            <div className="flex flex-col items-center mt-1 z-10 w-full px-4">
+              {/* Adaptive Logo */}
+              {logoUrl ? (
+                <div
+                  className={`p-1.5 flex items-center justify-center mb-1 overflow-hidden transition-all ${
+                    logoStyle === "banner"
+                      ? "w-44 h-12 rounded-xl"
+                      : "w-14 h-14 rounded-full"
+                  } ${
+                    logoPlate === "white"
+                      ? "bg-white border-2 border-amber-400 shadow-sm"
+                      : logoPlate === "frost"
+                      ? "bg-white/15 border border-white/30 backdrop-blur-sm"
+                      : ""
+                  }`}
                 >
-                  {business.name}
-                </h3>
-                <div className="flex items-center gap-1 mt-1">
-                  <div className="flex items-center text-amber-400">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <span
-                    className="text-[10px] font-bold"
-                    style={{ color: activeTheme.subtext }}
-                  >
-                    Google 5.0
+                  <img
+                    src={logoUrl}
+                    alt={business.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-full border-2 border-amber-400 bg-white flex items-center justify-center p-1 shadow-md mb-1 overflow-hidden">
+                  <span className="text-base font-black text-amber-600">
+                    {business.name.slice(0, 2).toUpperCase() || "RS"}
                   </span>
                 </div>
-              </div>
+              )}
 
-              <div className="space-y-1">
+              <h2
+                className="text-base font-black tracking-tight leading-tight max-w-[280px] truncate"
+                style={{ color: activeTheme.text }}
+              >
+                {business.name}
+              </h2>
+
+              {business.googleAddress && (
                 <p
-                  className="text-xs font-bold leading-tight"
-                  style={{ color: activeTheme.text }}
-                >
-                  Tap or Scan to Review
-                </p>
-                <p
-                  className="text-[10px]"
+                  className="text-[10px] truncate max-w-[260px] mt-0.5 font-medium"
                   style={{ color: activeTheme.subtext }}
                 >
-                  Instant 30-sec AI review
+                  📍 {business.googleAddress}
                 </p>
-              </div>
+              )}
 
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-400">
-                <Radio className="w-3 h-3" />
-                <span>NFC Contactless Ready</span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <div className="flex items-center text-amber-400">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <span
+                  className="text-[11px] font-extrabold ml-1"
+                  style={{ color: activeTheme.text }}
+                >
+                  5.0 on Google Maps
+                </span>
               </div>
             </div>
 
-            {/* Right Card QR */}
-            <div className="flex-shrink-0 bg-white p-2 rounded-xl border border-amber-400 shadow-md">
+            {/* Centerpiece Giant QR Code */}
+            <div className="p-3 bg-white rounded-2xl relative my-1 z-10 border-2 border-amber-400 shadow-xl">
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt="QR" className="w-28 h-28 object-contain" />
+                <img
+                  src={qrDataUrl}
+                  alt="Review QR Code"
+                  className="w-36 h-36 object-contain"
+                />
               ) : (
-                <div className="w-28 h-28 bg-slate-100 animate-pulse rounded-lg" />
+                <div className="w-36 h-36 bg-slate-100 animate-pulse rounded-xl" />
               )}
             </div>
 
+            {/* Micro 3-Step Instruction Guide */}
+            <div
+              className="w-full px-2 py-1.5 rounded-xl bg-black/20 border border-white/10 text-[9px] font-bold z-10"
+              style={{ color: activeTheme.subtext }}
+            >
+              ① Scan with Any Phone Camera • ② Pick Instant Compliments • ③ Post in 5 Sec
+            </div>
+
+            {/* Poster Footer */}
+            <div className="space-y-0.5 pb-0.5 z-10">
+              <h3
+                className="text-xs font-black tracking-tight"
+                style={{ color: activeTheme.text }}
+              >
+                {calloutTitle}
+              </h3>
+              <p
+                className="text-[10px] max-w-[260px] font-medium"
+                style={{ color: activeTheme.subtext }}
+              >
+                {calloutSubtitle}
+              </p>
+              <div className="pt-1 text-[9px] font-bold text-amber-400 flex items-center justify-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>ReviewSmart AI &bull; Verified Google Partner</span>
+              </div>
+            </div>
+
+            {/* Physical Print Dimension Indicator */}
             {showCropMarks && (
-              <div className="absolute -bottom-6 left-0 right-0 text-center text-[10px] text-slate-400 no-print font-mono flex items-center justify-center gap-1">
-                <Scissors className="w-3 h-3" /> Standard CR80 Wallet Card Size (85.6mm x 54mm)
+              <div className="absolute -bottom-6 text-[10px] text-slate-400 no-print flex items-center gap-1 font-mono">
+                <Scissors className="w-3 h-3" /> Standard A4 (210mm × 297mm) Printable Wall / Door Poster
               </div>
             )}
           </div>
         )}
 
         <p className="text-xs text-slate-400 mt-8 no-print text-center max-w-sm">
-          💡 Click <strong>"Print / Save as PDF"</strong> for direct paper printout, or <strong>"Download Stand PNG"</strong> for 300 DPI high-res output for your acrylic fabricator.
+          💡 Click <strong>"Print / Save as PDF"</strong> for direct paper printout, or <strong>"Download 300 DPI"</strong> for ultra high-res print shop files.
         </p>
       </div>
     </div>

@@ -82,7 +82,7 @@ export function BrandIcon({
           strokeOpacity="0.5"
         />
 
-        {/* ── Signal arcs (top-right, WiFi-style) — represent NFC/connectivity ── */}
+        {/* ── Signal arcs (top-right, WiFi-style) — represent wireless review connection ── */}
         <path
           d="M 30 8 A 14 14 0 0 1 40 18"
           stroke="url(#rs-arc)"

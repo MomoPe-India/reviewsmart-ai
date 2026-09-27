@@ -76,6 +76,7 @@ interface AgentSession {
 
 interface MyDeal {
   paymentId: string;
+  businessId?: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   amount: number;
   agentCommission: number;
@@ -593,27 +594,35 @@ export default function AgentPosPage() {
               </span>
               <p className="text-[11px] text-slate-300 leading-relaxed">
                 ✓ Hand over 1x 4"×6" Acrylic Counter Standee<br />
-                ✓ Apply NFC &amp; Laser QR Sticker<br />
+                ✓ Apply High-Resolution Camera QR Display Card<br />
                 ✓ Test customer scan live on merchant's phone
               </p>
             </div>
 
             {/* Action Buttons */}
             <div className="space-y-2 pt-2">
+              <Link
+                href={`/agent/manage/${createdDeal.businessId || createdDeal.businessSlug}`}
+                className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-98"
+              >
+                <Store className="w-4 h-4" />
+                <span>Open Merchant Kit &amp; Print Studio 🎨</span>
+              </Link>
+
               <button
                 type="button"
                 onClick={() => {
                   const base = getAppUrl();
-                  const msg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login Link: ${base}/login\n👤 User ID: ${createdDeal.merchantUserId}\n🔑 PIN: ${createdDeal.merchantPin}\n\nLive Review URL: ${base}/r/${createdDeal.businessSlug}\n\n⭐ Your customers can tap or scan to give 5-star Google reviews in 15 seconds!`;
+                  const msg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login Link: ${base}/login\n👤 User ID: ${createdDeal.merchantUserId}\n🔑 PIN: ${createdDeal.merchantPin}\n\nLive Review URL: ${base}/r/${createdDeal.businessSlug}\n\n⭐ Your customers can scan to give 5-star Google reviews in 15 seconds!`;
                   window.open(
                     `https://wa.me/91${createdDeal.merchantUserId}?text=${encodeURIComponent(msg)}`,
                     "_blank"
                   );
                 }}
-                className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition"
+                className="w-full py-3 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition"
               >
-                <Share2 className="w-5 h-5" />
-                Share Credentials via WhatsApp
+                <Share2 className="w-4 h-4" />
+                <span>Share Credentials via WhatsApp</span>
               </button>
 
               <button
@@ -1154,29 +1163,40 @@ export default function AgentPosPage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            window.open(
-                              `https://wa.me/91${deal.merchantPhone.replace(/\D/g, "")}?text=${encodeURIComponent(credsMsg)}`,
-                              "_blank"
-                            )
-                          }
-                          className="py-2 px-2 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
+                      <div className="space-y-1.5">
+                        <Link
+                          href={`/agent/manage/${deal.businessId || deal.businessSlug}`}
+                          className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-[11px] font-black flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 transition transform active:scale-98"
                         >
-                          <Share2 className="w-3 h-3" />
-                          Share Creds
-                        </button>
-                        <a
-                          href={`/r/${deal.businessSlug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="py-2 px-2 rounded-xl bg-indigo-600/15 hover:bg-indigo-600/25 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Review Card
-                        </a>
+                          <Store className="w-3.5 h-3.5" />
+                          <span>🎨 Manage &amp; Design Kit</span>
+                          <ArrowRight className="w-3 h-3 ml-auto opacity-75" />
+                        </Link>
+
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              window.open(
+                                `https://wa.me/91${deal.merchantPhone.replace(/\D/g, "")}?text=${encodeURIComponent(credsMsg)}`,
+                                "_blank"
+                              )
+                            }
+                            className="py-1.5 px-2 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
+                          >
+                            <Share2 className="w-3 h-3" />
+                            Share Creds
+                          </button>
+                          <a
+                            href={`/r/${deal.businessSlug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="py-1.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-bold flex items-center justify-center gap-1.5 transition"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Live Card
+                          </a>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1210,7 +1230,7 @@ export default function AgentPosPage() {
                 ⚡ 30-Second Elevator Pitch (Telugu / English):
               </span>
               <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                "Sir/Madam, daily 50+ customers walk into your shop, but nobody gives Google reviews. When people search on Maps for stores in Kadapa, your competitor with 4.9★ gets the business. With this 1-tap acrylic standee, customers tap phone or scan QR — our AI drafts a 5-star review in 15 seconds. If anyone is unhappy, their message goes privately to your phone instead of damaging your Google score!"
+                &quot;Sir/Madam, daily 50+ customers walk into your shop, but nobody gives Google reviews. When people search on Maps for stores in Kadapa, your competitor with 4.9★ gets the business. With this Smart QR acrylic standee, customers scan with their phone camera — our AI drafts a 5-star review in 15 seconds. If anyone is unhappy, their message goes privately to your phone instead of damaging your Google score!&quot;
               </p>
             </div>
 
@@ -1222,28 +1242,28 @@ export default function AgentPosPage() {
 
               <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
                 <span className="text-xs font-bold text-amber-400 block">
-                  1. "I already have a Google QR code paper on counter."
+                  1. &quot;I already have a Google QR code paper on counter.&quot;
                 </span>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  <strong>Say:</strong> "Sir, regular Google QR forces customer to type everything manually. 90% of people close it because they don't have time. ReviewSmart AI writes the full 5-star review for them in 1 tap!"
+                  <strong>Say:</strong> &quot;Sir, regular Google QR forces customer to type everything manually. 90% of people close it because they don&apos;t have time. ReviewSmart AI writes the full 5-star review for them in 1 tap!&quot;
                 </p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
                 <span className="text-xs font-bold text-amber-400 block">
-                  2. "What if someone writes a negative review?"
+                  2. &quot;What if someone writes a negative review?&quot;
                 </span>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  <strong>Say:</strong> "That is the biggest superpower of ReviewSmart! Any 1, 2, or 3-star rating is intercepted privately to your WhatsApp. Only 4 and 5 stars go to Google. Your public rating stays 100% protected."
+                  <strong>Say:</strong> &quot;That is the biggest superpower of ReviewSmart! Any 1, 2, or 3-star rating is intercepted privately to your WhatsApp. Only 4 and 5 stars go to Google. Your public rating stays 100% protected.&quot;
                 </p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
                 <span className="text-xs font-bold text-amber-400 block">
-                  3. "Is there any monthly subscription fees?"
+                  3. &quot;Is there any monthly subscription fees?&quot;
                 </span>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  <strong>Say:</strong> "No monthly headache! It's a complete 1-year package including physical acrylic standee and NFC chip delivered to your counter."
+                  <strong>Say:</strong> &quot;No monthly headache! It&apos;s a complete 1-year package including physical acrylic standee, vertical PVC card, and high-res print assets delivered for your counter.&quot;
                 </p>
               </div>
             </div>
@@ -1295,11 +1315,11 @@ export default function AgentPosPage() {
 
             <div className="flex items-center justify-center gap-1 text-amber-400 text-xs font-black">
               <span>★ ★ ★ ★ ★</span>
-              <span className="text-white text-[11px] font-semibold ml-1">Tap NFC or Scan to Review</span>
+              <span className="text-white text-[11px] font-semibold ml-1">Scan Camera to Review</span>
             </div>
 
             <p className="text-[10px] text-slate-400">
-              Flipkart 4"×6" (A6) Portrait Acrylic Counter Standee
+              Flipkart 4&quot;×6&quot; (A6) Portrait Acrylic Counter Standee
             </p>
 
             <button
