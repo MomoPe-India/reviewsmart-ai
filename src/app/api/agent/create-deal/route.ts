@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     const platformSettings = await prisma.platformSetting.findUnique({
       where: { id: "default" },
     });
-    const minFloor = platformSettings?.minNegotiatedPrice ?? 499;
+    const minFloor = platformSettings?.minNegotiatedPrice ?? 1999;
     const commissionRate = platformSettings?.commissionRate ?? 0.40;
 
     const finalAmount = Number(negotiatedPrice);

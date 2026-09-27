@@ -127,7 +127,7 @@ model UpiPayment {
   agentId        String?  // Agent user ID who closed the offline deal
   agentCode      String?  // e.g. "MKT-01"
   planType       String   @default("NEGOTIATED_DEAL") // "NEGOTIATED_DEAL" | "ONLINE_DIRECT"
-  amount         Float    @default(499)
+  amount         Float    @default(1999)
   utrNumber      String   // 12-digit UPI reference number submitted by customer/agent
   customerPhone  String?
   status         String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
@@ -150,7 +150,7 @@ model PlatformSetting {
   currencySymbol     String   @default("₹")
   upiId              String   @default("momopedeals@oksbi")
   upiPayeeName       String   @default("Damerla Mohan")
-  minNegotiatedPrice Float    @default(499)   // Hard floor for all agent + online deals
+  minNegotiatedPrice Float    @default(1999)   // Hard floor for all agent + online deals
   commissionRate     Float    @default(0.40)  // 40% agent commission on verified sales
   updatedAt          DateTime @updatedAt
 }

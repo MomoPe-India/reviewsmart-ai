@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest) {
         currencySymbol: body.currencySymbol || "₹",
         upiId: body.upiId || "momopedeals@oksbi",
         upiPayeeName: body.upiPayeeName || "Damerla Mohan",
-        minNegotiatedPrice: Number(body.minNegotiatedPrice) || 499,
+        minNegotiatedPrice: Number(body.minNegotiatedPrice) || 1999,
         commissionRate: Number(body.commissionRate) || 0.40,
       },
       create: {
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest) {
         currencySymbol: body.currencySymbol || "₹",
         upiId: body.upiId || "momopedeals@oksbi",
         upiPayeeName: body.upiPayeeName || "Damerla Mohan",
-        minNegotiatedPrice: Number(body.minNegotiatedPrice) || 499,
+        minNegotiatedPrice: Number(body.minNegotiatedPrice) || 1999,
         commissionRate: Number(body.commissionRate) || 0.40,
       },
     });

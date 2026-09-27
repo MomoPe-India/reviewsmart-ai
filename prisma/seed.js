@@ -14,8 +14,8 @@ async function main() {
       upiPayeeName: "Damerla Mohan",
       supportEmail: "momopedeals@gmail.com",
       digitalPrice: 299,
-      physicalPrice: 999,
-      minNegotiatedPrice: 499,
+      physicalPrice: 1999,
+      minNegotiatedPrice: 1999,
     },
     create: {
       id: "default",
@@ -25,8 +25,8 @@ async function main() {
       upiId: "momopedeals@oksbi",
       upiPayeeName: "Damerla Mohan",
       digitalPrice: 299,
-      physicalPrice: 999,
-      minNegotiatedPrice: 499,
+      physicalPrice: 1999,
+      minNegotiatedPrice: 1999,
     },
   });
 
@@ -70,12 +70,12 @@ async function main() {
     where: { id: "plan_pro" },
     update: {
       name: "1 Year / Lifetime Pass",
-      price: 999.0,
+      price: 1999.0,
       currency: "INR",
       durationDays: 3650,
       maxCards: 1,
       features: JSON.stringify([
-        "Special Launch Offer: was ₹1,999 (Save ₹1,000!)",
+        "Special Launch Offer: was ₹3,999 (Save ₹2,000!)",
         "Full 1 Year / Lifetime Uninterrupted Access",
         "1 Business Location License (1 Card)",
         "Gemini AI Unlimited Review Generations",
@@ -88,12 +88,12 @@ async function main() {
     create: {
       id: "plan_pro",
       name: "1 Year / Lifetime Pass",
-      price: 999.0,
+      price: 1999.0,
       currency: "INR",
       durationDays: 3650,
       maxCards: 1,
       features: JSON.stringify([
-        "Special Launch Offer: was ₹1,999 (Save ₹1,000!)",
+        "Special Launch Offer: was ₹3,999 (Save ₹2,000!)",
         "Full 1 Year / Lifetime Uninterrupted Access",
         "1 Business Location License (1 Card)",
         "Gemini AI Unlimited Review Generations",

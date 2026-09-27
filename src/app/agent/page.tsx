@@ -127,7 +127,7 @@ export default function AgentPosPage() {
   };
 
   // Pricing & Deal
-  const [negotiatedPrice, setNegotiatedPrice] = useState<number>(1499);
+  const [negotiatedPrice, setNegotiatedPrice] = useState<number>(1999);
   const [utrNumber, setUtrNumber] = useState("");
   const [isSubmittingDeal, setIsSubmittingDeal] = useState(false);
   const [dealError, setDealError] = useState("");
@@ -342,8 +342,8 @@ export default function AgentPosPage() {
       setDealError("Please enter a valid 10-digit mobile number for the merchant.");
       return;
     }
-    if (negotiatedPrice < 499) {
-      setDealError("Minimum authorized price floor is ₹499.");
+    if (negotiatedPrice < 1999) {
+      setDealError("Minimum authorized price floor is ₹1,999.");
       return;
     }
 
@@ -958,12 +958,12 @@ export default function AgentPosPage() {
                   <DollarSign className="w-4 h-4 text-emerald-400" />
                   Step 3: Agreed Price &amp; Commission
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">Min: ₹499</span>
+                <span className="text-[10px] text-slate-400 font-normal">Min: ₹1,999</span>
               </label>
 
               {/* Quick Presets */}
               <div className="grid grid-cols-4 gap-1.5 text-center">
-                {[999, 1499, 1999, 2999].map((amt) => (
+                {[1999, 2499, 2999, 3999].map((amt) => (
                   <button
                     key={amt}
                     type="button"
@@ -994,7 +994,7 @@ export default function AgentPosPage() {
                 </label>
                 <input
                   type="number"
-                  min={499}
+                  min={1999}
                   required
                   value={negotiatedPrice}
                   onChange={(e) => setNegotiatedPrice(Number(e.target.value))}

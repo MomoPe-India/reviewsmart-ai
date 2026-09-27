@@ -51,7 +51,7 @@ export default function BillingClient({
   const upiId = settings?.upiId || "momopedeals@oksbi";
   const upiPayee = settings?.upiPayeeName || "Damerla Mohan";
   const digitalPrice = settings?.digitalPrice || 299;
-  const physicalPrice = settings?.physicalPrice || 999;
+  const physicalPrice = settings?.physicalPrice || 1999;
   const addonPrice = 99;
 
   const currentAmount =
@@ -191,9 +191,9 @@ export default function BillingClient({
             </div>
             <div className="flex items-baseline gap-2 my-2">
               <span className="text-3xl font-black text-slate-900">₹{physicalPrice}</span>
-              <span className="text-sm text-slate-400 line-through">₹1,999</span>
+              <span className="text-sm text-slate-400 line-through">₹3,999</span>
               <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">
-                Save ₹1,000!
+                Save ₹2,000!
               </span>
             </div>
             <ul className="text-xs text-slate-600 space-y-1.5 mt-3 pt-3 border-t border-slate-200/60">
