@@ -1,192 +1,217 @@
 # 🚀 ReviewSmart AI — Kadapa Field Marketing Cookbook & Closer Playbook
-
-> **Mission for Tomorrow:** Turn every local business owner in Kadapa into a **5-Star Google Maps Leader** in under **5 minutes per shop** using the **ReviewSmart AI Agent Closer POS** and the **4"×6" Smart QR + NFC Countertop Standee**.
+> **కడప మార్కెటింగ్ ఏజెంట్ ఫీల్డ్ గైడ్ & సేల్స్ హ్యాండ్‌బుక్**
+>
+> **మన లక్ష్యం (Our Mission):** కడపలోని ప్రతి వ్యాపారిని (Doctor, Hotel, Clothing Store, Salon, Coaching Center) కేవలం **5 నిమిషాల్లో** గూగుల్ మ్యాప్స్ లీడర్‌గా మార్చడం!
+> **లైవ్ డొమైన్ (Official Platform):** [https://reviewsmart.online](https://reviewsmart.online)
 
 ---
 
-## 📌 Part 1: What Are We Selling? (Explain it in 15 Seconds)
+## 📌 Part 1: మనం ఏమి అమ్ముతున్నాం? (What Are We Selling?)
 
-Before an agent steps into a shop in Kadapa, they must understand **why** a merchant buys ReviewSmart AI.
+మనం కేవలం "సాఫ్ట్‌వేర్" లేదా "ప్లాస్టిక్ స్టాండ్" అమ్మడం లేదు.
+మనం అమ్ముతున్నది:
+1. **గూగుల్ మ్యాప్స్ ద్వారా కొత్త కస్టమర్లు (More Walk-in Customers)**
+2. **నెగటివ్ రివ్యూల నుండి రక్షణ (Negative Review Shield to Protect Reputation)**
 
-**We do NOT sell "software" or "plastic stands."**
-We sell **New Walk-In Customers from Google Maps** and **Protection Against 1-Star Angry Reviews**.
+### కడపలోని ప్రతి వ్యాపారి ఎదుర్కొనే 2 పెద్ద సమస్యలు:
+1. **99% మంచి కస్టమర్లు రివ్యూ రాయరు:** ఎందుకంటే కౌంటర్ దగ్గర నిలబడి గూగుల్ మ్యాప్స్ ఓపెన్ చేసి, షాప్ పేరు వెతికి, 3 లైన్లు ఇంగ్లీషులో టైప్ చేయడం ఎవరికీ ఇష్టం ఉండదు.
+2. **ఒక్క అసంతృప్త కస్టమర్ అయినా 1-స్టార్ రివ్యూ ఇచ్చేస్తాడు:** కోపంలో ఉన్న కస్టమర్ 10 నిమిషాలు కేటాయించి బ్యాడ్ రివ్యూ రాస్తాడు. అది గూగుల్‌లో శాశ్వతంగా ఉండి, భవిష్యత్తులో వచ్చే 50 మంది కస్టమర్లను దూరం చేస్తుంది.
 
-### The 2 Problems Every Kadapa Business Owner Has Today:
-1. **99% of Happy Customers Never Leave a Review:** Why? Because opening Google Maps, searching the shop name, scrolling to "Reviews", and typing 3 sentences in English is **too much work** at the billing counter.
-2. **1 Angry Customer Always Leaves a 1-Star Review:** An angry customer will spend 10 minutes writing a bad review that stays on Google forever and scares away 30+ future customers.
-
-### How ReviewSmart AI Solves Both in 10 Seconds:
+### ReviewSmart AI దీన్ని ఎలా పరిష్కరిస్తుంది?
 
 ```mermaid
 flowchart TD
-    A["📱 Customer Taps or Scans 4x6 Standee at Billing Counter"] --> B["✨ ReviewSmart AI Opens Instantly (No App Download)"]
-    B --> C{"⭐ Customer Taps Star Rating"}
+    A["📱 కస్టమర్ ఫోన్ కెమెరాతో కౌంటర్ Standee / PVC Card / Wall Poster QR స్కాన్ చేస్తారు"] --> B["✨ ReviewSmart AI పేజీ ఓపెన్ అవుతుంది (యాప్ డౌన్‌లోడ్ అవసరం లేదు)"]
+    B --> C{"⭐ కస్టమర్ స్టార్ రేటింగ్ ఎంచుకుంటారు"}
     
-    C -->|"⭐⭐⭐⭐ or ⭐⭐⭐⭐⭐ (Happy)"| D["🤖 AI Writes 3 Ready-Made English Reviews for That Exact Shop"]
-    D --> E["📋 1-Tap Auto-Copies Review to Phone Clipboard"]
-    E --> F["🗺️ Auto-Opens Google Maps Review Screen — Customer Just Taps PASTE & POST!"]
+    C -->|"⭐⭐⭐⭐ లేదా ⭐⭐⭐⭐⭐ (హ్యాపీ కస్టమర్)"| D["🤖 మన AI ఆ షాప్ కోసం 3 రెడీమేడ్ ఇంగ్లీష్ రివ్యూలు రాస్తుంది"]
+    D --> E["📋 ఒక్క ట్యాప్‌తో రివ్యూ ఆటోమేటిక్‌గా కాపీ అవుతుంది"]
+    E --> F["🗺️ గూగుల్ మ్యాప్స్ రివ్యూ పేజీ డైరెక్ట్‌గా ఓపెన్ అవుతుంది — కస్టమర్ PASTE & POST కొడితే చాలు!"]
     
-    C -->|"⭐ to ⭐⭐⭐ (Unhappy)"| G["🛡️ Negative Review Shield Activates"]
-    G --> H["🔒 Private Complaint Form Captures Customer Name, Phone & Issue"]
-    H --> I["📩 Saved Privately in Owner's Dashboard — Blocked from Public Google Maps!"]
+    C -->|"⭐ నుండి ⭐⭐⭐ (అసంతృప్త కస్టమర్)"| G["🛡️ నెగటివ్ రివ్యూ షీల్డ్ ఆక్టివేట్ అవుతుంది"]
+    G --> H["🔒 ప్రైవేట్ కంప్లైంట్ బాక్స్ ఓపెన్ అవుతుంది (పేరు, ఫోన్ నంబర్, సమస్య)"]
+    I["📩 ఫీడ్‌బ్యాక్ నేరుగా ఓనర్ ప్రైవేట్ వాట్సాప్ / డ్యాష్‌బోర్డ్‌కు మాత్రమే వెళ్తుంది — గూగుల్ మ్యాప్స్‌లోకి వెళ్ళదు!"]
+    H --> I
 ```
 
 ---
 
-## 🎒 Part 2: Pre-Field Checklist (Before Leaving for the Market)
+## 📦 Part 2: 3 రకాల ప్రీమియం డిస్‌ప్లే ఫార్మాట్లు (Physical Display Formats)
 
-Every marketing agent must verify these **6 items** before visiting their first merchant at 9:30 AM:
+మనం NFC వాడటం లేదు (No NFC). కేవలం హై-రిజల్యూషన్ స్మార్ట్ QR కోడ్ ద్వారా ఏదైనా స్మార్ట్‌ఫోన్ కెమెరాతో 100% వేగంగా పనిచేస్తుంది!
 
-| # | Checklist Item | Exact Details / Action |
+| # | డిస్‌ప్లే ఫార్మాట్ | సైజు (Size) | ఎక్కడ వాడాలి? (Best Placement) |
+| :--- | :--- | :--- | :--- |
+| **1** | **4"×6" (A6) అక్రిలిక్ కౌంటర్ స్టాండీ** (Acrylic Counter Standee) | 4 × 6 అంగుళాలు (Portrait) | బిల్లింగ్ కౌంటర్, రిసెప్షన్ డెస్క్, క్యాష్ కౌంటర్ దగ్గర PhonePe/GPay QR పక్కన. |
+| **2** | **వర్టికల్ PVC కార్డ్** (Vertical PVC Card - PAN Size) | 54mm × 85.6mm (CR80) | టేబుల్స్ మీద, చిన్న క్యాష్ డెస్క్‌ల మీద, లేదా డెలివరీ పాకెట్స్‌లో. వాటర్‌ప్రూఫ్, చాలా స్టైలిష్. |
+| **3** | **A4 వాల్ & డోర్ ప్రింటబుల్ పోస్టర్** (A4 Wall & Door Poster) | 210mm × 297mm | షాప్ ఎంట్రన్స్ గ్లాస్ డోర్, వెయిటింగ్ హాల్ గోడ, ట్రయల్ రూమ్ దగ్గర ఫ్రేమ్ కట్టి లేదా లామినేట్ చేసి అతికించడానికి. |
+
+> **ఫ్లెక్సిబుల్ లోగో సిస్టమ్ (Adaptive Logo):** వ్యాపారి లోగో స్క్వేర్ అయినా, రౌండ్ అయినా, లేదా వైడ్ బ్యానర్ అయినా సరే... కట్ అవ్వకుండా చాలా అందంగా అమరుతుంది!
+
+---
+
+## 🎒 Part 3: మార్కెట్‌లోకి వెళ్ళే ముందు చెక్‌లిస్ట్ (Pre-Field Checklist)
+
+ప్రతి మార్కెటింగ్ ఏజెంట్ ఉదయం 9:30 గంటలకల్లా ఈ 6 విషయాలు సరిచూసుకోవాలి:
+
+| # | చెక్‌లిస్ట్ అంశం | ఏమి చేయాలి? |
 | :--- | :--- | :--- |
-| **1** | **Smartphone Charged + Powerbank** | Minimum 90% battery + 5G mobile data active. Your phone is your **POS machine** and **Demo Kit**. |
-| **2** | **Logged into Agent Closer Portal** | Open `https://reviewsmart.online/login` -> Select **"User ID & PIN"** -> Log in with your `MKT-XX` code & 4-digit PIN. |
-| **3** | **Hide Earnings (Privacy Toggle ON)** | On the top bar of `/agent`, make sure the **Earnings** box shows `••••` (Eye icon closed). **Never let a merchant see your 40% commission on your screen!** |
-| **4** | **Live Demo Tab Open** | Keep a second browser tab ready at `https://reviewsmart.online/r/momo-it-technologies` to show the 10-second live Google Maps auto-copy & paste flow. |
-| **5** | **Physical Standee Stock** | Carry **5 to 8 clean 4"×6" A6 Acrylic T-Frame Standees** + printed QR cards + NFC tags in a neat folder/bag. Keep 1 sample standee in your hand when entering a shop. |
-| **6** | **Google Maps App Updated** | Have Google Maps open on your phone so you can check the merchant's current star rating and review count **30 seconds before walking in**. |
+| **1** | **స్మార్ట్‌ఫోన్ ఛార్జింగ్ + నెట్** | కనీసం 90% బ్యాటరీ + 5G డేటా. మీ ఫోనే మీ POS మెషిన్ మరియు లైవ్ డెమో కిట్. |
+| **2** | **ఏజెంట్ పోర్టల్ లాగిన్** | `https://reviewsmart.online/login` ఓపెన్ చేసి మీ మొబైల్ నంబర్ & 4-అంకెల PIN తో లాగిన్ అవ్వండి. |
+| **3** | **కమిషన్ హైడ్ చేయండి (Privacy ON)** | `/agent` స్క్రీన్ పైన **Earnings** బాక్స్‌లో కంటి గుర్తు నొక్కి `••••` ఉండేలా చూసుకోండి. మీ 40% కమిషన్ వ్యాపారికి కనిపించకూడదు! |
+| **4** | **లైవ్ డెమో ట్యాబ్ సిద్ధంగా ఉంచండి** | `https://reviewsmart.online/r/sri-guru-fashions-kadapa` లేదా `https://reviewsmart.online/r/momo-it-technologies` లింక్ ఓపెన్ చేసి ఉంచండి. |
+| **5** | **శాంపిల్ అక్రిలిక్ స్టాండీ & PVC కార్డ్** | మీ చేతిలో ఎప్పుడూ ఒక అందమైన శాంపిల్ స్టాండీ మరియు వర్టికల్ PVC కార్డ్ ఉండాలి. |
+| **6** | **గూగుల్ మ్యాప్స్ చెక్** | షాపులోకి అడుగుపెట్టే 30 సెకన్ల ముందే వాళ్ళ గూగుల్ రేటింగ్ మరియు రివ్యూల సంఖ్య చూసుకోండి. |
 
 ---
 
-## ⚡ Part 3: The 5-Minute "Show, Don't Tell" Sales Formula
+## ⚡ Part 4: 5 నిమిషాల సేల్స్ ఫార్ములా (The 5-Minute "Show, Don't Tell" Pitch)
 
-> **Golden Rule of Field Sales in Kadapa:** Never stand at the counter giving a 10-minute lecture. Shop owners are busy. Put your phone and the Acrylic Standee **in their hands within 45 seconds**.
+> **గోల్డెన్ రూల్:** కౌంటర్ దగ్గర నిలబడి ఎక్కువసేపు లెక్చర్లు ఇవ్వకండి. 45 సెకన్లలోనే మీ చేతిలోని శాంపిల్ స్టాండీని ఓనర్ చేతిలో పెట్టండి!
 
-### Minute 1: The 30-Second Pre-Check & Entry Hook
-Before walking inside the shop, search their shop name on Google Maps. Note two numbers:
-- **Their Rating & Review Count** (e.g., *4.1★ with 38 reviews*)
-- **A Nearby Competitor's Count** (e.g., *4.7★ with 310 reviews*)
+### నిమిషం 1: 30 సెకన్ల ఎంట్రీ హుక్ (Walk Straight to the Owner)
 
-**Walk straight to the owner (not the staff) with a warm smile:**
+షాపులోకి వెళ్లి చిరునవ్వుతో ఓనర్‌ను మాత్రమే కలవండి:
 
-> **Telugu-English (Kadapa Natural Pitch):**
-> *"Namaste Anna / Sir! Chinna vishayam — 30 seconds mathrame. Ippudu Kadapa lo evaraina kotha customer [Biryani / Dental Clinic / Bridal Makeup / Java Coaching] kosam Google lo search chesthe, mee shop ki kevalam 38 reviews matrame కనిపిస్తున్నాయి. Kani pakkana unna shop ki 300+ reviews unnayi. Mee daggara roju intha mandi happy customers vasthunnaru kada — vallatho 10 seconds lo typing lekunda Google 5-Star review ela veyinchalo live ga chupisthanu, okavela nacchitheనే matladudham!"*
-
-> **English Pitch (For Doctors / Corporate / Institutes):**
-> *"Good morning Sir/Madam! Quick 30-second observation — when people in Kadapa search on Google Maps for your category, your business shows only [X] reviews, even though you serve dozens of happy customers every day. The #1 reason customers don't review you is because nobody wants to type long sentences on Google. We built an AI system right here in Kadapa that lets your customer post a 5-star review in **2 taps without typing a single word**, AND blocks 1-star negative reviews from going public. Watch this on your own shop name in 10 seconds!"*
+#### 🗣️ తెలుగులో చెప్పాల్సిన మాటలు (Natural Telugu Script):
+> *"నమస్తే అన్నా / సార్! ఒక్క 30 సెకన్లు నా మాట వినండి.*  
+> *ఇప్పుడు కడపలో ఎవరైనా కొత్త కస్టమర్ మీ కేటగిరీ కోసం గూగుల్‌లో వెతికినప్పుడు, మీ షాపుకి కేవలం [30] రివ్యూలు మాత్రమే ఉన్నాయి. కానీ మీ కాంపిటీటర్ షాపుకి 300 రివ్యూలు ఉన్నాయి.*  
+> *మీ దగ్గరికి రోజూ వందలాది మంది హ్యాపీ కస్టమర్లు వస్తున్నారు కదా... వాళ్ళతో టైపింగ్ అవసరం లేకుండా, కేవలం 10 సెకన్లలో 5-స్టార్ గూగుల్ రివ్యూ ఎలా వేయించవచ్చో మీ షాప్ పేరుతోనే లైవ్‌గా చూపిస్తాను. నచ్చితేనే మాట్లాడదాం సార్!"*
 
 ---
 
-### Minute 2: The "Aha!" Moment Using the Agent Closer App
-Don't show a generic brochure. Open your **Agent Closer (`/agent`)** tab and type their shop name right in front of them!
+### నిమిషం 2: ఏజెంట్ క్లోజర్ యాప్‌లో "Aha!" మూమెంట్
 
-1. **Show the Live 4"×6" Standee Preview:**
-   - The moment you select their business in Step 1 of `/agent`, the app renders a **3D Countertop Standee with THEIR exact shop name and address**.
-   - **Say:** *"Chudandi Sir, mee billing counter paina ee standee ela untundo! 'Tap or Scan to Review [Their Shop Name]'."*
-2. **Show the Live AI Review Pitch Demo (Inside `/agent`):**
-   - Tap the **5th Star (5★)** right on the Agent Closer screen.
-   - In 2 seconds, the AI writes **3 authentic English reviews** specifically mentioning their shop name and category!
-   - **Say:** *"Customer ki English radhu anna parledhu, time lekapoina parledhu. Customer 5-Star nokkagane, AI automatic ga 3 super reviews rasthundi. Okka tap chesthe automatic ga copy ayyi direct Google Maps review page open avthundi — customer just 'Paste' nokkithe chalu!"*
-3. **Show the 1-3 Star "Negative Review Shield":**
-   - Now tap **2 Stars (2★)** on the demo screen.
-   - Show them how the screen changes to a **Private Owner Feedback Box** instead of going to Google!
-   - **Say:** *"Idi chala important Sir! Evadaina kopam tho 1-star leda 2-star kodithe, adi Google loki velladhu! Direct ga mee private dashboard loki complaint laaga vasthundi. Mee Google rating eppudu 4.8★–5.0★ ga safe ga untundi."*
-
----
-
-## 📱 Part 4: Step-by-Step Guide to Using the Agent Closer (`/agent`)
-
-Every agent must follow this exact workflow inside the **Agent Closer POS** so that the merchant's Google Review link works 100% seamlessly on both **Android and iPhone**.
-
-### 🔍 Step 1: Search Business (CRITICAL PRO-TIP FOR 100% ACCURACY)
-Inside **Step 1 ("Search Merchant's Google Business")**:
-- **Method A (Fastest):** Type the merchant's business name + `"Kadapa"` (e.g., `Vijaya Yummy Foods Kadapa`) and tap **Search**. Select their card from the results.
-- **Method B (100% Bulletproof — Best for Newly Listed or Tricky Shops):**
-  - If a shop has a common name or doesn't show up first, ask the merchant: *"Sir, mee Google Maps lo Share link copy chesi ivvandi."* (Or search their shop on your Google Maps app -> Tap **Share** -> **Copy Link**).
-  - Paste the `https://maps.app.goo.gl/...` or `https://share.google/...` link directly into the **Search box** (or into the **Step 2 Google Review Link override box**).
-  - Our system automatically extracts the official Google Place ID so every customer lands directly inside the **Google "Write a Review" composer screen**!
-
-### 🔐 Step 2: Merchant Mobile & 4-Digit Random PIN
-- Enter the merchant's **10-digit WhatsApp mobile number** (e.g., `9876543210`).
-  - Tell the merchant: *"Sir, mee mobile number eh mee User ID."*
-- A **4-digit PIN** is already generated automatically. Leave it as-is (or tap `Roll New` if they want another number).
-
-### 💰 Step 3: Agreed Negotiated Amount & Dynamic UPI QR
-- Select one of the quick buttons (`₹999`, `₹1,499`, `₹1,999`, `₹2,499`) or type the exact agreed price (minimum `₹499`).
-- Tap the green button: **"Generate Dynamic UPI QR & Close Deal"**.
-- **What happens immediately:**
-  1. The merchant's account and live AI Review Card (`/r/their-shop-name`) are created in real time!
-  2. A **Dynamic UPI QR Code** (`momopedeals@oksbi` — **Damerla Mohan**) pops up on your phone with the **exact rupee amount pre-locked** (the merchant doesn't even have to type the amount in PhonePe / GPay / Paytm).
-
-### 🤝 Step 4: Payment, WhatsApp Handover & Physical Standee Setup
-1. Have the merchant scan the **Dynamic UPI QR** on your screen and complete the payment.
-2. Scroll down to the green **"Share Credentials via WhatsApp to Merchant"** button and tap it.
-   - It automatically opens WhatsApp to the merchant's number with a formatted welcome message containing:
-     - Their **Live AI Review Card URL** (`https://reviewsmart.online/r/...`)
-     - Their **Dashboard Login URL**, **User ID (Mobile Number)**, and **4-Digit PIN**.
-3. **Print / Insert the QR Card** into the **4"×6" Acrylic Standee** (or link their NFC tag), place it right next to their PhonePe/Paytm payment QR at the billing counter, and **do 1 live scan on the merchant's own phone** before leaving!
+1. మీ ఫోన్‌లో `/agent` ఓపెన్ చేసి వాళ్ళ షాప్ పేరు టైప్ చేయండి (ఉదా: `Sri Guru Fashions Kadapa`).
+2. వాళ్ళ షాప్ కార్డు సెలెక్ట్ చేయగానే, వాళ్ళ సొంత షాప్ పేరు మరియు లోగోతో 3D స్టాండీ ప్రివ్యూ కనిపిస్తుంది!
+   - 🗣️ **వ్యాపారితో చెప్పండి:**  
+     *"చూడండి సార్! మీ బిల్లింగ్ కౌంటర్ మీద మీ షాప్ పేరుతో ఈ గోల్డెన్ స్టాండీ ఉంటే ఎంత రాయల్ లుక్ వస్తుందో!"*
+3. **5-స్టార్ AI రివ్యూ డెమో చూపించండి:**
+   - స్క్రీన్ మీద **5★** నొక్కండి. క్షణాల్లో AI ఆ షాప్ పేరుతో 3 అద్భుతమైన ఇంగ్లీష్ రివ్యూలు రాస్తుంది.
+   - 🗣️ **వ్యాపారితో చెప్పండి:**  
+     *"కస్టమర్‌కి ఇంగ్లీష్ రాకపోయినా, టైప్ చేసే టైమ్ లేకపోయినా పర్లేదు సార్! 5-స్టార్ ట్యాప్ చేయగానే AI సూపర్ రివ్యూ రాస్తుంది. ఒక్క ట్యాప్‌తో కాపీ అయి గూగుల్ మ్యాప్స్ ఓపెన్ అవుతుంది. కస్టమర్ జస్ట్ 'Paste & Post' కొడితే చాలు!"*
+4. **నెగటివ్ రివ్యూ షీల్డ్ చూపించండి (The Biggest Closer!):**
+   - ఇప్పుడు **2★** లేదా **1★** నొక్కండి. వెంటనే గూగుల్ ఓపెన్ అవ్వకుండా ప్రైవేట్ కంప్లైంట్ బాక్స్ వస్తుంది!
+   - 🗣️ **వ్యాపారితో చెప్పండి:**  
+     *"ఇది మన సిస్టమ్ యొక్క అతిపెద్ద పవర్ సార్! ఎవరైనా కస్టమర్ కోపంలో 1-స్టార్ లేదా 2-స్టార్ ఇస్తే, అది గూగుల్‌లోకి వెళ్ళదు! నేరుగా మీ వాట్సాప్‌కు మాత్రమే ప్రైవేట్‌గా వస్తుంది. మీ గూగుల్ రేటింగ్ ఎప్పటికీ 4.8★ పైన సేఫ్‌గా ఉంటుంది!"*
 
 ---
 
-## 🏙️ Part 5: Kadapa Market Territory & Industry Pitch Cheat Sheet
+### 🎁 సీక్రెట్ వెపన్: 24 గంటల ఉచిత లైవ్ ట్రయల్ (1-Day Free Live Trial)
 
-### 1. 🏥 Doctors, Dental Clinics, Eye Hospitals & Diagnostics
-- **Prime Kadapa Zones:** *Yerramukkapalli, Christian Lane, RIMS Road, ITI Circle, Nagarajupeta*
-- **Winning Pitch Line:**
-  > *"Doctor garu, mee daggara treatment teskoni happy ga velle patients 100 mandi unte, andulo okkaru kuda Google lo review rayaru. Kani reception daggara 15 minutes wait chesina okka patient matram kopam tho 1-star vestadu. Ee Smart Standee reception daggara pedithe, happy patients 2 taps lo 'Best Doctor in Kadapa' ani AI review post chestaru, and evaraina waiting time gurinchi 1-star kodithe adi Google loki vellakunda direct ga mee private inbox ki vasthundi."*
-- **Recommended Price to Quote:** **₹1,999 → Close at ₹1,499**.
+ఒకవేళ వ్యాపారి *"కస్టమర్లు స్కాన్ చేస్తారో లేదో నాకు నమ్మకం లేదు"* లేదా *"రేపు రా"* అని వెనకాడుతుంటే... వెంటనే ఈ బ్రహ్మాస్త్రాన్ని ప్రయోగించండి:
 
-### 2. 🍛 Restaurants, Biryani Points, Cafes, Bakeries & Tiffin Centers
-- **Prime Kadapa Zones:** *Seven Roads Circle, RTC Bus Stand Road, Madras Road, Almaspet, NGO Colony*
-- **Winning Pitch Line:**
-  > *"Anna, customer biryani thini cash counter daggara PhonePe scan chestadu. Appude pakkana ee Acrylic Standee unte, 'Scan & Tap 5 Stars' ani chepthe chalu — 10 seconds lo 'Best Biryani & Fast Service in Kadapa' ani pedda review Google lo padipothundi. Roju 15 reviews vachina, okka nelalo 450+ 5-star reviews tho Kadapa lo #1 top lo mee hotel vasthundi!"*
-- **Recommended Price to Quote:** **₹1,499 → Close at ₹999**.
+#### 🗣️ తెలుగులో చెప్పాల్సిన మాటలు:
+> *"సార్! మీరు ఒక్క రూపాయి కూడా ఇప్పుడే కట్టవద్దు.*  
+> *మీ షాపుకి ఈరోజే **24 గంటల ఫ్రీ లైవ్ ట్రయల్** ఆక్టివేట్ చేసి ఈ శాంపిల్ మీ కౌంటర్ మీద పెడతాను.*  
+> *ఈరోజు వచ్చే కస్టమర్లతో స్కాన్ చేయించండి. మీ కళ్లముందే గూగుల్‌లో రివ్యూలు పడటం చూడండి.*  
+> *రేపు సాయంత్రం వచ్చి కలుస్తాను. మీకు నిజంగా నచ్చి ఉపయోగపడింది అనుకుంటేనే పేమెంట్ చేయండి, లేదంటే ఆగిపోతుంది. మీకు నష్టమేమీ లేదు కదా సార్!"*
 
-### 3. 🎓 Training Institutes, Coaching Centers, Computer & Spoken English Academies
-- **Prime Kadapa Zones:** *Seven Roads Circle, Dwaraka Nagar, Sankarapuram, RTC Bus Stand Area*
-- **Winning Pitch Line:**
-  > *"Sir, students join ayye mundu pakka Google reviews chustaru. Kani manam students ni review ivvamante 'Good institute' ani 2 words matrame pedatharu. Maa AI system tho student okka tap chesthe, mee coaching, faculty, practical lab gurinchi 3–4 lines professional English review automatic ga copy ayyi Google lo post avthundi. Chudandi MOMO IT Technologies vallaki ela panichesthundo!"*
-- **Recommended Price to Quote:** **₹1,999 → Close at ₹1,499 or ₹999**.
-
-### 4. 💇‍♀️ Beauty Parlours, Unisex Salons, Bridal Studios & Boutiques
-- **Prime Kadapa Zones:** *Yerramukkapalli, Seven Roads, Prakash Nagar, Co-operative Colony*
-- **Winning Pitch Line:**
-  > *"Madam / Bro, haircut leda facial ayyaka customer mirror lo chuskoni chala happy ga untaru. Aa time lo counter daggara ee luxury Acrylic Standee unte, ఒక్క tap tho 5-star review vestaru. Okka bridal customer Google Maps nundi vachina meeku ₹10,000+ business vasthundi, kani deeni price kevalam ₹999 mathrame!"*
-- **Recommended Price to Quote:** **₹1,499 → Close at ₹999**.
-
-### 5. 💍 Jewellery, Opticals, Mobile Showrooms, Car/Bike Accessories & Hotels
-- **Prime Kadapa Zones:** *Bazar Street, Trunk Road, Madras Road, Railway Station Road*
-- **Recommended Price to Quote:** **₹1,999 → Close at ₹1,499 or ₹999**.
+👉 ఏజెంట్ పోర్టల్‌లో ఆ షాప్ మేనేజ్‌మెంట్ పేజీకి వెళ్లి **"Activate 24h Live Demo"** బటన్ నొక్కగానే ఆ షాప్ లైవ్ అయిపోతుంది! వాటర్ మార్క్ పోతుంది, కస్టమర్లు నిజంగానే రివ్యూలు ఇవ్వగలరు!
 
 ---
 
-## 💵 Part 6: Pricing Psychology, Negotiation Ladder & Your 40% Commission Math
+## 📱 Part 5: ఏజెంట్ క్లోజర్ POS వాడే విధానం (`/agent`)
 
-### The 4-Step Negotiation Ladder
+### స్టెప్ 1: గూగుల్ ప్రొఫైల్ సెర్చ్ (Search Merchant Profile)
+- షాప్ పేరు + `"Kadapa"` అని టైప్ చేయండి (ఉదా: `Kadapa Clothing Store`).
+- ఒకవేళ షాప్ పేరు లిస్ట్‌లో కనిపించకపోతే, వ్యాపారిని వాళ్ళ గూగుల్ మ్యాప్స్ షేర్ లింక్ అడగండి (Share ➔ Copy Link). ఆ లింక్ పేస్ట్ చేస్తే చాలు, సిస్టమ్ ఆటోమేటిక్‌గా గూగుల్ ప్లేస్ ఐడీని తీసుకుంటుంది.
 
-| Step | What You Quote / Do | When to Use It |
+### స్టెప్ 2: మొబైల్ నంబర్ & 4-అంకెల పిన్ (Mobile & PIN)
+- వ్యాపారి 10-అంకెల వాట్సాప్ మొబైల్ నంబర్ ఎంటర్ చేయండి.
+- 🗣️ *"సార్, మీ మొబైల్ నంబరే మీ యూజర్ ఐడీ. ఈ 4 అంకెల పిన్ మీ పాస్‌వర్డ్."*
+
+### స్టెప్ 3: ధర నిర్ణయం & డైనమిక్ UPI QR కోడ్
+- ఒప్పందం కుదిరిన రేటును ఎంచుకోండి (`₹999`, `₹1,499`, లేదా `₹1,999`).
+- **"Generate Dynamic UPI QR & Close Deal"** బటన్ నొక్కండి.
+- మీ స్క్రీన్ మీద డైనమిక్ UPI QR కోడ్ కనిపిస్తుంది (ఖచ్చితమైన రూపీ అమౌంట్‌తో). వ్యాపారి PhonePe / GPay తో స్కాన్ చేసి పేమెంట్ పూర్తి చేస్తారు.
+
+### స్టెప్ 4: 1-క్లిక్ వాట్సాప్ హ్యాండోవర్ (Instant WhatsApp Dispatch)
+- ఆకుపచ్చని **"Share Credentials via WhatsApp"** బటన్ నొక్కండి.
+- వ్యాపారి వాట్సాప్‌కి వారి లాగిన్ వివరాలు, లైవ్ రివ్యూ లింక్ (`https://reviewsmart.online/r/their-slug`) వెళ్ళిపోతాయి.
+- కౌంటర్ మీద స్టాండీ/కార్డ్ పెట్టి, వ్యాపారి ఫోన్‌తోనే ఒక్కసారి టెస్ట్ స్కాన్ చేసి చూపించి షేక్‌హ్యాండ్ ఇవ్వండి!
+
+---
+
+## 🏙️ Part 6: కడప మార్కెట్ కేటగిరీలు & పిచ్ డైలాగులు (Category-Wise Telugu Pitches)
+
+### 1. 🏥 డాక్టర్లు, డెంటల్ క్లినిక్‌లు, హాస్పిటల్స్ & ల్యాబ్‌లు
+- **కడప ప్రధాన ఏరియాలు:** *ఎర్రముక్కపల్లి, క్రిస్టియన్ లేన్, రిమ్స్ రోడ్, ఐటిఐ సర్కిల్, నాగరాజుపేట*
+- **🗣️ తెలుగు పిచ్:**
+  > *"డాక్టర్ గారూ, మీ దగ్గర ట్రీట్‌మెంట్ తీసుకుని హ్యాపీగా వెళ్ళే పేషెంట్లు వందమంది ఉంటే, అందులో ఒక్కరూ కూడా గూగుల్‌లో రివ్యూ రాయరు.*  
+  > *కానీ రిసెప్షన్ దగ్గర 15 నిమిషాలు వెయిట్ చేసిన ఒక్క పేషెంట్ మాత్రం కోపంతో 1-స్టార్ రేటింగ్ వేస్తాడు.*  
+  > *ఈ స్మార్ట్ స్టాండీని రిసెప్షన్ దగ్గర పెడితే, హ్యాపీ పేషెంట్లు 10 సెకన్లలో 'Best Doctor in Kadapa' అని AI రివ్యూ రాస్తారు. ఏదైనా కంప్లైంట్ ఉంటే గూగుల్‌లోకి వెళ్ళకుండా ప్రైవేట్‌గా మీ వాట్సాప్‌కు వస్తుంది."*
+- **రేటు:** **₹1,999 చెప్పి ➔ ₹1,499 కి క్లోజ్ చేయండి.**
+
+---
+
+### 2. 🍛 రెస్టారెంట్లు, బిర్యానీ పాయింట్లు, కేఫ్‌లు & బేకరీలు
+- **కడప ప్రధాన ఏరియాలు:** *సెవెన్ రోడ్స్ సర్కిల్, ఆర్టీసీ బస్టాండ్ రోడ్, మద్రాస్ రోడ్, అల్మాస్‌పేట్, ఎన్జీవో కాలనీ*
+- **🗣️ తెలుగు పిచ్:**
+  > *"అన్నా, కస్టమర్ బిర్యానీ తిన్నాక క్యాష్ కౌంటర్ దగ్గర PhonePe స్కాన్ చేస్తాడు కదా.*  
+  > *దాని పక్కనే ఈ స్టాండీ పెట్టి 'అన్నా, ఒక్క 5-స్టార్ రేటింగ్ వేయండి' అంటే చాలు — 10 సెకన్లలో 'Best Biryani in Kadapa' అని పెద్ద రివ్యూ గూగుల్‌లో పడిపోతుంది.*  
+  > *నెలకు 300 కొత్త 5-స్టార్ రివ్యూలు వస్తే, కడపలో ఫుడ్ కోసం గూగుల్‌లో వెతికే ప్రతి కస్టమర్ మీ హోటల్‌కే వస్తాడు!"*
+- **రేటు:** **₹1,499 చెప్పి ➔ ₹999 కి క్లోజ్ చేయండి.**
+
+---
+
+### 3. 👗 బట్టల దుకాణాలు, శారీ సెంటర్లు & జ్యువెలరీ షాపులు
+- **కడప ప్రధాన ఏరియాలు:** *బజార్ స్ట్రీట్, ట్రంక్ రోడ్, ఆర్ట్స్ కాలేజ్ రోడ్, ద్వారకా నగర్*
+- **🗣️ తెలుగు పిచ్:**
+  > *"సార్, పెళ్ళిళ్ళ సీజన్‌లో కస్టమర్లు బట్టలు లేదా నగల కోసం ముందుగా గూగుల్ రివ్యూలు చూసే వస్తారు.*  
+  > *శ్రీ గురు ఫ్యాషన్స్ లాంటి పెద్ద బ్రాండ్లే కౌంటర్ మీద మన రివ్యూస్మార్ట్ వాడుతున్నారు.*  
+  > *కస్టమర్ బిల్ కట్టే సమయంలో వాళ్ళ కెమెరాతో స్కాన్ చేయిస్తే చాలు, 'Exclusive Menswear & Best Collection in Kadapa' అని AI రివ్యూ పోస్ట్ అవుతుంది!"*
+- **రేటు:** **₹1,999 చెప్పి ➔ ₹1,499 లేదా ₹999 కి క్లోజ్ చేయండి.**
+
+---
+
+### 4. 💇‍♀️ బ్యూటీ పార్లర్లు, సెలూన్లు & బ్రైడల్ స్టూడియోలు
+- **కడప ప్రధాన ఏరియాలు:** *ఎర్రముక్కపల్లి, సెవెన్ రోడ్స్, ప్రకాష్ నగర్, కో-ఆపరేటివ్ కాలనీ*
+- **🗣️ తెలుగు పిచ్:**
+  > *"మేడమ్ / బ్రో, హెయిర్‌కట్ లేదా బ్రైడల్ మేకప్ అయ్యాక కస్టమర్ అద్దంలో చూసుకుని చాలా సంతోషంగా ఉంటారు.*  
+  > *ఆ మూమెంట్‌లో ఈ వర్టికల్ కార్డ్ లేదా స్టాండీ చూపిస్తే వెంటనే 5-స్టార్ రేటింగ్ వేస్తారు.*  
+  > *గూగుల్ మ్యాప్స్ ద్వారా ఒక్క బ్రైడల్ మేకప్ ఆర్డర్ వచ్చినా మీకు ₹10,000 పైనే లాభం వస్తుంది, కానీ దీని ఖర్చు కేవలం ₹999 మాత్రమే!"*
+- **రేటు:** **₹1,499 చెప్పి ➔ ₹999 కి క్లోజ్ చేయండి.**
+
+---
+
+## 💵 Part 7: ధర చర్చల సూత్రం & మీ 40% కమిషన్ లెక్క (Negotiation Ladder & Earnings)
+
+### 4 దశల నెగోషియేషన్ లాడర్ (The 4-Step Ladder):
+
+| దశ (Step) | మీరు చెప్పాల్సిన మాటలు (Telugu Script) | ఎప్పుడు వాడాలి? |
 | :--- | :--- | :--- |
-| **1. The Anchor (₹1,999)** | *"Sir, regular online price with the 4×6 Acrylic Standee, NFC Tag, Lifetime AI Review Engine & Negative Review Shield is **₹1,999**."* | Say this first to **every single merchant**. |
-| **2. The Kadapa Launch Offer (₹1,499)** | *"Since our team is doing the direct Kadapa market launch on this road today, we are giving the complete setup + physical standee at **₹1,499**."* | Default selected button in your `/agent` app. Great closing price for clinics, showrooms, and institutes. |
-| **3. The Sweet-Spot Instant Close (₹999)** | *"Sir, meeru ippude spot lo activate chesukunte, nenu నా agent special discount కింద **₹999** ki full setup + standee icchesthanu. No monthly headache!"* | Closes **80% of restaurants, salons, and retail shops** immediately. |
-| **4. The Last-Resort Walkaway Floor (₹699 – ₹499)** | *"Anna, kevalam Acrylic Standee + NFC + AI setup cost kosam last **₹699 / ₹499** cheyagalanu — kani మీరు మీ ప్రక్క షాప్ వాళ్ళకి ₹999 అనే చెప్పాలి!"* | **Emergency floor only** for small tiffin centers/petty shops, or when closing 2–3 shops together in the same complex. |
+| **1. యాంకర్ ప్రైస్ (₹1,999)** | *"సార్, ఆన్‌లైన్‌లో దీని రెగ్యులర్ ప్రైస్ లైఫ్‌టైమ్ AI సర్వర్ ఇంజిన్ మరియు నెగటివ్ రివ్యూ షీల్డ్‌తో కలిపి **₹1,999**."* | ప్రతి వ్యాపారికీ మొదట ఇదే రేటు చెప్పాలి. |
+| **2. కడప లాంచ్ ఆఫర్ (₹1,499)** | *"ఈరోజు మా టీమ్ కడప మార్కెట్ డైరెక్ట్ లాంచ్ చేస్తున్నందున, ఫుల్ సెటప్ + స్టాండీని **₹1,499** కే ఇస్తున్నాం."* | క్లినిక్‌లు, షోరూమ్‌లు, పెద్ద ఇన్‌స్టిట్యూట్‌లకు అనువైన రేటు. |
+| **3. ఇన్‌స్టంట్ క్లోజింగ్ (₹999)** | *"సార్, మీరు ఇప్పుడే స్పాట్‌లో తీసుకుంటే, నా ఏజెంట్ స్పెషల్ కోటా కింద **₹999** కే ఇచ్చేస్తాను. మళ్లీ నెలనెలా కట్టే బాధే ఉండదు!"* | 80% రెస్టారెంట్లు, సెలూన్లు, బట్టల షాపులు ఇక్కడే క్లోజ్ అవుతాయి. |
+| **4. ఆఖరి పరిమితి (₹699 – ₹499)** | *"అన్నా, కేవలం స్టాండీ ప్రింటింగ్ & సర్వర్ ఖర్చుల కోసం ఆఖరిగా **₹699 / ₹499** చేయగలను — కానీ పక్క షాప్ వాళ్ళకి ₹999 అనే చెప్పాలి!"* | చిన్న టిఫిన్ సెంటర్లు లేదా ఒకే కాంప్లెక్స్‌లో 3 షాపులు కలిపి తీసుకున్నప్పుడు మాత్రమే. |
 
-### 🤑 Agent Earnings Calculator (You Earn 40% on Every Verified Sale!)
+### 🤑 ఏజెంట్ సంపాదన లెక్క (మీకు ప్రతి సేల్ మీద 40% కమిషన్ స్పాట్‌లోనే!):
 
-| Daily Target | Average Deal Price | Total Daily Sales | **Your Daily Commission (40%)** | **Your Monthly Income (26 Working Days)** |
+| రోజువారీ టార్గెట్ | సగటు రేటు | రోజు మొత్తం అమ్మకాలు | **మీ డైలీ కమిషన్ (40%)** | **నెలకు మీ ఆదాయం (26 రోజులు)** |
 | :--- | :---: | :---: | :---: | :---: |
-| **2 Deals / Day** (Beginner) | ₹999 | ₹1,998 | **₹800 / day** | **₹20,800 / month** |
-| **3 Deals / Day** (Standard) | ₹1,199 | ₹3,597 | **₹1,438 / day** | **₹37,400 / month** |
-| **5 Deals / Day** (Star Closer) | ₹1,199 | ₹5,995 | **₹2,398 / day** | **₹62,348 / month** |
-| **5 Deals / Day** (Pro Anchor) | ₹1,499 | ₹7,495 | **₹2,998 / day** | **₹77,948 / month** |
+| **రోజూ 2 డీల్స్** (బిగినర్) | ₹999 | ₹1,998 | **₹800 / రోజుకు** | **₹20,800 / నెలకు** |
+| **రోజూ 3 డీల్స్** (స్టాండర్డ్) | ₹1,199 | ₹3,597 | **₹1,438 / రోజుకు** | **₹37,400 / నెలకు** |
+| **రోజూ 5 డీల్స్** (స్టార్ క్లోజర్) | ₹1,199 | ₹5,995 | **₹2,398 / రోజుకు** | **₹62,348 / నెలకు** |
+| **రోజూ 5 డీల్స్** (ప్రో లీడర్) | ₹1,499 | ₹7,495 | **₹2,998 / రోజుకు** | **₹77,948 / నెలకు** |
 
 ---
 
-## 🛡️ Part 7: The Top 8 Merchant Objections & Word-for-Word Rebuttals
+## 🛡️ Part 8: వ్యాపారుల 8 సాధారణ అనుమానాలు - సమాధానాలు (Top 8 Objections & Telugu Answers)
 
-1. **"Maaku already chala mandi regular customers unnaru, Google avasaram ledhu."**
-   - *"Correct anna! Patha customers tho meeru ee standee dwara reviews veyisthe, aa reviews chusi Kadapa loki vache **kotha customers** mee shop ki vastharu!"*
-2. **"Memu already normal Google QR code print teesi pettamu."**
-   - *"Normal Google QR scan chesthe khali box vasthundi — customer type chese opika leka back nokkestaru. Maa AI QR scan chesthe **review kuda AI ne rasi automatic ga copy chesthundi** — customer just Paste nokkithe chalu! Plus maa dantlo 1-star block avthundi."*
-3. **"Repu raa / Next week chuddam."**
-   - *"Sir, idi ₹50,000 software kadhu alochinchadaniki — kevalam ₹999. Okka kotha customer Google chusi vachina mee ₹999 ఈరోజే తిరిగి వచ్చేస్తుంది. 2 minutes lo mee phone lone live chesi pedathanu!"*
-4. **"₹999 ekkuva anna, ₹300 ki isthava?"**
-   - *"Anna, kevalam ee imported 4×6 Acrylic Standee + NFC chip + Google AI server cost eh chala avthundi. Mee kosam final ga ₹799 / ₹699 chesthanu, ippude counter meeda set cheseddam!"*
-5. **"iPhone lo work avthunda? Android lo work avthunda?"**
-   - *"100% rendu phones lonu super fast ga work avthundi Sir! Ippude mee phone lone okasari test cheyandi!"*
-6. **"AI rasina reviews anni oke laaga untaya? Google block chesthunda?"**
-   - *"Assalu oke laaga undavu Sir! Prathi sari AI kotha words tho natural ga rasthundi. 100% genuine Google policy prakaram untundi."*
-7. **"Owner ippudu shop lo leru, evening vastharu."**
-   - *"Nenu ippude mee shop peru meeda Digital Standee preview create chesi pettanu — owner gari WhatsApp number ivvandi, preview pampinchi evening exact time ki vachi kalusthanu."*
-8. **"Naaku phone వాడటం పెద్దగా రాదు."**
-   - *"Sir, meeru roju ఏమీ చేయాల్సిన అవసరమే లేదు! Nenu ippude అన్నీ సెట్ చేసి ఈ Standee మీ కౌంటర్ మీద పెడతాను. Customers స్కాన్ చేసుకుంటారు, ఆటోమేటిక్ గా మీ గూగుల్ రివ్యూలు పెరిగిపోతాయి."*
+1. **"మాకు ఆల్రెడీ చాలా మంది రెగ్యులర్ కస్టమర్లు ఉన్నారు, గూగుల్ అవసరం లేదు."**
+   - 🗣️ *"నిజమే అన్నా! ఆ పాత కస్టమర్లతోనే ఈ స్టాండీ ద్వారా రివ్యూలు వేయిస్తే, ఆ రేటింగ్ చూసి కడపలోకి వచ్చే **కొత్త కస్టమర్లు** మీ షాపుకే వస్తారు!"*
+2. **"మేము ఆల్రెడీ నార్మల్ గూగుల్ క్యూఆర్ కోడ్ ప్రింట్ తీసి కౌంటర్ మీద పెట్టాం."**
+   - 🗣️ *"నార్మల్ QR స్కాన్ చేస్తే ఖాళీ బాక్స్ వస్తుంది సార్. కస్టమర్‌కి టైప్ చేసే ఓపిక లేక క్లోజ్ చేస్తారు. మన సిస్టమ్‌లో **రివ్యూ కూడా AI రాసి పెడుతుంది** — కస్టమర్ జస్ట్ Paste కొడితే చాలు! పైగా నెగటివ్ రివ్యూలు గూగుల్‌లోకి వెళ్ళకుండా ఆగిపోతాయి."*
+3. **"రేపు రా / వచ్చే వారం చూద్దాం."**
+   - 🗣️ *"సార్, ఇది ₹50,000 సాఫ్ట్‌వేర్ కాదు ఆలోచించడానికి — కేవలం ₹999 మాత్రమే. గూగుల్ చూసి ఒక్క కొత్త కస్టమర్ వచ్చినా మీ ₹999 ఈరోజే వచ్చేస్తుంది. 2 నిమిషాల్లో మీ ఫోన్ లోనే లైవ్ చేసి ఇస్తాను!"*
+4. **"నాకు స్మార్ట్‌ఫోన్ వాడటం పెద్దగా రాదు."**
+   - 🗣️ *"సార్, మీరు రోజూ ఏమీ చేయాల్సిన అవసరమే లేదు! నేను ఇప్పుడే అన్నీ సెట్ చేసి ఈ స్టాండీ మీ కౌంటర్ మీద పెడతాను. కస్టమర్లే స్కాన్ చేసుకుంటారు, ఆటోమేటిక్‌గా మీ గూగుల్ రివ్యూలు పెరిగిపోతాయి."*
+5. **"ఐఫోన్‌లో పనిచేస్తుందా? ఆండ్రాయిడ్‌లో పనిచేస్తుందా?"**
+   - 🗣️ *"100% అన్ని రకాల ఫోన్లలోనూ సూపర్ ఫాస్ట్‌గా పనిచేస్తుంది సార్! ఇప్పుడే మీ ఫోన్‌తోనే టెస్ట్ చేసి చూడండి!"*
+6. **"AI రాసిన రివ్యూలన్నీ ఒకేలా ఉంటాయా? గూగుల్ బ్లాక్ చేస్తుందా?"**
+   - 🗣️ *"అస్సలు ఒకేలా ఉండవు సార్! ప్రతిసారీ AI సరికొత్త పదాలతో చాలా న్యాచురల్‌గా రాస్తుంది. 100% గూగుల్ అధికారిక నిబంధనల ప్రకారమే ఉంటుంది."*
+7. **"ఓనర్ ఇప్పుడు షాపులో లేరు, సాయంత్రం వస్తారు."**
+   - 🗣️ *"నేను ఇప్పుడే మీ షాప్ పేరు మీద డిజిటల్ స్టాండీ ప్రివ్యూ క్రియేట్ చేశాను — ఓనర్ గారి వాట్సాప్ నంబర్ ఇవ్వండి, ప్రివ్యూ పంపించి సాయంత్రం వచ్చి కలుస్తాను."*
+8. **"కస్టమర్లు స్కాన్ చేయకపోతే నా డబ్బులు వేస్ట్ కదా?"**
+   - 🗣️ *"అందుకే కదా సార్, మీకు **24 గంటల ఫ్రీ లైవ్ ట్రయల్** ఇస్తున్నాను! ఈరోజు కౌంటర్ మీద పెట్టి టెస్ట్ చేయండి. రేపు సాయంత్రం వచ్చి కలుస్తాను, నచ్చితేనే తీసుకోండి!"*

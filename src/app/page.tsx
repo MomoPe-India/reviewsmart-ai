@@ -353,7 +353,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-xs font-bold mb-6">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
-            Rank #1 on Google Maps · Proven in Kadapa, Hyderabad, Bangalore &amp; Beyond
+            Rank #1 on Google Maps · Proven in Kadapa, Hyderabad, Bangalore &amp; All over the world
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.15] mb-5">
@@ -365,7 +365,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
-            Customers tap your counter standee or scan the QR code. Our AI drafts the perfect 5-star review in 15 seconds. Bad reviews are intercepted privately to your WhatsApp before they ever touch Google.
+            Customers scan your counter standee, vertical PVC card, or wall poster QR code. Our AI drafts the perfect 5-star review in 15 seconds. Bad reviews are intercepted privately to your WhatsApp before they ever touch Google.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
