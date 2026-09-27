@@ -118,12 +118,34 @@ export default function ReviewExperience({ business }: { business: BusinessData 
 
   // Resolved Direct GMB Review URL
   const getResolvedGoogleUrl = () => {
+    const rawUrl = (business.googleReviewUrl || "").trim();
     const placeId =
       business.slug === "momo-it-technologies"
         ? "ChIJd5iV_xdzszsR_OIKD3ympJo"
         : (business.googlePlaceId || "").trim();
-    const rawUrl = (business.googleReviewUrl || "").trim();
 
+    // 1. If merchant has an explicit Google Maps Search, Maps Place, or Share URL, respect it directly
+    if (
+      rawUrl &&
+      (rawUrl.includes("google.com/maps") ||
+        rawUrl.includes("maps.google.com") ||
+        rawUrl.includes("maps.app.goo.gl") ||
+        rawUrl.includes("share.google"))
+    ) {
+      return rawUrl;
+    }
+
+    // 2. If rawUrl explicitly points to writereview, use it
+    if (rawUrl && rawUrl.includes("search.google.com/local/writereview")) {
+      return rawUrl;
+    }
+
+    // 3. Known coordinate / non-writereview place IDs fallback to Google Maps search
+    if (placeId === "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
+    }
+
+    // 4. Standard verified Google Business Profile Place ID
     if (placeId) {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
     }
