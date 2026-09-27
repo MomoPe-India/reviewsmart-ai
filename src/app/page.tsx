@@ -49,10 +49,10 @@ const DEMO_MERCHANTS = [
     color: "#4f46e5",
     logo: "/images/sri-guru-fashions-logo.png",
     slug: "sri-guru-fashions-393a",
-    chips: ["Exclusive Sarees", "Latest Trends", "Quality Fabric", "Reasonable Prices", "Friendly Staff"],
+    chips: ["Exclusive Menswear", "Latest Trends", "Quality Fabric", "Reasonable Prices", "Friendly Staff"],
     aiDraft:
-      "Sri Guru Fashions has the best saree and ethnic collection in Kadapa! Found trendy designs at very reasonable prices, and the staff is so humble and helpful. Highly recommended!",
-    author: "Lakshmi P.",
+      "Sri Guru Fashions has the best menswear collection in Kadapa! Found stylish shirts, trousers, and festive menswear at great prices. The fabric quality is top-notch and staff is very polite. Highly recommended!",
+    author: "Karthik R.",
   },
   {
     id: "food",
