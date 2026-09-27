@@ -19,6 +19,7 @@ export async function GET() {
           role: true,
           userIdTag: true,
           agentCode: true,
+          commissionRate: true,
           phone: true,
           customerType: true,
           isActive: true,

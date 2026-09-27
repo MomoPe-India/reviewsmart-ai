@@ -24,15 +24,46 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "APPROVE") {
-      // 1. Get platform settings for commission rate
+      // 1. Get platform settings for default commission rate
       const settings = await prisma.platformSetting.findUnique({
         where: { id: "default" },
       });
-      const commissionRate = settings?.commissionRate ?? 0.40;
+      let effectiveCommissionRate = settings?.commissionRate ?? 0.30;
 
-      // 2. Calculate commission (only for agent deals)
-      const commission =
-        payment.agentId ? Math.round(payment.amount * commissionRate * 100) / 100 : null;
+      // 2. Lookup agent's individual commission rate if agent deal
+      const isAgentDeal = Boolean(payment.agentId || payment.agentCode);
+      let resolvedAgentId = payment.agentId;
+
+      if (payment.agentId) {
+        const agentUser = await prisma.user.findUnique({
+          where: { id: payment.agentId },
+          select: { commissionRate: true },
+        });
+        if (agentUser?.commissionRate != null) {
+          effectiveCommissionRate = agentUser.commissionRate;
+        }
+      } else if (payment.agentCode) {
+        const agentUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { agentCode: payment.agentCode },
+              { userIdTag: payment.agentCode },
+            ],
+          },
+          select: { id: true, commissionRate: true },
+        });
+        if (agentUser) {
+          resolvedAgentId = agentUser.id;
+          if (agentUser.commissionRate != null) {
+            effectiveCommissionRate = agentUser.commissionRate;
+          }
+        }
+      }
+
+      // 3. Calculate commission
+      const commission = isAgentDeal
+        ? Math.round(payment.amount * effectiveCommissionRate * 100) / 100
+        : null;
 
       // 3. Update payment status + set commission
       await prisma.upiPayment.update({
@@ -40,6 +71,7 @@ export async function POST(req: NextRequest) {
         data: {
           status: "APPROVED",
           commission: commission,
+          ...(resolvedAgentId && !payment.agentId ? { agentId: resolvedAgentId } : {}),
         },
       });
 
@@ -55,7 +87,7 @@ export async function POST(req: NextRequest) {
       }
 
       const commissionMsg = commission
-        ? ` Agent earns ₹${commission.toFixed(2)} commission.`
+        ? ` Agent earns ₹${commission.toFixed(2)} (${Math.round(effectiveCommissionRate * 100)}%) commission.`
         : "";
 
       return NextResponse.json({

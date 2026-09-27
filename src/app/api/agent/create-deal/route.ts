@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       where: { id: "default" },
     });
     const minFloor = platformSettings?.minNegotiatedPrice ?? 1999;
-    const commissionRate = platformSettings?.commissionRate ?? 0.40;
+    const commissionRate = session.commissionRate ?? platformSettings?.commissionRate ?? 0.30;
 
     const finalAmount = Number(negotiatedPrice);
     if (isNaN(finalAmount) || finalAmount < minFloor) {

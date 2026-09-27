@@ -19,6 +19,7 @@ model User {
   phone          String?
   role           String            @default("BUSINESS_OWNER") // "SUPER_ADMIN" | "BUSINESS_OWNER" | "MARKETING_AGENT"
   agentCode      String?           // Unique code for marketing agents (e.g. MKT-01)
+  commissionRate Float?            // Individual agent commission rate (e.g. 0.30 for 30%, 0.40 for 40%). Falls back to platform setting if null
   referredBy     String?           // Agent user ID who onboarded this merchant
   customerType   String            @default("OFFLINE") // "ONLINE" (admin direct) | "OFFLINE" (agent field sale)
   isActive       Boolean           @default(true) // Admin can disable/suspend accounts
@@ -156,6 +157,6 @@ model PlatformSetting {
   upiId              String   @default("momopedeals@oksbi")
   upiPayeeName       String   @default("Damerla Mohan")
   minNegotiatedPrice Float    @default(1999)   // Hard floor for all agent + online deals
-  commissionRate     Float    @default(0.40)  // 40% agent commission on verified sales
+  commissionRate     Float    @default(0.30)  // 30% default agent commission on verified sales
   updatedAt          DateTime @updatedAt
 }

@@ -14,6 +14,7 @@ export interface SessionUser {
   userIdTag?: string | null;
   agentCode?: string | null;
   phone?: string | null;
+  commissionRate?: number | null;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -41,6 +42,7 @@ export function signToken(user: SessionUser): string {
       role: user.role,
       userIdTag: user.userIdTag || null,
       agentCode: user.agentCode || null,
+      commissionRate: user.commissionRate ?? null,
     },
     JWT_SECRET,
     { expiresIn: "7d" }
@@ -77,6 +79,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
           agentCode: true,
           phone: true,
           isActive: true,
+          commissionRate: true,
         },
       });
 
@@ -98,6 +101,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
             agentCode: true,
             phone: true,
             isActive: true,
+            commissionRate: true,
           },
         });
         if (userByEmail) {

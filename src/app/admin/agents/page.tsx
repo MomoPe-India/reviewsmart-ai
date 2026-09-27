@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   Copy,
   Check,
+  Zap,
 } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ interface AgentItem {
   name: string;
   phone: string | null;
   agentCode: string | null;
+  commissionRate?: number | null;
   isActive: boolean;
   dealsClosed: number;
   totalRevenue: number;
@@ -63,6 +65,7 @@ export default function AdminAgentsPage() {
   const [createPhone, setCreatePhone] = useState("");
   const [createAgentCode, setCreateAgentCode] = useState("");
   const [createPin, setCreatePin] = useState("");
+  const [createCommissionRate, setCreateCommissionRate] = useState("30");
   const [showCreatePin, setShowCreatePin] = useState(false);
   const [submittingCreate, setSubmittingCreate] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -73,6 +76,7 @@ export default function AdminAgentsPage() {
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editAgentCode, setEditAgentCode] = useState("");
+  const [editCommissionRate, setEditCommissionRate] = useState("30");
   const [submittingEdit, setSubmittingEdit] = useState(false);
   const [editError, setEditError] = useState("");
 
@@ -133,6 +137,7 @@ export default function AdminAgentsPage() {
           phone: createPhone.trim() || null,
           agentCode: createAgentCode.trim().toUpperCase(),
           pin: cleanPin,
+          commissionRate: Number(createCommissionRate) || 30,
         }),
       });
 
@@ -150,12 +155,13 @@ export default function AdminAgentsPage() {
       }
 
       setCreateSuccessMsg(
-        `✅ Agent ${createAgentCode.toUpperCase()} registered! PIN: ${cleanPin}`
+        `✅ Agent ${createAgentCode.toUpperCase()} registered! PIN: ${cleanPin} (${createCommissionRate}% Commission)`
       );
       setCreateName("");
       setCreatePhone("");
       setCreateAgentCode("");
       setCreatePin("");
+      setCreateCommissionRate("30");
       fetchAgents();
 
       setTimeout(() => {
@@ -175,6 +181,9 @@ export default function AdminAgentsPage() {
     setEditName(agent.name);
     setEditPhone(agent.phone || "");
     setEditAgentCode(agent.agentCode || "");
+    setEditCommissionRate(
+      agent.commissionRate != null ? Math.round(agent.commissionRate * 100).toString() : "30"
+    );
     setEditError("");
   };
 
@@ -194,6 +203,7 @@ export default function AdminAgentsPage() {
           name: editName.trim(),
           phone: editPhone.trim() || null,
           agentCode: editAgentCode.trim().toUpperCase(),
+          commissionRate: Number(editCommissionRate) || 30,
         }),
       });
 
@@ -377,9 +387,8 @@ export default function AdminAgentsPage() {
       <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
         <IndianRupee className="w-4 h-4 flex-shrink-0 text-emerald-400" />
         <span>
-          <strong>Commission Policy:</strong> Agents earn{" "}
-          <span className="font-black text-emerald-200">40% commission</span> on each
-          verified and approved offline review card sale.
+          <strong>Commission Policy:</strong> Standard agent commission is{" "}
+          <span className="font-black text-emerald-200">30%</span> on verified sales. As Super Admin, you have full control to customize each agent&apos;s commission percentage individually anytime.
         </span>
       </div>
 
@@ -553,11 +562,22 @@ export default function AdminAgentsPage() {
                   </div>
                 </div>
 
-                {/* Status Badge Row */}
+                {/* Status & Commission Badge Row */}
                 <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-[11px] text-slate-500">
-                    Enrolled: {new Date(agt.createdAt).toLocaleDateString("en-IN")}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(agt)}
+                      title="Click to change commission percentage"
+                      className="text-[10px] font-black text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 transition cursor-pointer"
+                    >
+                      <Zap className="w-2.5 h-2.5" />
+                      {Math.round((agt.commissionRate ?? 0.30) * 100)}% Commission
+                    </button>
+                    <span className="text-[11px] text-slate-500">
+                      Enrolled: {new Date(agt.createdAt).toLocaleDateString("en-IN")}
+                    </span>
+                  </div>
                   {agt.isActive ? (
                     <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -719,7 +739,7 @@ export default function AdminAgentsPage() {
             {/* Commission Policy Callout */}
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300">
               <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" />
-              Agents earn <strong className="mx-0.5">40% commission</strong> on each verified sale.
+              Standard agent commission is <strong className="mx-0.5">30%</strong> (customizable per agent).
             </div>
 
             {/* Error / Success Alerts */}
@@ -818,6 +838,47 @@ export default function AdminAgentsPage() {
                 />
               </div>
 
+              {/* Commission Percentage */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-300">
+                    Commission Rate (%)
+                  </label>
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                    {createCommissionRate}% Assigned
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    required
+                    value={createCommissionRate}
+                    onChange={(e) => setCreateCommissionRate(e.target.value)}
+                    placeholder="30"
+                    className="w-full text-xs p-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <div className="flex items-center gap-1 shrink-0">
+                    {["25", "30", "35", "40"].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => setCreateCommissionRate(rate)}
+                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition ${
+                          createCommissionRate === rate
+                            ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                            : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white"
+                        }`}
+                      >
+                        {rate}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">Standard default is 30%.</p>
+              </div>
+
               {/* Actions */}
               <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
                 <button
@@ -904,6 +965,49 @@ export default function AdminAgentsPage() {
                   placeholder="9876543210"
                   className="w-full text-xs p-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+
+              {/* Commission Percentage */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-300">
+                    Agent Commission Rate (%)
+                  </label>
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    {editCommissionRate}% Active
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    required
+                    value={editCommissionRate}
+                    onChange={(e) => setEditCommissionRate(e.target.value)}
+                    placeholder="30"
+                    className="w-full text-xs p-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <div className="flex items-center gap-1 shrink-0">
+                    {["25", "30", "35", "40", "50"].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => setEditCommissionRate(rate)}
+                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition ${
+                          editCommissionRate === rate
+                            ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                            : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white"
+                        }`}
+                      >
+                        {rate}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Individual commission earned when deals are closed by this agent. Standard default is 30%.
+                </p>
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">

@@ -161,6 +161,7 @@ export async function POST(req: NextRequest) {
       userIdTag: user.userIdTag,
       agentCode: user.agentCode,
       phone: user.phone,
+      commissionRate: user.commissionRate,
     });
 
     const response = NextResponse.json({
@@ -172,6 +173,7 @@ export async function POST(req: NextRequest) {
         role: user.role,
         userIdTag: user.userIdTag,
         agentCode: user.agentCode,
+        commissionRate: user.commissionRate,
       },
     });
 
@@ -204,6 +206,7 @@ export async function POST(req: NextRequest) {
         role: "SUPER_ADMIN",
         userIdTag: "momopedeals",
         agentCode: null,
+        commissionRate: null,
       };
       const token = signToken(fallbackUser);
       const response = NextResponse.json({ success: true, user: fallbackUser });

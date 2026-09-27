@@ -36,7 +36,7 @@ export default function AdminPaymentsClient({
       upiId: "momopedeals@oksbi",
       upiPayeeName: "Damerla Mohan",
       minNegotiatedPrice: 1999,
-      commissionRate: 0.40,
+      commissionRate: 0.30,
     }
   );
 
@@ -215,7 +215,7 @@ export default function AdminPaymentsClient({
         </form>
 
         <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
-          <span className="font-bold">Agent Commission Rate: 40%</span> — automatically calculated when you approve a deal from a marketing agent.
+          <span className="font-bold">Standard Agent Commission: 30%</span> — automatically calculated when approving deals based on each agent&apos;s custom rate (e.g. Madhu MKT-01 at 40%, others at 30%).
         </div>
       </div>
 
@@ -307,7 +307,7 @@ export default function AdminPaymentsClient({
                   const storeSlug = p.user?.businesses?.[0]?.slug;
                   const isAgentDeal = p.planType === "NEGOTIATED_DEAL" && p.agentCode;
                   const previewCommission = isAgentDeal
-                    ? Math.round(p.amount * (settings.commissionRate || 0.40))
+                    ? Math.round(p.amount * (p.agentCode === "MKT-01" ? 0.40 : settings.commissionRate || 0.30))
                     : null;
 
                   return (

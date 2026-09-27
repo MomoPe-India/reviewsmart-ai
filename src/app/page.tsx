@@ -165,7 +165,7 @@ const HOW_IT_WORKS = [
   {
     step: "01",
     title: "Customer Scans QR Code",
-    desc: "Customer points their phone camera at your counter standee, card, or poster. Your branded review card opens instantly.",
+    desc: "Customer points phone camera at counter standee. On older Android phones, simply tap Google Lens on the home search bar — instant scan in 1 second!",
     icon: QrCode,
     color: "from-indigo-600 to-indigo-500",
   },
@@ -1253,6 +1253,21 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Older Smartphone / Google Lens Guidance Callout */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/30 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div className="text-xs">
+                  <span className="font-bold text-white flex items-center gap-1.5 mb-1">
+                    📱 Works on 100% of Phones · Older Smartphone? Use Google Lens!
+                  </span>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Zero app download needed! If a customer uses an older smartphone whose default camera doesn&apos;t auto-scan QR codes, they can simply tap the <strong className="text-blue-300">Google Lens camera icon</strong> (built right inside the Google Search widget on every Android phone) or use <strong className="text-emerald-300">Google Pay / PhonePe scanner</strong>. It opens the review funnel in 1 second!
+                  </p>
+                </div>
+              </div>
+
               <div className="pt-2">
                 <a
                   href={whatsappInquiryUrl}
@@ -1377,6 +1392,14 @@ export default function HomePage() {
                 <p className="text-xs text-slate-400 leading-relaxed">{step.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* Quick Compatibility Tip */}
+          <div className="mt-8 text-center">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Universal Compatibility: Works with iPhone Camera, Android Camera, or <strong className="text-white">Google Lens</strong> on older smartphones.</span>
+            </span>
           </div>
         </div>
       </section>
@@ -1609,7 +1632,7 @@ export default function HomePage() {
               Become a Marketing Agent in Your City
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg">
-              Onboard local shops and restaurants in your area. Earn <strong>40% commission</strong> on every verified merchant deal closed via our high-speed mobile POS.
+              Onboard local shops and restaurants in your area. Earn <strong>30% commission</strong> on every verified merchant deal closed via our high-speed mobile POS.
             </p>
           </div>
 

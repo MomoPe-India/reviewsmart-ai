@@ -18,7 +18,7 @@ export async function GET() {
     const platformSettings = await prisma.platformSetting.findUnique({
       where: { id: "default" },
     });
-    const commissionRate = platformSettings?.commissionRate ?? 0.4;
+    const commissionRate = session.commissionRate ?? platformSettings?.commissionRate ?? 0.30;
 
     // Fetch all payments for this agent, newest first
     const payments = await prisma.upiPayment.findMany({
@@ -109,7 +109,7 @@ export async function GET() {
         businessId: bId,
         status: p.status as "PENDING" | "APPROVED" | "REJECTED",
         amount: p.amount,
-        agentCommission: Math.round(p.amount * commissionRate),
+        agentCommission: p.commission ?? Math.round(p.amount * commissionRate),
         createdAt: p.createdAt.toISOString(),
         utrNumber: p.utrNumber || null,
         businessName: biz?.name || "Unknown Business",

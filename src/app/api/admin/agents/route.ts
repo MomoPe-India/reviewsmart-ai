@@ -22,6 +22,7 @@ export async function GET() {
         phone: true,
         userIdTag: true,
         agentCode: true,
+        commissionRate: true,
         isActive: true,
         createdAt: true,
       },
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { name, phone, agentCode, pin } = await req.json();
+    const { name, phone, agentCode, pin, commissionRate } = await req.json();
 
     if (!name || !agentCode || !pin) {
       return NextResponse.json(
@@ -88,6 +89,14 @@ export async function POST(req: NextRequest) {
     const cleanCode = String(agentCode).trim().toUpperCase();
     const cleanPin = String(pin).trim().replace(/[^0-9]/g, "").slice(0, 4);
     const cleanPhone = phone ? String(phone).replace(/[^0-9]/g, "").slice(0, 10) : null;
+
+    let parsedCommission = 0.30;
+    if (commissionRate !== undefined && commissionRate !== null && commissionRate !== "") {
+      const num = Number(commissionRate);
+      if (!isNaN(num) && num > 0) {
+        parsedCommission = num > 1 ? Math.round(num) / 100 : num;
+      }
+    }
 
     if (cleanPin.length !== 4) {
       return NextResponse.json({ error: "PIN must be exactly 4 digits." }, { status: 400 });
@@ -120,6 +129,7 @@ export async function POST(req: NextRequest) {
         phone: cleanPhone,
         userIdTag: cleanCode,
         agentCode: cleanCode,
+        commissionRate: parsedCommission,
         pinCode: hashedPin,
         password: hashedPassword,
         role: "MARKETING_AGENT",
@@ -129,6 +139,7 @@ export async function POST(req: NextRequest) {
         id: true,
         name: true,
         agentCode: true,
+        commissionRate: true,
         phone: true,
         userIdTag: true,
         createdAt: true,
@@ -199,9 +210,41 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
+    // 2.5 Update Commission Rate Individually
+    if (action === "update_commission") {
+      const { commissionRate } = body;
+      if (commissionRate === undefined || commissionRate === null || commissionRate === "") {
+        return NextResponse.json({ error: "commissionRate is required." }, { status: 400 });
+      }
+
+      const num = Number(commissionRate);
+      if (isNaN(num) || num <= 0) {
+        return NextResponse.json({ error: "Please enter a valid positive commission percentage." }, { status: 400 });
+      }
+
+      const parsedRate = num > 1 ? Math.round(num) / 100 : num;
+
+      const updated = await prisma.user.update({
+        where: { id: agentId },
+        data: { commissionRate: parsedRate },
+        select: {
+          id: true,
+          name: true,
+          agentCode: true,
+          commissionRate: true,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        commissionRate: updated.commissionRate,
+        message: `Commission rate for ${updated.name} updated to ${Math.round(parsedRate * 100)}%.`,
+      });
+    }
+
     // 3. Edit Agent Details
     if (action === "edit_agent") {
-      const { name, phone, agentCode } = body;
+      const { name, phone, agentCode, commissionRate } = body;
       const cleanCode = agentCode ? String(agentCode).trim().toUpperCase() : agent.agentCode;
       const cleanPhone = phone ? String(phone).replace(/[^0-9]/g, "").slice(0, 10) : agent.phone;
 
@@ -228,6 +271,13 @@ export async function PATCH(req: NextRequest) {
         userIdTag: cleanCode,
       };
 
+      if (commissionRate !== undefined && commissionRate !== null && commissionRate !== "") {
+        const num = Number(commissionRate);
+        if (!isNaN(num) && num > 0) {
+          updateData.commissionRate = num > 1 ? Math.round(num) / 100 : num;
+        }
+      }
+
       if (cleanCode) {
         updateData.email = `${cleanCode.toLowerCase()}@agent.reviewsmart.local`;
       }
@@ -248,6 +298,7 @@ export async function PATCH(req: NextRequest) {
           id: true,
           name: true,
           agentCode: true,
+          commissionRate: true,
           phone: true,
           userIdTag: true,
           isActive: true,
