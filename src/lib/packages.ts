@@ -28,8 +28,10 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
     badge: "Compact Entry",
     isPopular: false,
     hardwareDeliverables: [
-      "1x Vertical PVC Smart Display Card (CR80 PAN Card Standard Size)",
-      "High-density dynamic QR code with scratch & waterproof finish",
+      "1x Dual-Sided Vertical PVC Smart Card (CR80 Standard)",
+      "Front: Google 5-Star Review Station with Dynamic QR & NFC Tap",
+      "Back: Custom Merchant Business Visiting Card (or Direct UPI QR)",
+      "Scratch & waterproof matte/gloss executive finish",
     ],
     softwareDeliverables: [
       "Gemini AI 5-Star Review Generation Engine",
@@ -39,7 +41,7 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
     ],
     bestFor: "Small counter tills, tea/coffee counters, compact boutique desks, takeaway counters",
     salesPitch:
-      "Pocket-friendly starter kit for compact desks with 1 waterproof vertical PVC card.",
+      "Pocket-friendly starter kit with 1 Dual-Sided PVC Card (Google Review Front + Store Visiting Card Back).",
   },
   EXECUTIVE_STANDEE: {
     id: "EXECUTIVE_STANDEE",
@@ -51,7 +53,7 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
     isPopular: true,
     hardwareDeliverables: [
       "1x 4″×6″ (A6) Crystal Acrylic L-Standee (Flipkart/Retail standard)",
-      "1x Vertical PVC Display Card (CR80 PAN Card Size)",
+      "1x Dual-Sided Vertical PVC Smart Card (Google Review + Store Business Card)",
       "Official Google 'G' Circular Badge Authentic Brand Styling",
     ],
     softwareDeliverables: [
@@ -63,7 +65,7 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
     ],
     bestFor: "Retail stores, apparel boutiques, restaurants, clinics, beauty salons",
     salesPitch:
-      "Our best-selling package featuring a luxury 4″×6″ crystal acrylic standee for the cash counter plus a vertical PVC card.",
+      "Our best-selling package featuring a luxury 4″×6″ crystal acrylic standee for the cash counter plus a dual-sided PVC smart card.",
   },
   ALL_IN_ONE_HUB: {
     id: "ALL_IN_ONE_HUB",
@@ -75,7 +77,7 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
     isPopular: false,
     hardwareDeliverables: [
       "1x 4″×6″ (A6) Crystal Acrylic Counter Standee",
-      "2x Vertical PVC Display Cards (For billing & dining/service desks)",
+      "2x Dual-Sided Vertical PVC Smart Cards (For billing & dining/service desks)",
       "1x A4 Framed Entrance / Glass Door Wall Poster",
       "Staff Attribution QR Badges for team members",
     ],

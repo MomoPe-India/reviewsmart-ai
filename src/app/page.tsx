@@ -912,7 +912,7 @@ export default function HomePage() {
                 }`}
               >
                 <CreditCard className="w-4 h-4" />
-                <span>Vertical PVC Card (CR80)</span>
+                <span>Dual-Sided PVC Card (CR80)</span>
               </button>
 
               <button
@@ -1198,13 +1198,13 @@ export default function HomePage() {
                 {mockupFormat === "stand"
                   ? "4\"×6\" (A6) Portrait Acrylic Standee"
                   : mockupFormat === "pvc-vertical"
-                  ? "Vertical PVC Card (CR80 PAN Size)"
+                  ? "Dual-Sided Smart PVC Card (CR80 PAN Size)"
                   : "A4 Printable Wall & Door Poster"}
               </div>
 
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
                 {mockupFormat === "stand" && "Durable Crystal Acrylic for Your Billing Counter"}
-                {mockupFormat === "pvc-vertical" && "Pocket-Sized Card for Counters, Registers & Wallets"}
+                {mockupFormat === "pvc-vertical" && "Side A: Google Review Station • Side B: Store Business Card"}
                 {mockupFormat === "poster-a4" && "Eye-Level High-Visibility Poster for Entrances & Walls"}
               </h3>
 
@@ -1212,7 +1212,7 @@ export default function HomePage() {
                 {mockupFormat === "stand" &&
                   "Crafted from premium heavy crystal acrylic with brilliant UV back-printing. Designed to sit elegantly on reception counters, billing desks, and dining tables."}
                 {mockupFormat === "pvc-vertical" &&
-                  "Standard PAN card / CR80 ID dimensions (54mm × 85.6mm) on thick 30mil PVC plastic. Scratch-resistant matte lamination ensures flawless camera scans every time."}
+                  "Standard CR80 PAN card size (54mm × 85.6mm) on thick waterproof PVC plastic. Front side acts as your official Google 5-Star Review Station with dynamic QR & NFC; flip side features your custom luxury store visiting card or direct UPI QR."}
                 {mockupFormat === "poster-a4" &&
                   "Full-bleed 210×297mm poster at 300 DPI (2480 × 3508 px). Merchants can download instantly, print at any local xerox or photo shop, and mount on entrance doors, mirrors, or waiting lounges."}
               </p>
@@ -1447,7 +1447,7 @@ export default function HomePage() {
                 <div className="pt-4 border-t border-slate-200/80 space-y-2.5 text-xs text-slate-700">
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong className="text-slate-900">1x Vertical PVC Smart Display Card</strong> (CR80 standard)</span>
+                    <span><strong className="text-slate-900">1x Dual-Sided Vertical PVC Smart Card</strong> (Google Review Front + Store Visiting Card Back)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -1512,7 +1512,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong className="text-slate-900">1x Vertical PVC Display Card</strong> (CR80 PAN card size)</span>
+                    <span><strong className="text-slate-900">1x Dual-Sided Vertical PVC Smart Card</strong> (Google Review + Store Business Card)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -1570,7 +1570,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong className="text-slate-900">2x Vertical PVC Cards</strong> (Billing &amp; Dining/Desks)</span>
+                    <span><strong className="text-slate-900">2x Dual-Sided Vertical PVC Smart Cards</strong> (Google Review + Store Business Card)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />

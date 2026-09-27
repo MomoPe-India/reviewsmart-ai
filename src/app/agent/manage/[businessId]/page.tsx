@@ -63,6 +63,13 @@ interface BusinessData {
   qrMode?: string | null;
   menuUrl?: string | null;
   customUpiId?: string | null;
+  visitingCardBackMode?: string | null;
+  visitingCardOwnerName?: string | null;
+  visitingCardOwnerTitle?: string | null;
+  visitingCardPhone?: string | null;
+  visitingCardEmail?: string | null;
+  visitingCardAddress?: string | null;
+  visitingCardImageUrl?: string | null;
   isPaid: boolean;
   customerType: string;
   demoExpiresAt?: string | null;

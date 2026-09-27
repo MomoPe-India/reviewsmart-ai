@@ -31,6 +31,11 @@ import {
   Tag,
   MessageCircle,
   Printer,
+  CreditCard,
+  Briefcase,
+  Mail,
+  IndianRupee,
+  HelpCircle,
 } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
 
@@ -59,6 +64,13 @@ interface BusinessData {
   qrMode?: string | null;
   menuUrl?: string | null;
   customUpiId?: string | null;
+  visitingCardBackMode?: string | null;
+  visitingCardOwnerName?: string | null;
+  visitingCardOwnerTitle?: string | null;
+  visitingCardPhone?: string | null;
+  visitingCardEmail?: string | null;
+  visitingCardAddress?: string | null;
+  visitingCardImageUrl?: string | null;
 }
 
 interface GoogleSearchResult {
@@ -102,6 +114,13 @@ export default function SettingsClient({ business }: { business: BusinessData })
     qrMode: business.qrMode || "SMART_HUB",
     menuUrl: business.menuUrl || "",
     customUpiId: business.customUpiId || "",
+    visitingCardBackMode: business.visitingCardBackMode || "BUSINESS_CARD",
+    visitingCardOwnerName: business.visitingCardOwnerName || "",
+    visitingCardOwnerTitle: business.visitingCardOwnerTitle || "Founder & Proprietor",
+    visitingCardPhone: business.visitingCardPhone || "",
+    visitingCardEmail: business.visitingCardEmail || "",
+    visitingCardAddress: business.visitingCardAddress || "",
+    visitingCardImageUrl: business.visitingCardImageUrl || "",
   });
 
   // State for Google Places Typeahead Search
@@ -214,6 +233,27 @@ export default function SettingsClient({ business }: { business: BusinessData })
       reader.onload = (event) => {
         if (typeof event.target?.result === "string") {
           setForm((prev) => ({ ...prev, logoUrl: event.target?.result as string }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVisitingCardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Please upload an image smaller than 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === "string") {
+          setForm((prev) => ({
+            ...prev,
+            visitingCardImageUrl: event.target?.result as string,
+            visitingCardBackMode: "CUSTOM_IMAGE",
+          }));
         }
       };
       reader.readAsDataURL(file);
@@ -1006,6 +1046,230 @@ export default function SettingsClient({ business }: { business: BusinessData })
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </div>
+            </div>
+
+            {/* 5. Dual-Sided Smart PVC Card & Business Visiting Card */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-amber-500" />
+                    Dual-Sided Smart PVC Card (Back Side Identity)
+                  </h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Front side displays your Google 5-Star Review Station. Customize what gets printed on the back side of your waterproof PVC card.
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/studio"
+                  className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold hover:bg-amber-100 transition"
+                >
+                  <Printer className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Open Print Studio</span>
+                </Link>
+              </div>
+
+              {/* Back Mode Selection Tabs */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                  Select Back-Side Printing Layout
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, visitingCardBackMode: "BUSINESS_CARD" }))}
+                    className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center ${
+                      form.visitingCardBackMode === "BUSINESS_CARD"
+                        ? "border-amber-500 bg-amber-50/80 text-amber-950 font-bold ring-2 ring-amber-400/50 shadow-sm"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Briefcase className="w-4 h-4 mb-1 text-amber-600" />
+                    <span className="text-xs">Luxury Card</span>
+                    <span className="text-[9px] text-slate-400 font-normal">Auto Typography</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, visitingCardBackMode: "CUSTOM_IMAGE" }))}
+                    className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center ${
+                      form.visitingCardBackMode === "CUSTOM_IMAGE"
+                        ? "border-amber-500 bg-amber-50/80 text-amber-950 font-bold ring-2 ring-amber-400/50 shadow-sm"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Camera className="w-4 h-4 mb-1 text-amber-600" />
+                    <span className="text-xs">Upload Artwork</span>
+                    <span className="text-[9px] text-slate-400 font-normal">Photo / Custom Card</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, visitingCardBackMode: "DUAL_UPI" }))}
+                    className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center ${
+                      form.visitingCardBackMode === "DUAL_UPI"
+                        ? "border-amber-500 bg-amber-50/80 text-amber-950 font-bold ring-2 ring-amber-400/50 shadow-sm"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <IndianRupee className="w-4 h-4 mb-1 text-amber-600" />
+                    <span className="text-xs">Direct UPI QR</span>
+                    <span className="text-[9px] text-slate-400 font-normal">Pay &amp; Review Station</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, visitingCardBackMode: "GUIDE" }))}
+                    className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center ${
+                      form.visitingCardBackMode === "GUIDE"
+                        ? "border-amber-500 bg-amber-50/80 text-amber-950 font-bold ring-2 ring-amber-400/50 shadow-sm"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <HelpCircle className="w-4 h-4 mb-1 text-amber-600" />
+                    <span className="text-xs">3-Step Guide</span>
+                    <span className="text-[9px] text-slate-400 font-normal">Customer Instructions</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Mode 1: Auto Luxury Visiting Card Fields */}
+              {form.visitingCardBackMode === "BUSINESS_CARD" && (
+                <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Proprietor / Owner Name
+                      </label>
+                      <input
+                        type="text"
+                        name="visitingCardOwnerName"
+                        value={form.visitingCardOwnerName}
+                        onChange={handleChange}
+                        placeholder="e.g. Damerla Mohan"
+                        className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Designation / Title
+                      </label>
+                      <input
+                        type="text"
+                        name="visitingCardOwnerTitle"
+                        value={form.visitingCardOwnerTitle}
+                        onChange={handleChange}
+                        placeholder="e.g. Founder &amp; Managing Director"
+                        className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        VIP Direct Mobile / WhatsApp
+                      </label>
+                      <input
+                        type="tel"
+                        name="visitingCardPhone"
+                        value={form.visitingCardPhone}
+                        onChange={handleChange}
+                        placeholder={form.phone ? `Default: ${form.phone}` : "e.g. 9876543210"}
+                        className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        VIP / Store Email
+                      </label>
+                      <input
+                        type="email"
+                        name="visitingCardEmail"
+                        value={form.visitingCardEmail}
+                        onChange={handleChange}
+                        placeholder="e.g. contact@business.com"
+                        className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Short Store Address / Landmark (Card Back)
+                    </label>
+                    <input
+                      type="text"
+                      name="visitingCardAddress"
+                      value={form.visitingCardAddress}
+                      onChange={handleChange}
+                      placeholder={form.googleAddress ? `Default: ${form.googleAddress}` : "e.g. Main Bazaar, Opp. Clock Tower, Kadapa"}
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mode 2: Upload Artwork */}
+              {form.visitingCardBackMode === "CUSTOM_IMAGE" && (
+                <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                  <p className="text-xs text-slate-600">
+                    Upload an image or photo of your existing visiting card or designer artwork. It will be printed directly on Side B of your CR80 PVC Card:
+                  </p>
+                  {form.visitingCardImageUrl ? (
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-amber-300 shadow-sm">
+                      <img
+                        src={form.visitingCardImageUrl}
+                        alt="Visiting Card Preview"
+                        className="w-24 h-16 object-cover rounded-xl border border-slate-200 shadow-inner"
+                      />
+                      <div className="flex-1">
+                        <div className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Visiting Card Attached
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          High-resolution print asset saved. Open Print Studio to test on 3D card flip.
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <label className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer">
+                            <span>Replace Card</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleVisitingCardUpload}
+                              className="hidden"
+                            />
+                          </label>
+                          <span className="text-slate-300">•</span>
+                          <button
+                            type="button"
+                            onClick={() => setForm((prev) => ({ ...prev, visitingCardImageUrl: "" }))}
+                            className="text-[11px] font-bold text-red-500 hover:text-red-600"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 hover:border-amber-400 rounded-2xl cursor-pointer bg-white transition group">
+                      <Camera className="w-8 h-8 text-amber-500 mb-2 group-hover:scale-110 transition" />
+                      <span className="text-xs font-bold text-slate-800">
+                        Upload Visiting Card Artwork or Photo
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">
+                        PNG, JPG, or high-res photo from phone (Max 5MB)
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleVisitingCardUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Submit Action Bar */}

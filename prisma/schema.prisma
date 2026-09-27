@@ -86,6 +86,13 @@ model Business {
   menuUrl            String?
   customUpiId        String?
   packageTier        String            @default("EXECUTIVE_STANDEE") // "STARTER_PVC" | "EXECUTIVE_STANDEE" | "ALL_IN_ONE_HUB" | "ENTERPRISE_CUSTOM"
+  visitingCardBackMode String?         @default("BUSINESS_CARD") // "BUSINESS_CARD" | "CUSTOM_IMAGE" | "DUAL_UPI" | "GUIDE"
+  visitingCardOwnerName String?
+  visitingCardOwnerTitle String?
+  visitingCardPhone    String?
+  visitingCardEmail    String?
+  visitingCardAddress  String?
+  visitingCardImageUrl String?
   isPaid             Boolean           @default(false) // false until admin explicitly approves payment
   demoExpiresAt      DateTime?         // If set and in future, card is temporarily active for evaluation
   demoActivatedAt    DateTime?         // Timestamp when demo was started

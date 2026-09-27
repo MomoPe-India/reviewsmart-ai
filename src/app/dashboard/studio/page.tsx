@@ -202,7 +202,7 @@ export default async function StudioPage({
               <ul className="text-xs space-y-1 text-slate-700 pt-2">
                 <li>✓ Everything in Digital Card</li>
                 <li>✓ 4&quot;×6&quot; Portrait Acrylic Standee</li>
-                <li>✓ Vertical PVC Pocket/Counter Card (CR80)</li>
+                <li>✓ Dual-Sided Vertical PVC Smart Card (Google Review Front + Store Visiting Card Back)</li>
                 <li>✓ A4 Wall &amp; Door Printable Poster</li>
                 <li>✓ Doorstep Delivery / Instant Print-Ready PDFs</li>
               </ul>
@@ -222,7 +222,7 @@ export default async function StudioPage({
             Print &amp; Standee Studio 🖨️
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Design, preview and export your print-ready 4&quot;×6&quot; Acrylic Standee, Vertical PVC Card, and A4 Wall Poster.
+            Design, preview and export your print-ready 4&quot;×6&quot; Acrylic Standee, Dual-Sided Vertical PVC Card (Google Review Front + Business Card Back), and A4 Wall Poster.
           </p>
         </div>
       </div>

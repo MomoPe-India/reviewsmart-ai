@@ -28,6 +28,10 @@ import {
   FileText,
   Send,
   ExternalLink,
+  Briefcase,
+  Mail,
+  PhoneCall,
+  MapPin,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { printElement } from "@/lib/print";
@@ -43,6 +47,14 @@ interface BusinessData {
   googleAddress?: string | null;
   phone?: string | null;
   whatsapp?: string | null;
+  visitingCardBackMode?: string | null;
+  visitingCardOwnerName?: string | null;
+  visitingCardOwnerTitle?: string | null;
+  visitingCardPhone?: string | null;
+  visitingCardEmail?: string | null;
+  visitingCardAddress?: string | null;
+  visitingCardImageUrl?: string | null;
+  customUpiId?: string | null;
 }
 
 interface PrintStudioProps {
@@ -176,7 +188,34 @@ export default function PrintStudioClient({
 }: PrintStudioProps) {
   const [format, setFormat] = useState<"stand" | "pvc-vertical" | "poster-a4">("stand");
   const [pvcSide, setPvcSide] = useState<"front" | "back">("front");
-  const [pvcBackMode, setPvcBackMode] = useState<"guide" | "staff" | "dual-upi">("guide");
+  type PvcBackMode = "business-card" | "upload-card" | "dual-upi" | "guide" | "staff";
+  const [pvcBackMode, setPvcBackMode] = useState<PvcBackMode>(() => {
+    if (business.visitingCardBackMode === "CUSTOM_IMAGE" && business.visitingCardImageUrl) return "upload-card";
+    if (business.visitingCardBackMode === "DUAL_UPI") return "dual-upi";
+    if (business.visitingCardBackMode === "GUIDE") return "guide";
+    return "business-card";
+  });
+  const [visitingOwnerName, setVisitingOwnerName] = useState(business.visitingCardOwnerName || "");
+  const [visitingOwnerTitle, setVisitingOwnerTitle] = useState(business.visitingCardOwnerTitle || "Founder & Proprietor");
+  const [visitingPhone, setVisitingPhone] = useState(business.visitingCardPhone || business.phone || "");
+  const [visitingEmail, setVisitingEmail] = useState(business.visitingCardEmail || "");
+  const [visitingAddress, setVisitingAddress] = useState(business.visitingCardAddress || business.googleAddress || "");
+  const [visitingCardImg, setVisitingCardImg] = useState<string | null>(business.visitingCardImageUrl || null);
+
+  const handleVisitingCardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === "string") {
+          setVisitingCardImg(event.target.result);
+          setPvcBackMode("upload-card");
+          setPvcSide("back");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const [staffName, setStaffName] = useState("");
   const [staffId, setStaffId] = useState("");
   const [showLanyardSlot, setShowLanyardSlot] = useState(false);
@@ -745,7 +784,134 @@ export default function PrintStudioClient({
           ctx.fillText("✨ ReviewSmart AI • Smart Business Card", 342, 980);
         } else {
           // BACK SIDE
-          if (pvcBackMode === "guide") {
+          if (pvcBackMode === "business-card") {
+            // Top Ribbon Badge
+            const ribbonGrad = ctx.createLinearGradient(160, 95, 525, 95);
+            ribbonGrad.addColorStop(0, "#d97706");
+            ribbonGrad.addColorStop(0.5, "#fbbf24");
+            ribbonGrad.addColorStop(1, "#d97706");
+            ctx.fillStyle = ribbonGrad;
+            ctx.beginPath();
+            ctx.roundRect(160, 95, 365, 42, 21);
+            ctx.fill();
+
+            ctx.fillStyle = "#0b0f19";
+            ctx.font = "bold 15px -apple-system, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("★ OFFICIAL BUSINESS IDENTITY ★", 342, 116);
+            ctx.textBaseline = "alphabetic";
+
+            // Store Name
+            ctx.fillStyle = activeTheme.text;
+            ctx.font = "900 32px -apple-system, sans-serif";
+            ctx.fillText(business.name, 342, 205);
+
+            // Store Tagline / Category
+            ctx.fillStyle = activeTheme.accent;
+            ctx.font = "bold 18px -apple-system, sans-serif";
+            ctx.fillText(business.tagline || "Verified Local Merchant", 342, 240);
+
+            // Center: Owner / Executive Box
+            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.beginPath();
+            ctx.roundRect(75, 280, 535, 245, 20);
+            ctx.fill();
+            ctx.strokeStyle = activeTheme.innerBorder;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Avatar Icon or Circular Monogram
+            ctx.beginPath();
+            ctx.arc(342, 350, 42, 0, Math.PI * 2);
+            ctx.fillStyle = activeTheme.bg;
+            ctx.fill();
+            ctx.strokeStyle = activeTheme.accent;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            const initials = (visitingOwnerName.trim() || business.name)
+              .split(" ")
+              .map((w: string) => w[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase();
+            ctx.fillStyle = activeTheme.accent;
+            ctx.font = "900 28px -apple-system, sans-serif";
+            ctx.textBaseline = "middle";
+            ctx.fillText(initials || "★", 342, 350);
+            ctx.textBaseline = "alphabetic";
+
+            ctx.fillStyle = activeTheme.text;
+            ctx.font = "900 28px -apple-system, sans-serif";
+            ctx.fillText(visitingOwnerName.trim() || "Store Proprietor", 342, 440);
+
+            ctx.fillStyle = activeTheme.accent;
+            ctx.font = "bold 18px -apple-system, sans-serif";
+            ctx.fillText(visitingOwnerTitle.trim() || "Founder & Managing Director", 342, 475);
+
+            // Bottom: Contact Details Box
+            ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+            ctx.beginPath();
+            ctx.roundRect(75, 545, 535, 340, 20);
+            ctx.fill();
+            ctx.strokeStyle = activeTheme.innerBorder;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.font = "bold 20px -apple-system, sans-serif";
+            ctx.fillStyle = activeTheme.text;
+            ctx.textAlign = "center";
+            ctx.fillText(`📞 VIP Direct: ${visitingPhone || business.phone || "Available on request"}`, 342, 605);
+
+            if (visitingEmail) {
+              ctx.fillText(`✉️ Email: ${visitingEmail}`, 342, 650);
+            }
+
+            ctx.fillStyle = activeTheme.subtext;
+            ctx.font = "16px -apple-system, sans-serif";
+            ctx.fillText(`📍 ${visitingAddress || business.googleAddress || "Kadapa • Andhra Pradesh"}`, 342, visitingEmail ? 705 : 665);
+
+            ctx.fillStyle = "#fbbf24";
+            ctx.font = "bold 22px sans-serif";
+            ctx.fillText("★★★★★", 342, 800);
+            ctx.fillStyle = activeTheme.subtext;
+            ctx.font = "14px -apple-system, sans-serif";
+            ctx.fillText("Verified Google 5-Star Business Partner", 342, 828);
+
+            // Footer
+            ctx.fillStyle = activeTheme.accent;
+            ctx.font = "bold 18px -apple-system, sans-serif";
+            ctx.fillText("✨ Official ReviewSmart Partner Card", 342, 980);
+          } else if (pvcBackMode === "upload-card") {
+            if (visitingCardImg) {
+              const cardImg = new Image();
+              await new Promise((resolve) => {
+                cardImg.onload = resolve;
+                cardImg.src = visitingCardImg;
+              });
+              ctx.save();
+              ctx.beginPath();
+              ctx.roundRect(42, 42, 601, 974, 16);
+              ctx.clip();
+              ctx.drawImage(cardImg, 42, 42, 601, 974);
+              ctx.restore();
+
+              ctx.strokeStyle = activeTheme.accent;
+              ctx.lineWidth = 4;
+              ctx.beginPath();
+              ctx.roundRect(42, 42, 601, 974, 16);
+              ctx.stroke();
+            } else {
+              ctx.fillStyle = activeTheme.accent;
+              ctx.font = "bold 28px -apple-system, sans-serif";
+              ctx.textAlign = "center";
+              ctx.fillText("No Visiting Card Uploaded", 342, 480);
+              ctx.fillStyle = activeTheme.subtext;
+              ctx.font = "18px -apple-system, sans-serif";
+              ctx.fillText("Upload an image in the options panel", 342, 520);
+            }
+          } else if (pvcBackMode === "guide") {
             ctx.fillStyle = activeTheme.accent;
             ctx.font = "bold 26px -apple-system, sans-serif";
             ctx.textAlign = "center";
@@ -1258,7 +1424,19 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                   }`}
                 >
                   <RotateCw className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Back Side ({pvcBackMode === "guide" ? "Guide" : pvcBackMode === "staff" ? "Staff" : "UPI"})</span>
+                  <span>
+                    Back Side (
+                    {pvcBackMode === "business-card"
+                      ? "Visiting Card"
+                      : pvcBackMode === "upload-card"
+                      ? "Uploaded Card"
+                      : pvcBackMode === "dual-upi"
+                      ? "Pay & Review"
+                      : pvcBackMode === "staff"
+                      ? "Staff"
+                      : "Guide"}
+                    )
+                  </span>
                 </button>
               </div>
             </div>
@@ -1268,37 +1446,37 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
               <label className="block text-[11px] font-semibold text-slate-600 mb-1.5">
                 Back Side Configuration Mode
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                 <button
                   type="button"
                   onClick={() => {
-                    setPvcBackMode("guide");
+                    setPvcBackMode("business-card");
                     setPvcSide("back");
                   }}
                   className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-                    pvcBackMode === "guide"
-                      ? "border-indigo-500 bg-indigo-50/80 text-indigo-950 font-bold ring-1 ring-indigo-400"
+                    pvcBackMode === "business-card"
+                      ? "border-amber-500 bg-amber-50 text-amber-950 font-bold ring-1 ring-amber-400"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
-                  <HelpCircle className="w-3.5 h-3.5 mb-0.5 text-indigo-600" />
-                  <span className="text-[11px]">3-Step Guide</span>
+                  <Briefcase className="w-3.5 h-3.5 mb-0.5 text-amber-600" />
+                  <span className="text-[10px]">Visiting Card</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setPvcBackMode("staff");
+                    setPvcBackMode("upload-card");
                     setPvcSide("back");
                   }}
                   className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-                    pvcBackMode === "staff"
-                      ? "border-indigo-500 bg-indigo-50/80 text-indigo-950 font-bold ring-1 ring-indigo-400"
+                    pvcBackMode === "upload-card"
+                      ? "border-amber-500 bg-amber-50 text-amber-950 font-bold ring-1 ring-amber-400"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
-                  <UserCheck className="w-3.5 h-3.5 mb-0.5 text-indigo-600" />
-                  <span className="text-[11px]">Staff Badge</span>
+                  <Camera className="w-3.5 h-3.5 mb-0.5 text-amber-600" />
+                  <span className="text-[10px]">Upload Card</span>
                 </button>
 
                 <button
@@ -1309,15 +1487,183 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                   }}
                   className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
                     pvcBackMode === "dual-upi"
-                      ? "border-indigo-500 bg-indigo-50/80 text-indigo-950 font-bold ring-1 ring-indigo-400"
+                      ? "border-amber-500 bg-amber-50 text-amber-950 font-bold ring-1 ring-amber-400"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
-                  <IndianRupee className="w-3.5 h-3.5 mb-0.5 text-indigo-600" />
-                  <span className="text-[11px]">Pay &amp; Review</span>
+                  <IndianRupee className="w-3.5 h-3.5 mb-0.5 text-amber-600" />
+                  <span className="text-[10px]">Pay &amp; Review</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPvcBackMode("guide");
+                    setPvcSide("back");
+                  }}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    pvcBackMode === "guide"
+                      ? "border-amber-500 bg-amber-50 text-amber-950 font-bold ring-1 ring-amber-400"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <HelpCircle className="w-3.5 h-3.5 mb-0.5 text-amber-600" />
+                  <span className="text-[10px]">3-Step Guide</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPvcBackMode("staff");
+                    setPvcSide("back");
+                  }}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    pvcBackMode === "staff"
+                      ? "border-amber-500 bg-amber-50 text-amber-950 font-bold ring-1 ring-amber-400"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <UserCheck className="w-3.5 h-3.5 mb-0.5 text-amber-600" />
+                  <span className="text-[10px]">Staff Badge</span>
                 </button>
               </div>
             </div>
+
+            {/* Mode 1: Visiting Card Typography Controls */}
+            {pvcBackMode === "business-card" && (
+              <div className="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                    <Briefcase className="w-3.5 h-3.5 text-amber-600" />
+                    Luxury Business Card Details
+                  </span>
+                  <span className="text-[10px] text-amber-800 font-semibold bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                    Live on Flip Card
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-700 mb-1">
+                      Proprietor / Owner Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. D. Mohan"
+                      value={visitingOwnerName}
+                      onChange={(e) => setVisitingOwnerName(e.target.value)}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-700 mb-1">
+                      Title / Designation
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Managing Director"
+                      value={visitingOwnerTitle}
+                      onChange={(e) => setVisitingOwnerTitle(e.target.value)}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-700 mb-1">
+                      VIP Direct Mobile
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder={business.phone || "VIP Phone"}
+                      value={visitingPhone}
+                      onChange={(e) => setVisitingPhone(e.target.value)}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-700 mb-1">
+                      Store Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g. store@gmail.com"
+                      value={visitingEmail}
+                      onChange={(e) => setVisitingEmail(e.target.value)}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-700 mb-1">
+                    Store Address / Landmark
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={business.googleAddress || "Kadapa • Bengaluru"}
+                    value={visitingAddress}
+                    onChange={(e) => setVisitingAddress(e.target.value)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Mode 2: Upload Card Artwork Controls */}
+            {pvcBackMode === "upload-card" && (
+              <div className="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-amber-600" />
+                    Uploaded Visiting Card Artwork
+                  </span>
+                </div>
+                {visitingCardImg ? (
+                  <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-amber-300">
+                    <img
+                      src={visitingCardImg}
+                      alt="Visiting card"
+                      className="w-16 h-10 object-cover rounded-lg border border-slate-200"
+                    />
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-slate-800">Artwork Attached</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <label className="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer">
+                          <span>Replace</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleVisitingCardUpload}
+                            className="hidden"
+                          />
+                        </label>
+                        <span className="text-slate-300">•</span>
+                        <button
+                          type="button"
+                          onClick={() => setVisitingCardImg(null)}
+                          className="text-[11px] font-bold text-red-500 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-amber-400/70 hover:border-amber-500 rounded-xl cursor-pointer bg-white transition group">
+                    <Camera className="w-6 h-6 text-amber-600 mb-1 group-hover:scale-110 transition" />
+                    <span className="text-xs font-bold text-slate-800">
+                      Upload Card Image or Photo
+                    </span>
+                    <span className="text-[9px] text-slate-400">PNG, JPG, or Camera photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleVisitingCardUpload}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+            )}
 
             {/* Staff Attribution Inputs */}
             <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2.5">
@@ -1634,24 +1980,44 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
             </button>
 
             {format === "pvc-vertical" ? (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleExportHighResPng("front")}
+                    disabled={isExporting}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition disabled:opacity-50"
+                  >
+                    <Download className="w-3.5 h-3.5 text-amber-400" />
+                    {isExporting ? "Exporting..." : "Front Side PNG"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExportHighResPng("back")}
+                    disabled={isExporting}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition disabled:opacity-50"
+                  >
+                    <Download className="w-3.5 h-3.5 text-amber-400" />
+                    {isExporting ? "Exporting..." : "Back Side PNG"}
+                  </button>
+                </div>
                 <button
                   type="button"
-                  onClick={() => handleExportHighResPng("front")}
+                  onClick={async () => {
+                    setIsExporting(true);
+                    try {
+                      await handleExportHighResPng("front");
+                      await new Promise((r) => setTimeout(r, 600));
+                      await handleExportHighResPng("back");
+                    } finally {
+                      setIsExporting(false);
+                    }
+                  }}
                   disabled={isExporting}
-                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition disabled:opacity-50"
                 >
-                  <Download className="w-3.5 h-3.5 text-amber-400" />
-                  {isExporting ? "Exporting..." : "Front (300 DPI)"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleExportHighResPng("back")}
-                  disabled={isExporting}
-                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition disabled:opacity-50"
-                >
-                  <Download className="w-3.5 h-3.5 text-amber-400" />
-                  {isExporting ? "Exporting..." : "Back (300 DPI)"}
+                  <Download className="w-3.5 h-3.5 text-slate-950" />
+                  {isExporting ? "Exporting Dual Pack..." : "Download Dual-Sided Print Pack (Front + Back)"}
                 </button>
               </div>
             ) : (
@@ -2088,6 +2454,96 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                   {showLanyardSlot && (
                     <div className="w-12 h-2.5 rounded-full border-2 border-dashed border-amber-400/70 bg-black/40 text-[7px] text-amber-300 font-mono flex items-center justify-center z-20 -mt-1">
                       SLOT
+                    </div>
+                  )}
+
+                  {/* Back Mode 0: Luxury Business Card */}
+                  {pvcBackMode === "business-card" && (
+                    <div className="flex flex-col justify-between items-center h-full w-full py-1 z-10 text-center">
+                      <div>
+                        <div className="text-[8px] uppercase font-black tracking-widest text-amber-400 mb-0.5">
+                          Official Business Identity
+                        </div>
+                        <h3
+                          className="text-xs font-black truncate max-w-[210px]"
+                          style={{ color: activeTheme.text }}
+                        >
+                          {business.name}
+                        </h3>
+                        <p className="text-[8px] text-amber-300/80 font-medium truncate max-w-[200px]">
+                          {business.tagline || "Verified Local Merchant"}
+                        </p>
+                      </div>
+
+                      {/* Center Monogram & Proprietor Badge */}
+                      <div className="flex flex-col items-center my-auto w-full px-1">
+                        <div className="w-12 h-12 rounded-full border-2 border-amber-400/80 bg-black/40 flex items-center justify-center shadow-inner mb-1.5">
+                          <span className="text-amber-400 font-serif font-black text-sm">
+                            {(visitingOwnerName.trim() || business.name)
+                              .split(" ")
+                              .map((w: string) => w[0])
+                              .slice(0, 2)
+                              .join("")
+                              .toUpperCase() || "★"}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-black text-white tracking-tight leading-tight">
+                          {visitingOwnerName.trim() || "Store Proprietor"}
+                        </h4>
+                        <div className="px-2 py-0.5 mt-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[8px] font-bold">
+                          {visitingOwnerTitle.trim() || "Founder & Managing Director"}
+                        </div>
+                      </div>
+
+                      {/* Contact & Address Block */}
+                      <div className="w-full space-y-1 p-2 rounded-xl bg-black/30 border border-white/10 text-[8px]">
+                        <div className="text-white font-medium flex items-center justify-center gap-1">
+                          <span>📞 VIP Direct:</span>
+                          <span className="text-amber-300 font-mono font-bold">
+                            {visitingPhone || business.phone || "On Request"}
+                          </span>
+                        </div>
+                        {visitingEmail && (
+                          <div className="text-slate-300 truncate">
+                            ✉️ {visitingEmail}
+                          </div>
+                        )}
+                        <div className="text-slate-400 truncate">
+                          📍 {visitingAddress || business.googleAddress || "Kadapa • Bengaluru"}
+                        </div>
+                      </div>
+
+                      <div className="text-[7.5px] font-bold text-amber-400/90 flex items-center gap-1">
+                        <span>★★★★★</span>
+                        <span>Google 5-Star Partner</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Back Mode: Uploaded Visiting Card Artwork */}
+                  {pvcBackMode === "upload-card" && (
+                    <div className="flex flex-col items-center justify-center h-full w-full z-10 p-1">
+                      {visitingCardImg ? (
+                        <div className="relative w-full h-full rounded-xl overflow-hidden border border-amber-400/50 shadow-inner flex items-center justify-center bg-black/30">
+                          <img
+                            src={visitingCardImg}
+                            alt="Visiting Card"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-amber-400/40 rounded-xl cursor-pointer bg-black/30 w-full h-full hover:bg-black/40 transition">
+                          <Camera className="w-6 h-6 text-amber-400 mb-1" />
+                          <span className="text-[10px] font-bold text-white">Upload Card Artwork</span>
+                          <span className="text-[8px] text-slate-400">Photo / Front &amp; Back Artwork</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleVisitingCardUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
                     </div>
                   )}
 

@@ -29,6 +29,13 @@ export async function PATCH(req: NextRequest) {
       qrMode,
       menuUrl,
       customUpiId,
+      visitingCardBackMode,
+      visitingCardOwnerName,
+      visitingCardOwnerTitle,
+      visitingCardPhone,
+      visitingCardEmail,
+      visitingCardAddress,
+      visitingCardImageUrl,
     } = body;
 
     let business;
@@ -80,6 +87,13 @@ export async function PATCH(req: NextRequest) {
         ...(qrMode !== undefined && { qrMode }),
         ...(menuUrl !== undefined && { menuUrl }),
         ...(customUpiId !== undefined && { customUpiId }),
+        ...(visitingCardBackMode !== undefined && { visitingCardBackMode }),
+        ...(visitingCardOwnerName !== undefined && { visitingCardOwnerName }),
+        ...(visitingCardOwnerTitle !== undefined && { visitingCardOwnerTitle }),
+        ...(visitingCardPhone !== undefined && { visitingCardPhone }),
+        ...(visitingCardEmail !== undefined && { visitingCardEmail }),
+        ...(visitingCardAddress !== undefined && { visitingCardAddress }),
+        ...(visitingCardImageUrl !== undefined && { visitingCardImageUrl }),
         ...(minRatingForGoogle !== undefined && { minRatingForGoogle: Number(minRatingForGoogle) }),
       },
     });

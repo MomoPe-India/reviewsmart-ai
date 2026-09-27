@@ -94,6 +94,13 @@ export async function PUT(
         qrMode: body.qrMode !== undefined ? body.qrMode : (business.qrMode || "SMART_HUB"),
         menuUrl: body.menuUrl !== undefined ? body.menuUrl : business.menuUrl,
         customUpiId: body.customUpiId !== undefined ? body.customUpiId : business.customUpiId,
+        visitingCardBackMode: body.visitingCardBackMode !== undefined ? body.visitingCardBackMode : business.visitingCardBackMode,
+        visitingCardOwnerName: body.visitingCardOwnerName !== undefined ? body.visitingCardOwnerName : business.visitingCardOwnerName,
+        visitingCardOwnerTitle: body.visitingCardOwnerTitle !== undefined ? body.visitingCardOwnerTitle : business.visitingCardOwnerTitle,
+        visitingCardPhone: body.visitingCardPhone !== undefined ? body.visitingCardPhone : business.visitingCardPhone,
+        visitingCardEmail: body.visitingCardEmail !== undefined ? body.visitingCardEmail : business.visitingCardEmail,
+        visitingCardAddress: body.visitingCardAddress !== undefined ? body.visitingCardAddress : business.visitingCardAddress,
+        visitingCardImageUrl: body.visitingCardImageUrl !== undefined ? body.visitingCardImageUrl : business.visitingCardImageUrl,
       },
     });
 

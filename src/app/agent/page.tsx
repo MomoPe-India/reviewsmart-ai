@@ -41,6 +41,12 @@ import {
   Maximize2,
   Filter,
   Volume2,
+  CreditCard,
+  Camera,
+  Upload,
+  Briefcase,
+  PhoneCall,
+  Image as ImageIcon,
 } from "lucide-react";
 import { HARDWARE_PACKAGES, PACKAGE_LIST, PackageTierId, getPackageById } from "@/lib/packages";
 
@@ -122,6 +128,24 @@ export default function AgentPosPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
   const [customReviewUrl, setCustomReviewUrl] = useState("");
+
+  // Dual-Sided PVC Card Back Customization
+  const [visitingCardBackMode, setVisitingCardBackMode] = useState<"BUSINESS_CARD" | "CUSTOM_IMAGE" | "DUAL_UPI">("BUSINESS_CARD");
+  const [visitingCardOwnerName, setVisitingCardOwnerName] = useState("");
+  const [visitingCardOwnerTitle, setVisitingCardOwnerTitle] = useState("Founder & Proprietor");
+  const [visitingCardPhone, setVisitingCardPhone] = useState("");
+  const [visitingCardImageUrl, setVisitingCardImageUrl] = useState<string | null>(null);
+
+  const handleVisitingCardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setVisitingCardImageUrl(event.target?.result as string);
+      setVisitingCardBackMode("CUSTOM_IMAGE");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleGenerateNewPin = () => {
     setMerchantPin(Math.floor(1000 + Math.random() * 9000).toString());
@@ -375,6 +399,11 @@ export default function AgentPosPage() {
           packageTier: selectedPackageTier,
           negotiatedPrice,
           utrNumber: utrNumber.trim() || undefined,
+          visitingCardBackMode,
+          visitingCardOwnerName: visitingCardOwnerName.trim() || undefined,
+          visitingCardOwnerTitle: visitingCardOwnerTitle.trim() || undefined,
+          visitingCardPhone: visitingCardPhone.trim() || undefined,
+          visitingCardImageUrl: visitingCardImageUrl || undefined,
         }),
       });
 
@@ -967,6 +996,171 @@ export default function AgentPosPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* STEP 2B: Dual-Sided PVC Card Back Customization */}
+            <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4 text-amber-400" />
+                  Step 2B: Dual-Sided PVC Card Back Design
+                </label>
+                <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-full">
+                  Front: Google QR • Back: Store Identity
+                </span>
+              </div>
+
+              {/* Mode Toggle */}
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setVisitingCardBackMode("BUSINESS_CARD")}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    visitingCardBackMode === "BUSINESS_CARD"
+                      ? "border-amber-500 bg-amber-500/15 text-amber-300 font-bold ring-1 ring-amber-400"
+                      : "border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700"
+                  }`}
+                >
+                  <Briefcase className="w-3.5 h-3.5 mb-0.5 text-amber-400" />
+                  <span className="text-[10px]">Luxury Card</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setVisitingCardBackMode("CUSTOM_IMAGE")}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    visitingCardBackMode === "CUSTOM_IMAGE"
+                      ? "border-amber-500 bg-amber-500/15 text-amber-300 font-bold ring-1 ring-amber-400"
+                      : "border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700"
+                  }`}
+                >
+                  <Camera className="w-3.5 h-3.5 mb-0.5 text-amber-400" />
+                  <span className="text-[10px]">Snap / Upload</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setVisitingCardBackMode("DUAL_UPI")}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    visitingCardBackMode === "DUAL_UPI"
+                      ? "border-amber-500 bg-amber-500/15 text-amber-300 font-bold ring-1 ring-amber-400"
+                      : "border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700"
+                  }`}
+                >
+                  <DollarSign className="w-3.5 h-3.5 mb-0.5 text-amber-400" />
+                  <span className="text-[10px]">Direct UPI QR</span>
+                </button>
+              </div>
+
+              {/* Mode 1: Business Card Typography Fields */}
+              {visitingCardBackMode === "BUSINESS_CARD" && (
+                <div className="space-y-2 p-3 bg-slate-950/80 rounded-2xl border border-slate-800">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] text-slate-400 font-semibold mb-1">
+                        Proprietor / Owner Name
+                      </label>
+                      <input
+                        type="text"
+                        value={visitingCardOwnerName}
+                        onChange={(e) => setVisitingCardOwnerName(e.target.value)}
+                        placeholder="e.g. D. Mohan"
+                        className="w-full text-xs p-2 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-400 font-semibold mb-1">
+                        Designation / Title
+                      </label>
+                      <input
+                        type="text"
+                        value={visitingCardOwnerTitle}
+                        onChange={(e) => setVisitingCardOwnerTitle(e.target.value)}
+                        placeholder="e.g. Managing Director"
+                        className="w-full text-xs p-2 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 font-semibold mb-1">
+                      Direct VIP Mobile (Optional override)
+                    </label>
+                    <input
+                      type="tel"
+                      value={visitingCardPhone}
+                      onChange={(e) => setVisitingCardPhone(e.target.value)}
+                      placeholder={merchantPhone ? `Default: ${merchantPhone}` : "10-digit mobile"}
+                      className="w-full text-xs p-2 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mode 2: Camera / Upload */}
+              {visitingCardBackMode === "CUSTOM_IMAGE" && (
+                <div className="space-y-2 p-3 bg-slate-950/80 rounded-2xl border border-slate-800">
+                  <p className="text-[10px] text-slate-400">
+                    Snap a photo of the merchant's physical paper visiting card or upload custom back artwork:
+                  </p>
+                  {visitingCardImageUrl ? (
+                    <div className="relative rounded-xl overflow-hidden border border-amber-400/40 bg-black/40 p-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={visitingCardImageUrl}
+                          alt="Visiting Card"
+                          className="w-16 h-10 object-cover rounded-lg border border-white/20"
+                        />
+                        <div>
+                          <div className="text-[11px] font-bold text-white flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Card Attached
+                          </div>
+                          <div className="text-[9px] text-slate-400">Ready for CR80 PVC printing</div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setVisitingCardImageUrl(null)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-red-400 hover:bg-white/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-700 hover:border-amber-400/60 rounded-xl cursor-pointer bg-slate-900/60 transition group">
+                      <Camera className="w-6 h-6 text-amber-400 mb-1 group-hover:scale-110 transition" />
+                      <span className="text-[11px] font-bold text-slate-200">
+                        Take Photo or Select File
+                      </span>
+                      <span className="text-[9px] text-slate-500">Camera / Gallery / PDF preview</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleVisitingCardUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
+
+              {/* Mode 3: Direct UPI QR Note */}
+              {visitingCardBackMode === "DUAL_UPI" && (
+                <div className="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 text-[10px] text-slate-300 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>
+                    Back side will render a direct UPI Payment QR code alongside the store name, making this a 2-in-1 <strong>Pay &amp; Review</strong> station.
+                  </span>
+                </div>
+              )}
+
+              {/* Coaching Alert */}
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-200 flex items-start gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span>
+                  <strong>Closer Tip:</strong> Tell the merchant — <em>"Sir, this is not just a review card. The flip side is your personal luxury visiting card that you can carry in your wallet or display on your counter!"</em>
+                </span>
               </div>
             </div>
 

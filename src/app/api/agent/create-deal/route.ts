@@ -30,6 +30,13 @@ export async function POST(req: NextRequest) {
       negotiatedPrice,
       packageTier: requestedPackageTier,
       utrNumber,
+      visitingCardBackMode,
+      visitingCardOwnerName,
+      visitingCardOwnerTitle,
+      visitingCardPhone,
+      visitingCardEmail,
+      visitingCardAddress,
+      visitingCardImageUrl,
     } = body;
 
     if (!merchantName || !merchantPhone || !googleReviewUrl) {
@@ -139,6 +146,13 @@ export async function POST(req: NextRequest) {
         minRatingForGoogle: 4,
         reviewPromptTone: "friendly",
         packageTier: activePackage.id,
+        visitingCardBackMode: visitingCardBackMode || "BUSINESS_CARD",
+        visitingCardOwnerName: visitingCardOwnerName || null,
+        visitingCardOwnerTitle: visitingCardOwnerTitle || null,
+        visitingCardPhone: visitingCardPhone || cleanPhone,
+        visitingCardEmail: visitingCardEmail || null,
+        visitingCardAddress: visitingCardAddress || googleAddress || null,
+        visitingCardImageUrl: visitingCardImageUrl || null,
         isPaid: false, // CRITICAL: never auto-activate
       },
     });
