@@ -2,10 +2,20 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://reviewsmart.online"),
   title: "ReviewSmart AI - Smart Google Review Cards & AI Reputation Platform",
   description:
     "Empower local businesses to capture 5-star Google reviews with AI-powered draft suggestions, smart QR display cards, and a private negative review shield.",
   applicationName: "ReviewSmart AI",
+  openGraph: {
+    title: "ReviewSmart AI - Smart Google Review Cards & AI Reputation Platform",
+    description:
+      "Empower local businesses to capture 5-star Google reviews with AI-powered draft suggestions, smart QR display cards, and a private negative review shield.",
+    url: "https://reviewsmart.online",
+    siteName: "ReviewSmart AI",
+    locale: "en_IN",
+    type: "website",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

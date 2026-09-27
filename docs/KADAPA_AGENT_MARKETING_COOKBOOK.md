@@ -40,9 +40,9 @@ Every marketing agent must verify these **6 items** before visiting their first 
 | # | Checklist Item | Exact Details / Action |
 | :--- | :--- | :--- |
 | **1** | **Smartphone Charged + Powerbank** | Minimum 90% battery + 5G mobile data active. Your phone is your **POS machine** and **Demo Kit**. |
-| **2** | **Logged into Agent Closer Portal** | Open `https://reviewsmart-ai.vercel.app/login` -> Select **"User ID & PIN"** -> Log in with your `MKT-XX` code & 4-digit PIN. |
+| **2** | **Logged into Agent Closer Portal** | Open `https://reviewsmart.online/login` -> Select **"User ID & PIN"** -> Log in with your `MKT-XX` code & 4-digit PIN. |
 | **3** | **Hide Earnings (Privacy Toggle ON)** | On the top bar of `/agent`, make sure the **Earnings** box shows `••••` (Eye icon closed). **Never let a merchant see your 40% commission on your screen!** |
-| **4** | **Live Demo Tab Open** | Keep a second browser tab ready at `https://reviewsmart-ai.vercel.app/r/momo-it-technologies` to show the 10-second live Google Maps auto-copy & paste flow. |
+| **4** | **Live Demo Tab Open** | Keep a second browser tab ready at `https://reviewsmart.online/r/momo-it-technologies` to show the 10-second live Google Maps auto-copy & paste flow. |
 | **5** | **Physical Standee Stock** | Carry **5 to 8 clean 4"×6" A6 Acrylic T-Frame Standees** + printed QR cards + NFC tags in a neat folder/bag. Keep 1 sample standee in your hand when entering a shop. |
 | **6** | **Google Maps App Updated** | Have Google Maps open on your phone so you can check the merchant's current star rating and review count **30 seconds before walking in**. |
 
@@ -112,7 +112,7 @@ Inside **Step 1 ("Search Merchant's Google Business")**:
 1. Have the merchant scan the **Dynamic UPI QR** on your screen and complete the payment.
 2. Scroll down to the green **"Share Credentials via WhatsApp to Merchant"** button and tap it.
    - It automatically opens WhatsApp to the merchant's number with a formatted welcome message containing:
-     - Their **Live AI Review Card URL** (`https://reviewsmart-ai.vercel.app/r/...`)
+     - Their **Live AI Review Card URL** (`https://reviewsmart.online/r/...`)
      - Their **Dashboard Login URL**, **User ID (Mobile Number)**, and **4-Digit PIN**.
 3. **Print / Insert the QR Card** into the **4"×6" Acrylic Standee** (or link their NFC tag), place it right next to their PhonePe/Paytm payment QR at the billing counter, and **do 1 live scan on the merchant's own phone** before leaving!
 

@@ -170,7 +170,7 @@ async function main() {
   console.log("══════════════════════════════════════════════");
   console.log(`📱 Merchant Phone (User ID): ${MERCHANT_PHONE}`);
   console.log(`🔑 Merchant PIN:             ${RAW_PIN}`);
-  console.log(`🔗 Review Page:              https://reviewsmart-ai.vercel.app/r/${uniqueSlug}`);
+  console.log(`🔗 Review Page:              https://reviewsmart.online/r/${uniqueSlug}`);
   console.log(`📋 Google Review URL:        ${googleReviewUrl}`);
   console.log(`💰 Payment Amount:           ₹${NEGOTIATED_PRICE} (PENDING)`);
   console.log(`👤 Agent:                    ${AGENT_CODE} (${agent.name})`);

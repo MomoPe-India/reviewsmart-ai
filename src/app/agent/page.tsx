@@ -1104,7 +1104,7 @@ export default function AgentPosPage() {
                 </div>
               ) : (
                 filteredDeals.map((deal) => {
-                  const base = typeof window !== "undefined" ? window.location.origin : "https://reviewsmart-ai.vercel.app";
+                  const base = typeof window !== "undefined" ? window.location.origin : getAppUrl();
                   const credsMsg = `Hi! Welcome to ReviewSmart AI 😊\n\nHere are your store credentials:\n📱 Login: ${base}/login\n👤 User ID: ${deal.merchantUserId}\n\nYour review page: ${base}/r/${deal.businessSlug}\n\n⭐ Share this with your customers to get 5-star reviews instantly!`;
 
                   return (
