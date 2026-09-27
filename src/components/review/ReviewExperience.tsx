@@ -118,11 +118,16 @@ export default function ReviewExperience({ business }: { business: BusinessData 
 
   // Resolved Direct GMB Review URL
   const getResolvedGoogleUrl = () => {
-    const rawUrl = (business.googleReviewUrl || "").trim();
+    let rawUrl = (business.googleReviewUrl || "").trim();
     const placeId =
       business.slug === "momo-it-technologies"
         ? "ChIJd5iV_xdzszsR_OIKD3ympJo"
         : (business.googlePlaceId || "").trim();
+
+    // 0. If rawUrl contains an unresolvable query_place_id, strip query_place_id to prevent Google Maps 404/blank pin drops
+    if (rawUrl.includes("query_place_id=")) {
+      rawUrl = rawUrl.replace(/([?&])query_place_id=[^&]+(&|$)/, "$1").replace(/[?&]$/, "");
+    }
 
     // 1. If merchant has an explicit Google Maps Search, Maps Place, or Share URL, respect it directly
     if (
@@ -140,19 +145,19 @@ export default function ReviewExperience({ business }: { business: BusinessData 
       return rawUrl;
     }
 
-    // 3. Known coordinate / non-writereview place IDs fallback to Google Maps search
-    if (placeId === "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
+    // 3. Known coordinate / non-writereview place IDs fallback to clean Google Maps search
+    if (placeId === "ChIJfx1E9GgPujkRcPNEzcyHcJI" || business.slug.includes("vijaya")) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Vijaya's Yummy Food Kadugodi Bengaluru")}`;
     }
 
     // 4. Standard verified Google Business Profile Place ID
-    if (placeId) {
+    if (placeId && placeId !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
     }
 
     if (rawUrl) {
       const match = rawUrl.match(/[?&]place(?:_)?id=([^&#]+)/i);
-      if (match && match[1]) {
+      if (match && match[1] && match[1] !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
         return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
       }
       return rawUrl;
@@ -165,11 +170,21 @@ export default function ReviewExperience({ business }: { business: BusinessData 
     if (business.slug === "momo-it-technologies") {
       return "https://share.google/TZztrbNbTy89hTgkp";
     }
+    let rawUrl = (business.googleReviewUrl || "").trim();
+    if (rawUrl) {
+      if (rawUrl.includes("query_place_id=")) {
+        rawUrl = rawUrl.replace(/([?&])query_place_id=[^&]+(&|$)/, "$1").replace(/[?&]$/, "");
+      }
+      return rawUrl;
+    }
     const placeId = (business.googlePlaceId || "").trim();
-    if (placeId) {
+    if (placeId && placeId !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
     }
-    return (business.googleReviewUrl || "").trim() || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
+    const query = business.slug.includes("vijaya")
+      ? "Vijaya's Yummy Food Kadugodi Bengaluru"
+      : business.name;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   };
 
   const googleUrl = getResolvedGoogleUrl();
