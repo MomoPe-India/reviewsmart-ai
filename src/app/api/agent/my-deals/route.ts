@@ -45,6 +45,8 @@ export async function GET() {
             logoUrl: true,
             category: true,
             isPaid: true,
+            demoExpiresAt: true,
+            demoUsed: true,
           },
         },
       },
@@ -71,6 +73,8 @@ export async function GET() {
           logoUrl: true,
           category: true,
           isPaid: true,
+          demoExpiresAt: true,
+          demoUsed: true,
         },
       }),
       prisma.user.findMany({
@@ -96,6 +100,10 @@ export async function GET() {
       const bId = p.businessId || biz?.id || "";
       if (bId) seenBusinessIds.add(bId);
 
+      const isDemoActive =
+        !biz?.isPaid &&
+        Boolean(biz?.demoExpiresAt && new Date(biz.demoExpiresAt) > new Date());
+
       return {
         paymentId: p.id,
         businessId: bId,
@@ -110,6 +118,9 @@ export async function GET() {
         businessAddress: biz?.googleAddress || "",
         businessLogoUrl: biz?.logoUrl || null,
         isPaid: biz?.isPaid || false,
+        isDemoActive,
+        demoExpiresAt: biz?.demoExpiresAt ? biz.demoExpiresAt.toISOString() : null,
+        demoUsed: biz?.demoUsed || false,
         googleReviewUrl: biz?.googleReviewUrl || "",
         merchantName: merchant?.name || "",
         merchantPhone: merchant?.phone || p.customerPhone || "",
@@ -122,6 +133,10 @@ export async function GET() {
       for (const biz of refUser.businesses) {
         if (!seenBusinessIds.has(biz.id)) {
           seenBusinessIds.add(biz.id);
+          const isDemoActive =
+            !biz.isPaid &&
+            Boolean(biz.demoExpiresAt && new Date(biz.demoExpiresAt) > new Date());
+
           deals.push({
             paymentId: `ref-${biz.id}`,
             businessId: biz.id,
@@ -136,6 +151,9 @@ export async function GET() {
             businessAddress: biz.googleAddress || "",
             businessLogoUrl: biz.logoUrl || null,
             isPaid: biz.isPaid,
+            isDemoActive,
+            demoExpiresAt: biz.demoExpiresAt ? biz.demoExpiresAt.toISOString() : null,
+            demoUsed: biz.demoUsed || false,
             googleReviewUrl: biz.googleReviewUrl || "",
             merchantName: refUser.name || "",
             merchantPhone: refUser.phone || "",

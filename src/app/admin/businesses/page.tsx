@@ -88,6 +88,14 @@ export default async function AdminBusinessesPage() {
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
                         <CheckCircle2 className="w-3 h-3" /> Live
                       </span>
+                    ) : b.demoExpiresAt && new Date(b.demoExpiresAt) > new Date() ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/40 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 24h Demo Active
+                      </span>
+                    ) : b.demoUsed ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-bold text-[10px] border border-amber-500/30">
+                        <Clock className="w-3 h-3" /> Demo Expired
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px]">
                         <Clock className="w-3 h-3" /> Pending Payment
@@ -104,6 +112,13 @@ export default async function AdminBusinessesPage() {
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      <a
+                        href={`/agent/manage/${b.id}`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm"
+                        title="Customise Profile & Studio"
+                      >
+                        🎨 Studio
+                      </a>
                       <a
                         href={`/r/${b.slug}`}
                         target="_blank"

@@ -124,6 +124,14 @@ export async function GET(
         OR: [{ id }, { slug: id }],
       },
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            userIdTag: true,
+          },
+        },
         feedbacks: {
           orderBy: { createdAt: "desc" },
           take: 50,
@@ -144,7 +152,16 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    return NextResponse.json({ business });
+    const isDemoActive =
+      !business.isPaid &&
+      Boolean(business.demoExpiresAt && new Date(business.demoExpiresAt) > new Date());
+
+    return NextResponse.json({
+      business: {
+        ...business,
+        isDemoActive,
+      },
+    });
   } catch (error) {
     console.error("Get business error:", error);
     return NextResponse.json({ error: "Failed to fetch business" }, { status: 500 });

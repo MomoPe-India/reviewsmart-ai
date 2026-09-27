@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ReviewExperience from "@/components/review/ReviewExperience";
 import type { Metadata } from "next";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Sparkles, Clock } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +31,15 @@ export async function generateMetadata({
       images: business.logoUrl ? [business.logoUrl] : [],
     },
   };
+}
+
+function formatRemainingDemoHours(expiresAt: Date): string {
+  const diffMs = expiresAt.getTime() - Date.now();
+  if (diffMs <= 0) return "Expired";
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  if (hours > 0) return `${hours}h ${mins}m left`;
+  return `${mins}m left`;
 }
 
 export default async function PublicReviewPage({
@@ -63,6 +72,8 @@ export default async function PublicReviewPage({
       keywords: true,
       reviewPromptTone: true,
       isPaid: true,
+      demoExpiresAt: true,
+      demoUsed: true,
       customerType: true,
       user: {
         select: {
@@ -78,9 +89,20 @@ export default async function PublicReviewPage({
     notFound();
   }
 
-  // Show payment watermark for unpaid businesses (except the demo slug)
+  const now = new Date();
+  const isDemoActive =
+    business.isPaid === false &&
+    Boolean(business.demoExpiresAt && new Date(business.demoExpiresAt) > now);
+
+  const isDemoExpired =
+    business.isPaid === false &&
+    Boolean(business.demoUsed && business.demoExpiresAt && new Date(business.demoExpiresAt) <= now);
+
+  // Show payment watermark only for unpaid businesses that are NOT in an active demo
   const showWatermark =
-    business.isPaid === false && business.slug !== "momo-it-technologies";
+    business.isPaid === false &&
+    !isDemoActive &&
+    business.slug !== "momo-it-technologies";
 
   const merchantPhone =
     business.user?.phone ||
@@ -100,18 +122,36 @@ export default async function PublicReviewPage({
       `📱 Merchant Mobile / User ID: ${merchantPhone}\n` +
       `🔗 Review Link: ${appUrl}/r/${business.slug}\n` +
       `💼 Channel: ${channelBadge}\n\n` +
-      `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`
+      (isDemoExpired
+        ? `Evaluation Period Ended: My 24-hour evaluation has expired. Please verify my payment to unlock permanent active status.`
+        : `Payment Pending: This review card is not yet active. Please verify my payment and activate it.`)
   );
   const waActivationUrl = `https://wa.me/918639831132?text=${waActivationText}`;
 
   return (
     <main className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-0 sm:py-8 sm:px-4 selection:bg-amber-500 selection:text-slate-950 relative">
-      {/* Review card — blurred when unpaid */}
+      {/* 24-Hour Live Evaluation Banner (discreet top pill) */}
+      {isDemoActive && business.demoExpiresAt && (
+        <div className="w-full max-w-sm px-4 pt-3 pb-1 sm:pt-0 no-print">
+          <div className="px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold flex items-center justify-between shadow-lg backdrop-blur-md">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="truncate">24h Live Evaluation Trial</span>
+            </div>
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/70 px-2 py-0.5 rounded-full border border-emerald-800/80 shrink-0 flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" />
+              {formatRemainingDemoHours(new Date(business.demoExpiresAt))}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Review card — blurred when unpaid and demo not active */}
       <div className={showWatermark ? "w-full blur-sm brightness-50 pointer-events-none select-none" : "w-full"}>
         <ReviewExperience business={business} staff={searchParams?.staff || null} />
       </div>
 
-      {/* Payment Pending Watermark Overlay */}
+      {/* Payment / Expiry Watermark Overlay */}
       {showWatermark && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6">
           {/* Blurred backdrop */}
@@ -121,30 +161,34 @@ export default async function PublicReviewPage({
           <div className="relative z-10 w-full max-w-sm bg-slate-900/90 backdrop-blur-2xl border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 text-center flex flex-col items-center gap-4">
             {/* Icon */}
             <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.75}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-8 h-8 text-amber-400"
-              >
-                <rect x="2" y="5" width="20" height="14" rx="3" />
-                <path d="M2 10h20" />
-              </svg>
+              {isDemoExpired ? (
+                <Clock className="w-8 h-8 text-amber-400" />
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.75}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-8 h-8 text-amber-400"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="3" />
+                  <path d="M2 10h20" />
+                </svg>
+              )}
             </div>
 
             {/* Heading */}
             <div>
               <h2 className="text-2xl font-black text-white tracking-tight">
-                Payment Pending
+                {isDemoExpired ? "Evaluation Period Ended" : "Payment Pending"}
               </h2>
               <p className="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
-                This review card is not yet active.{" "}
-                <br className="hidden sm:block" />
-                Contact ReviewSmart AI support to activate it.
+                {isDemoExpired
+                  ? "The 24-hour evaluation period for this review card has ended. Complete payment to restore permanent active status."
+                  : "This review card is not yet active. Contact ReviewSmart AI support to activate it."}
               </p>
             </div>
 
@@ -172,7 +216,9 @@ export default async function PublicReviewPage({
               className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-950/50 transition-all duration-200 mt-1 transform active:scale-98"
             >
               <MessageCircle className="w-4 h-4 shrink-0" />
-              <span>Contact ReviewSmart AI on WhatsApp</span>
+              <span>
+                {isDemoExpired ? "Upgrade & Activate on WhatsApp" : "Contact ReviewSmart AI on WhatsApp"}
+              </span>
             </a>
 
             {/* Badge */}

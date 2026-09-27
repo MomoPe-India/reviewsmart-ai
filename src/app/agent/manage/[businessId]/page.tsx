@@ -28,6 +28,13 @@ import {
   Tag,
   CreditCard,
   FileText,
+  Clock,
+  ShieldCheck,
+  Zap,
+  X,
+  Lock,
+  Unlock,
+  AlertTriangle,
 } from "lucide-react";
 import PrintStudioClient from "@/components/studio/PrintStudioClient";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -55,11 +62,24 @@ interface BusinessData {
   reviewPromptTone: string;
   isPaid: boolean;
   customerType: string;
+  demoExpiresAt?: string | null;
+  demoActivatedAt?: string | null;
+  demoActivatedBy?: string | null;
+  demoUsed?: boolean;
+  isDemoActive?: boolean;
   user?: {
+    id: string;
     name: string | null;
     phone: string | null;
     userIdTag: string | null;
   };
+}
+
+interface CurrentUser {
+  id: string;
+  role: "SUPER_ADMIN" | "MARKETING_AGENT" | "BUSINESS_OWNER";
+  name?: string | null;
+  agentCode?: string | null;
 }
 
 export default function AgentManageMerchantPage() {
@@ -67,6 +87,7 @@ export default function AgentManageMerchantPage() {
   const router = useRouter();
   const businessId = (params?.businessId as string) || "";
 
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [activeTab, setActiveTab] = useState<"profile" | "studio" | "whatsapp">("profile");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,17 +115,33 @@ export default function AgentManageMerchantPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Demo Action State
+  const [isDemoProcessing, setIsDemoProcessing] = useState(false);
+  const [demoBannerMsg, setDemoBannerMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [convertUtr, setConvertUtr] = useState("");
+  const [remainingTimeStr, setRemainingTimeStr] = useState<string>("");
+
   // WhatsApp Tab State
   const [waRecipient, setWaRecipient] = useState("");
   const [copiedWaMessage, setCopiedWaMessage] = useState(false);
 
+  // Load User Session & Business
   useEffect(() => {
-    if (!businessId) return;
-
-    async function loadBusiness() {
+    async function loadData() {
+      if (!businessId) return;
       setLoading(true);
       setError(null);
+
       try {
+        // Fetch current user
+        const userRes = await fetch("/api/auth/me");
+        if (userRes.ok) {
+          const uData = await userRes.json();
+          setCurrentUser(uData.user || null);
+        }
+
+        // Fetch business
         const res = await fetch(`/api/business/${businessId}`);
         const data = await res.json();
 
@@ -142,8 +179,43 @@ export default function AgentManageMerchantPage() {
       }
     }
 
-    loadBusiness();
+    loadData();
   }, [businessId]);
+
+  // Live countdown timer for active demo
+  useEffect(() => {
+    if (!business?.demoExpiresAt) {
+      setRemainingTimeStr("");
+      return;
+    }
+
+    const targetDate = new Date(business.demoExpiresAt).getTime();
+
+    function updateCountdown() {
+      const now = Date.now();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        setRemainingTimeStr("Expired");
+        if (business && business.isDemoActive) {
+          setBusiness((prev) => (prev ? { ...prev, isDemoActive: false } : null));
+        }
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setRemainingTimeStr(
+        `${hours.toString().padStart(2, "0")}h ${mins.toString().padStart(2, "0")}m ${secs.toString().padStart(2, "0")}s`
+      );
+    }
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [business?.demoExpiresAt, business?.isDemoActive]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -185,12 +257,142 @@ export default function AgentManageMerchantPage() {
     }
   };
 
+  // Demo Actions: Activate 24h Demo
+  const handleActivateDemo = async () => {
+    if (!business) return;
+    const confirmMsg =
+      "Are you sure you want to activate a 24-hour evaluation demo for this merchant? The live Google Review portal and QR scan will be fully operational for 24 hours.";
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsDemoProcessing(true);
+    setDemoBannerMsg(null);
+
+    try {
+      const res = await fetch(`/api/business/${business.id}/demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "activate_demo" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDemoBannerMsg({ type: "error", text: data.error || "Failed to activate demo" });
+        return;
+      }
+
+      setDemoBannerMsg({ type: "success", text: "24-Hour Evaluation Demo activated successfully!" });
+      setBusiness((prev) =>
+        prev
+          ? {
+              ...prev,
+              demoExpiresAt: data.business.demoExpiresAt,
+              demoActivatedAt: data.business.demoActivatedAt,
+              demoUsed: true,
+              isDemoActive: true,
+            }
+          : null
+      );
+      setTimeout(() => setDemoBannerMsg(null), 5000);
+    } catch (err: any) {
+      setDemoBannerMsg({ type: "error", text: err.message || "Failed to connect to demo service" });
+    } finally {
+      setIsDemoProcessing(false);
+    }
+  };
+
+  // Demo Actions: Cancel Demo Early
+  const handleCancelDemo = async () => {
+    if (!business) return;
+    if (!window.confirm("Cancel this merchant's evaluation demo early and lock the review card?")) return;
+
+    setIsDemoProcessing(true);
+    setDemoBannerMsg(null);
+
+    try {
+      const res = await fetch(`/api/business/${business.id}/demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel_demo" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDemoBannerMsg({ type: "error", text: data.error || "Failed to cancel demo" });
+        return;
+      }
+
+      setDemoBannerMsg({ type: "success", text: "Demo canceled. Merchant card has been locked." });
+      setBusiness((prev) =>
+        prev
+          ? {
+              ...prev,
+              demoExpiresAt: data.business.demoExpiresAt,
+              isDemoActive: false,
+            }
+          : null
+      );
+      setTimeout(() => setDemoBannerMsg(null), 5000);
+    } catch (err: any) {
+      setDemoBannerMsg({ type: "error", text: err.message || "Failed to cancel demo" });
+    } finally {
+      setIsDemoProcessing(false);
+    }
+  };
+
+  // Demo Actions: Convert to Permanent Active Account
+  const handleConvertToPaid = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!business) return;
+
+    setIsDemoProcessing(true);
+    setDemoBannerMsg(null);
+
+    try {
+      const res = await fetch(`/api/business/${business.id}/demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "convert_to_paid",
+          utrNumber: convertUtr.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDemoBannerMsg({ type: "error", text: data.error || "Failed to convert account" });
+        return;
+      }
+
+      setShowConvertModal(false);
+      setConvertUtr("");
+      setDemoBannerMsg({
+        type: "success",
+        text: "Merchant account permanently converted to Active & Verified status!",
+      });
+      setBusiness((prev) =>
+        prev
+          ? {
+              ...prev,
+              isPaid: true,
+              demoExpiresAt: null,
+              isDemoActive: false,
+            }
+          : null
+      );
+      setTimeout(() => setDemoBannerMsg(null), 5000);
+    } catch (err: any) {
+      setDemoBannerMsg({ type: "error", text: err.message || "Failed to convert account" });
+    } finally {
+      setIsDemoProcessing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-6">
         <Loader2 className="w-10 h-10 animate-spin text-indigo-400 mb-4" />
         <h2 className="text-base font-bold text-slate-200">Loading Merchant Workspace...</h2>
-        <p className="text-xs text-slate-400 mt-1">Fetching business profile, brand assets, and print configurations.</p>
+        <p className="text-xs text-slate-400 mt-1">Fetching profile, print studio, and evaluation status.</p>
       </div>
     );
   }
@@ -205,11 +407,11 @@ export default function AgentManageMerchantPage() {
             {error || "This merchant could not be found or you do not have permission to manage this business profile."}
           </p>
           <Link
-            href="/agent"
+            href={currentUser?.role === "SUPER_ADMIN" ? "/admin/merchants" : "/agent"}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Agent Dashboard
+            {currentUser?.role === "SUPER_ADMIN" ? "Back to Admin Merchants" : "Back to Agent Dashboard"}
           </Link>
         </div>
       </div>
@@ -241,15 +443,46 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
 
   const waSendUrl = `https://wa.me/91${waRecipient.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(waMessage)}`;
 
+  // Evaluation status flags
+  const isPaid = business.isPaid;
+  const isDemoActive = Boolean(
+    !isPaid &&
+      business.demoExpiresAt &&
+      new Date(business.demoExpiresAt).getTime() > Date.now()
+  );
+  const isDemoExpired = Boolean(
+    !isPaid &&
+      business.demoUsed &&
+      business.demoExpiresAt &&
+      new Date(business.demoExpiresAt).getTime() <= Date.now()
+  );
+  const canActivateDemo = !isPaid && (!business.demoUsed || currentUser?.role === "SUPER_ADMIN");
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24">
+      {/* Super Admin Access Banner (if logged in as admin) */}
+      {currentUser?.role === "SUPER_ADMIN" && (
+        <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 px-4 py-1.5 text-slate-950 text-xs font-black flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-slate-950" />
+            <span>Super Admin Mode: Full profile editing, print studio, and merchant activation rights.</span>
+          </div>
+          <Link
+            href="/admin/merchants"
+            className="text-[11px] underline hover:text-white font-extrabold transition"
+          >
+            ← Back to Admin Console
+          </Link>
+        </div>
+      )}
+
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link
-            href="/agent"
+            href={currentUser?.role === "SUPER_ADMIN" ? "/admin/merchants" : "/agent"}
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
-            title="Return to Agent Portal"
+            title={currentUser?.role === "SUPER_ADMIN" ? "Return to Admin Console" : "Return to Agent Portal"}
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -257,18 +490,34 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
-                <Store className="w-3.5 h-3.5" /> Agent Merchant Workspace
+                <Store className="w-3.5 h-3.5" />
+                {currentUser?.role === "SUPER_ADMIN" ? "Admin Merchant Workspace" : "Agent Merchant Workspace"}
               </span>
-              <span
-                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                  business.isPaid
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                }`}
-              >
-                {business.isPaid ? "● Active & Verified" : "⏳ Pending Payment"}
-              </span>
+
+              {/* Status Badge */}
+              {isPaid ? (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  Active &amp; Verified
+                </span>
+              ) : isDemoActive ? (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 animate-pulse">
+                  <Clock className="w-3 h-3 text-cyan-300" />
+                  24h Demo Active ({remainingTimeStr})
+                </span>
+              ) : isDemoExpired ? (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 text-rose-400" />
+                  Demo Expired
+                </span>
+              ) : (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-amber-400" />
+                  Payment Pending
+                </span>
+              )}
             </div>
+
             <h1 className="text-base sm:text-lg font-black text-white truncate max-w-xs sm:max-w-md">
               {business.name}
             </h1>
@@ -301,8 +550,144 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
         </div>
       </header>
 
-      {/* Main Tabs Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* Banner Messages */}
+        {demoBannerMsg && (
+          <div
+            className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-3 border transition ${
+              demoBannerMsg.type === "success"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+            }`}
+          >
+            {demoBannerMsg.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+            )}
+            <span>{demoBannerMsg.text}</span>
+          </div>
+        )}
+
+        {/* ─── EVALUATION & DEMO ACTIVATION CONTROLLER CARD ──────────────────── */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Status Information */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Merchant Account Activation Status:
+                </span>
+                <span className="font-mono text-xs text-indigo-400">/r/{business.slug}</span>
+              </div>
+
+              {isPaid ? (
+                <div>
+                  <h3 className="text-lg font-black text-emerald-400 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5" /> Permanent Active &amp; Verified Account
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    This business has paid in full. The customer review portal, AI drafts, and Google Maps redirects are permanently unlocked.
+                  </p>
+                </div>
+              ) : isDemoActive ? (
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="text-lg font-black text-cyan-300 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-cyan-400 animate-spin" style={{ animationDuration: "12s" }} />
+                      24-Hour Live Evaluation Demo Active
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-mono font-black text-xs border border-cyan-800">
+                      {remainingTimeStr} left
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1">
+                    The merchant can now test the live card and collect real 5-star Google reviews on their counter. Card automatically locks when the 24 hours expire.
+                  </p>
+                </div>
+              ) : isDemoExpired ? (
+                <div>
+                  <h3 className="text-lg font-black text-rose-400 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" /> Evaluation Period Expired (Card Locked)
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    The 24-hour evaluation has finished. The card is currently showing the &quot;Payment Pending&quot; watermark. Collect payment to convert to permanent active status.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-lg font-black text-amber-300 flex items-center gap-2">
+                    <Lock className="w-5 h-5" /> Ready for Live Evaluation Demonstration
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Provide the merchant with a 24-hour live trial so they can test real customer reviews on their counter before committing to payment.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 md:pt-0">
+              {/* If not paid and demo can be activated */}
+              {canActivateDemo && !isDemoActive && (
+                <button
+                  type="button"
+                  disabled={isDemoProcessing}
+                  onClick={handleActivateDemo}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition transform active:scale-95 disabled:opacity-50"
+                >
+                  {isDemoProcessing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Zap className="w-4 h-4 fill-slate-950" />
+                  )}
+                  <span>Activate 24h Live Demo 🚀</span>
+                </button>
+              )}
+
+              {/* If demo is active: Cancel button */}
+              {isDemoActive && (
+                <button
+                  type="button"
+                  disabled={isDemoProcessing}
+                  onClick={handleCancelDemo}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-800/60 font-bold text-xs flex items-center gap-1.5 transition disabled:opacity-50"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Cancel Demo Early</span>
+                </button>
+              )}
+
+              {/* Convert to Permanent Button (Available if not already paid) */}
+              {!isPaid && (
+                <button
+                  type="button"
+                  onClick={() => setShowConvertModal(true)}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition transform active:scale-95"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Convert to Permanent (Mark Paid)</span>
+                </button>
+              )}
+
+              {/* Super Admin Override for Expired Demo */}
+              {currentUser?.role === "SUPER_ADMIN" && isDemoExpired && (
+                <button
+                  type="button"
+                  disabled={isDemoProcessing}
+                  onClick={handleActivateDemo}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center gap-1.5 transition"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Admin: Grant Another 24h</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Tabs Navigation */}
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("profile")}
@@ -343,7 +728,7 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
 
         {/* Tab 1: Merchant Profile & Branding */}
         {activeTab === "profile" && (
-          <div className="mt-6 max-w-4xl">
+          <div className="max-w-4xl">
             <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800 mb-6">
                 <div>
@@ -622,7 +1007,7 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
 
         {/* Tab 2: Design & Print Studio */}
         {activeTab === "studio" && (
-          <div className="mt-6">
+          <div>
             <PrintStudioClient
               business={business}
               reviewUrl={reviewUrl}
@@ -637,7 +1022,7 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
 
         {/* Tab 3: 1-Click WhatsApp Delivery Suite */}
         {activeTab === "whatsapp" && (
-          <div className="mt-6 max-w-3xl">
+          <div className="max-w-3xl">
             <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-xl space-y-6">
               <div className="flex items-start justify-between gap-4 pb-6 border-b border-slate-800">
                 <div>
@@ -738,6 +1123,71 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
           </div>
         )}
       </div>
+
+      {/* ─── MODAL: CONVERT TO PERMANENT ACTIVE ACCOUNT ────────────────────── */}
+      {showConvertModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-black text-white text-base">Convert to Permanent Account</h3>
+              </div>
+              <button
+                onClick={() => setShowConvertModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Converting <strong>{business.name}</strong> will remove all evaluation time limits and mark this merchant permanently as an active, verified account.
+            </p>
+
+            <form onSubmit={handleConvertToPaid} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  UPI Transaction Ref / UTR Number (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={convertUtr}
+                  onChange={(e) => setConvertUtr(e.target.value)}
+                  placeholder="e.g. 423987123456 or CASH-PAID"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Leave blank if cash was collected or paid via direct company account.
+                </p>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowConvertModal(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isDemoProcessing}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 disabled:opacity-50"
+                >
+                  {isDemoProcessing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4" />
+                  )}
+                  <span>Confirm &amp; Unlock Permanently</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -47,6 +47,8 @@ export async function GET() {
             keywords: true,
             isPaid: true,
             customerType: true,
+            demoExpiresAt: true,
+            demoUsed: true,
             createdAt: true,
           },
         },
@@ -58,11 +60,17 @@ export async function GET() {
       },
     });
 
-    // Enrich with payment totals
+    const now = new Date();
+
+    // Enrich with payment totals & demo status
     const enriched = merchants.map((m) => {
       const approved = m.upiPayments.filter((p) => p.status === "APPROVED");
       const totalPaid = approved.reduce((s, p) => s + p.amount, 0);
-      return { ...m, totalPaid, dealCount: m.upiPayments.length };
+      const businesses = m.businesses.map((b) => ({
+        ...b,
+        isDemoActive: !b.isPaid && Boolean(b.demoExpiresAt && new Date(b.demoExpiresAt) > now),
+      }));
+      return { ...m, businesses, totalPaid, dealCount: m.upiPayments.length };
     });
 
     return NextResponse.json({ merchants: enriched });

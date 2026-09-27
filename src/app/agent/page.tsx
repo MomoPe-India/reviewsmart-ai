@@ -87,6 +87,9 @@ interface MyDeal {
   businessAddress: string;
   businessLogoUrl: string | null;
   isPaid: boolean;
+  isDemoActive?: boolean;
+  demoExpiresAt?: string | null;
+  demoUsed?: boolean;
   googleReviewUrl: string;
   merchantName: string;
   merchantPhone: string;
@@ -142,7 +145,7 @@ export default function AgentPosPage() {
   const [myDeals, setMyDeals] = useState<MyDeal[]>([]);
   const [isLoadingDeals, setIsLoadingDeals] = useState(false);
   const [showMyDeals, setShowMyDeals] = useState(false);
-  const [portfolioFilter, setPortfolioFilter] = useState<"ALL" | "APPROVED" | "PENDING">("ALL");
+  const [portfolioFilter, setPortfolioFilter] = useState<"ALL" | "APPROVED" | "DEMO" | "PENDING">("ALL");
   const [portfolioSearch, setPortfolioSearch] = useState("");
 
   const fetchMyDeals = async () => {
@@ -420,6 +423,7 @@ export default function AgentPosPage() {
   // Filter deals
   const filteredDeals = myDeals.filter((d) => {
     if (portfolioFilter === "APPROVED" && d.status !== "APPROVED") return false;
+    if (portfolioFilter === "DEMO" && !d.isDemoActive) return false;
     if (portfolioFilter === "PENDING" && d.status !== "PENDING") return false;
     if (portfolioSearch.trim()) {
       const q = portfolioSearch.toLowerCase();
@@ -1068,8 +1072,8 @@ export default function AgentPosPage() {
             <div className="mt-2 space-y-2.5 animate-fadeIn">
               {/* Portfolio Filter & Search */}
               <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                <div className="flex gap-1">
-                  {(["ALL", "APPROVED", "PENDING"] as const).map((tab) => (
+                <div className="flex gap-1 flex-wrap">
+                  {(["ALL", "APPROVED", "DEMO", "PENDING"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -1080,7 +1084,7 @@ export default function AgentPosPage() {
                           : "bg-slate-800 text-slate-400 hover:bg-slate-700"
                       }`}
                     >
-                      {tab}
+                      {tab === "DEMO" ? "🟢 24h Demo" : tab}
                     </button>
                   ))}
                 </div>
@@ -1133,17 +1137,30 @@ export default function AgentPosPage() {
                           </div>
                         </div>
 
-                        <span
-                          className={`px-2 py-0.5 rounded-lg text-[9px] font-black shrink-0 ${
-                            deal.status === "APPROVED"
-                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                              : deal.status === "REJECTED"
-                              ? "bg-red-500/15 text-red-400 border border-red-500/30"
-                              : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                          }`}
-                        >
-                          {deal.status}
-                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          {deal.isDemoActive ? (
+                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-black shrink-0 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 animate-pulse">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                              24h Demo Active
+                            </span>
+                          ) : deal.demoUsed && !deal.isPaid ? (
+                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-black shrink-0 bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                              Demo Expired
+                            </span>
+                          ) : null}
+
+                          <span
+                            className={`px-2 py-0.5 rounded-lg text-[9px] font-black shrink-0 ${
+                              deal.status === "APPROVED"
+                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                : deal.status === "REJECTED"
+                                ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                                : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                            }`}
+                          >
+                            {deal.status}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2 mb-2 text-[10px]">

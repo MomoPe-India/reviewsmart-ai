@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   Users,
   Plus,
@@ -26,6 +27,8 @@ import {
   X,
   Save,
   MapPin,
+  Sparkles,
+  Clock,
 } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
 
@@ -46,6 +49,9 @@ interface BusinessItem {
   minRatingForGoogle?: number;
   isPaid: boolean;
   customerType: string;
+  demoExpiresAt?: string | null;
+  demoUsed?: boolean;
+  isDemoActive?: boolean;
 }
 
 interface MerchantItem {
@@ -563,15 +569,24 @@ export default function AdminMerchantsPage() {
                       )}
                     </div>
                     {biz && (
-                      <div className="text-xs text-slate-300 mt-1 flex items-center gap-1.5">
+                      <div className="text-xs text-slate-300 mt-1 flex items-center gap-1.5 flex-wrap">
                         <Store className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                         <span className="font-semibold text-white truncate">{biz.name}</span>
                         {biz.isPaid ? (
-                          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                             ✓ Live Card
                           </span>
+                        ) : biz.isDemoActive ? (
+                          <span className="text-[10px] text-emerald-300 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/40 flex items-center gap-1 animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            🟢 24h Demo Active
+                          </span>
+                        ) : biz.demoUsed ? (
+                          <span className="text-[10px] text-amber-300 font-bold bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30">
+                            ⏳ Demo Expired
+                          </span>
                         ) : (
-                          <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.2 rounded">
+                          <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
                             ⏳ Unpaid
                           </span>
                         )}
@@ -599,7 +614,7 @@ export default function AdminMerchantsPage() {
                 </div>
 
                 {/* Info Grid */}
-                <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 mb-3.5">
+                <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 mb-3">
                   <div>
                     <span className="text-[10px] text-slate-500 block font-semibold">User ID (Mobile):</span>
                     <span className="font-mono font-bold text-white text-xs">{m.phone || m.userIdTag}</span>
@@ -612,7 +627,7 @@ export default function AdminMerchantsPage() {
 
                 {/* Review Link */}
                 {biz && (
-                  <div className="flex items-center justify-between text-xs mb-3.5 px-1">
+                  <div className="flex items-center justify-between text-xs mb-3 px-1">
                     <a
                       href={`/r/${biz.slug}`}
                       target="_blank"
@@ -627,6 +642,19 @@ export default function AdminMerchantsPage() {
                         📍 {biz.googleAddress}
                       </span>
                     )}
+                  </div>
+                )}
+
+                {/* Direct Studio & Customizer Access for Admin */}
+                {biz && (
+                  <div className="mb-3.5">
+                    <Link
+                      href={`/agent/manage/${biz.id}`}
+                      className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition transform active:scale-[0.99]"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                      <span>🎨 Customise Profile &amp; Print Studio</span>
+                    </Link>
                   </div>
                 )}
 

@@ -82,6 +82,10 @@ model Business {
   tagChips           String            @default("Friendly Staff,Fast Service,Great Quality,Fair Pricing,Clean Ambiance")
   reviewPromptTone   String            @default("friendly")
   isPaid             Boolean           @default(false) // false until admin explicitly approves payment
+  demoExpiresAt      DateTime?         // If set and in future, card is temporarily active for evaluation
+  demoActivatedAt    DateTime?         // Timestamp when demo was started
+  demoActivatedBy    String?           // User ID of agent or admin who activated the demo
+  demoUsed           Boolean           @default(false) // Guardrail: prevents repeated free demo abuse
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
