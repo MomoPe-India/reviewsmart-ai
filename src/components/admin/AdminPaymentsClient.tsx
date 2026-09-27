@@ -15,6 +15,7 @@ import {
   UserCheck,
   Globe,
 } from "lucide-react";
+import { getPackageById, getPackageByPrice } from "@/lib/packages";
 
 interface AdminPaymentsProps {
   initialPayments: any[];
@@ -326,12 +327,21 @@ export default function AdminPaymentsClient({
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
                               <UserCheck className="w-2.5 h-2.5" /> Offline
                             </span>
-                            <div className="text-[10px] text-slate-500 mt-0.5">Agent: {p.agentCode}</div>
+                            <div className="text-[10px] text-slate-400 mt-0.5 font-medium">Agent: {p.agentCode}</div>
+                            <div className="text-[10px] text-amber-300 font-bold mt-0.5 flex items-center gap-1">
+                              <span>📦</span>
+                              <span>{p.packageTier ? getPackageById(p.packageTier).shortName : getPackageByPrice(p.amount).shortName}</span>
+                            </div>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
-                            <Globe className="w-2.5 h-2.5" /> Online
-                          </span>
+                          <div>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
+                              <Globe className="w-2.5 h-2.5" /> Online
+                            </span>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              {p.packageTier ? getPackageById(p.packageTier).shortName : getPackageByPrice(p.amount).shortName}
+                            </div>
+                          </div>
                         )}
                       </td>
                       <td className="py-3 px-4 font-mono font-bold text-amber-300">{p.utrNumber}</td>

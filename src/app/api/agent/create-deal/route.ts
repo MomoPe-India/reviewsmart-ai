@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { detectIndustry } from "@/lib/industry";
+import { getPackageById, getPackageByPrice } from "@/lib/packages";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
       instagram,
       website,
       negotiatedPrice,
+      packageTier: requestedPackageTier,
       utrNumber,
     } = body;
 
@@ -60,6 +62,10 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const activePackage = requestedPackageTier
+      ? getPackageById(requestedPackageTier)
+      : getPackageByPrice(finalAmount);
 
     // Generate random 4-digit PIN if not provided
     const rawPin = merchantPin
@@ -132,6 +138,7 @@ export async function POST(req: NextRequest) {
         keywords: finalKeywords,
         minRatingForGoogle: 4,
         reviewPromptTone: "friendly",
+        packageTier: activePackage.id,
         isPaid: false, // CRITICAL: never auto-activate
       },
     });
@@ -144,11 +151,12 @@ export async function POST(req: NextRequest) {
         agentId: session.role === "MARKETING_AGENT" ? session.id : null,
         agentCode: session.agentCode || null,
         planType: "NEGOTIATED_DEAL",
+        packageTier: activePackage.id,
         amount: finalAmount,
         utrNumber: utrNumber ? String(utrNumber).trim() : `PENDING-${Date.now().toString().slice(-8)}`,
         customerPhone: cleanPhone,
         status: "PENDING",
-        notes: `Offline deal by Agent ${session.agentCode || session.name || "DIRECT"}. Negotiated: ₹${finalAmount}`,
+        notes: `Offline deal by Agent ${session.agentCode || session.name || "DIRECT"} • ${activePackage.name} (₹${finalAmount}) • Deliverables: ${activePackage.hardwareDeliverables.join("; ")}`,
       },
     });
 
@@ -172,6 +180,9 @@ export async function POST(req: NextRequest) {
         businessId: business.id,
         businessSlug: business.slug,
         businessName: business.name,
+        packageTier: activePackage.id,
+        packageName: activePackage.name,
+        hardwareDeliverables: activePackage.hardwareDeliverables,
         negotiatedAmount: finalAmount,
         agentCommission,
         upiId,

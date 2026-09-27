@@ -42,6 +42,7 @@ import {
   Filter,
   Volume2,
 } from "lucide-react";
+import { HARDWARE_PACKAGES, PACKAGE_LIST, PackageTierId, getPackageById } from "@/lib/packages";
 
 import QRCode from "qrcode";
 import { getAppUrl } from "@/lib/utils";
@@ -126,8 +127,9 @@ export default function AgentPosPage() {
     setMerchantPin(Math.floor(1000 + Math.random() * 9000).toString());
   };
 
-  // Pricing & Deal
-  const [negotiatedPrice, setNegotiatedPrice] = useState<number>(1999);
+  // Pricing & Hardware Package Deal
+  const [selectedPackageTier, setSelectedPackageTier] = useState<PackageTierId>("EXECUTIVE_STANDEE");
+  const [negotiatedPrice, setNegotiatedPrice] = useState<number>(HARDWARE_PACKAGES.EXECUTIVE_STANDEE.price);
   const [utrNumber, setUtrNumber] = useState("");
   const [isSubmittingDeal, setIsSubmittingDeal] = useState(false);
   const [dealError, setDealError] = useState("");
@@ -370,6 +372,7 @@ export default function AgentPosPage() {
           logoUrl: selectedPlace.logoUrl || null,
           whatsapp: whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}` : null,
           instagram: instagram ? `https://instagram.com/${instagram.replace("@", "")}` : null,
+          packageTier: selectedPackageTier,
           negotiatedPrice,
           utrNumber: utrNumber.trim() || undefined,
         }),
@@ -591,16 +594,32 @@ export default function AgentPosPage() {
               </div>
             </div>
 
-            {/* Offline Standee Handover Checklist */}
-            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs text-left">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-amber-400" /> Physical Standee Handover:
-              </span>
-              <p className="text-[11px] text-slate-300 leading-relaxed">
-                ✓ Hand over 1x 4"×6" Acrylic Counter Standee<br />
-                ✓ Apply High-Resolution Camera QR Display Card<br />
-                ✓ Test customer scan live on merchant's phone
-              </p>
+            {/* Dynamic Hardware Deliverables Handover Checklist */}
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-2 text-xs text-left">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  Package: {createdDeal.packageName || "Executive Kit"}
+                </span>
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  ₹{createdDeal.negotiatedAmount}
+                </span>
+              </div>
+              <div className="space-y-1 text-[11px] text-slate-300">
+                {(createdDeal.hardwareDeliverables || [
+                  "1x 4″×6″ Acrylic Counter Standee",
+                  "1x Vertical PVC Display Card",
+                ]).map((del: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                    <span>{del}</span>
+                  </div>
+                ))}
+                <div className="flex items-start gap-1.5 text-slate-400 pt-1 border-t border-slate-700/50">
+                  <span className="text-indigo-400 font-bold shrink-0">✓</span>
+                  <span>Test customer camera scan live on merchant&apos;s phone</span>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -951,33 +970,138 @@ export default function AgentPosPage() {
               </div>
             </div>
 
-            {/* STEP 3: Agreed Price & Deal Submission */}
+            {/* STEP 3: Deliverables Hardware Package & Agreed Price */}
             <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-4">
-              <label className="text-xs font-bold text-white flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-white flex items-center gap-1.5">
                   <DollarSign className="w-4 h-4 text-emerald-400" />
-                  Step 3: Agreed Price &amp; Commission
-                </span>
-                <span className="text-[10px] text-slate-400 font-normal">Min: ₹1,999</span>
-              </label>
+                  Step 3: Hardware Package &amp; Agreed Price
+                </label>
+                <span className="text-[10px] text-slate-400 font-normal">Min Floor: ₹1,999</span>
+              </div>
 
-              {/* Quick Presets */}
-              <div className="grid grid-cols-4 gap-1.5 text-center">
-                {[1999, 2499, 2999, 3999].map((amt) => (
+              {/* Package Tier Selection Cards */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Select Deliverables Hardware Tier:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {/* Starter PVC */}
                   <button
-                    key={amt}
                     type="button"
-                    onClick={() => setNegotiatedPrice(amt)}
-                    className={`py-2.5 px-1 rounded-xl text-xs font-black border transition-all ${
-                      negotiatedPrice === amt
-                        ? "bg-indigo-600 text-white border-indigo-500 ring-2 ring-indigo-500 scale-105 shadow-lg shadow-indigo-500/20"
-                        : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                    onClick={() => {
+                      setSelectedPackageTier("STARTER_PVC");
+                      setNegotiatedPrice(HARDWARE_PACKAGES.STARTER_PVC.price);
+                    }}
+                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                      selectedPackageTier === "STARTER_PVC"
+                        ? "bg-gradient-to-b from-indigo-950/80 to-slate-900 border-indigo-500 ring-2 ring-indigo-500/50 shadow-lg shadow-indigo-500/10"
+                        : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
                     }`}
                   >
-                    ₹{amt}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                          Entry Tier
+                        </span>
+                        <span className="text-xs font-black text-white">₹1,999</span>
+                      </div>
+                      <div className="text-xs font-black text-white">Starter PVC Pack</div>
+                      <p className="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                        1x Vertical PVC Card (CR80) · Best for compact single tills
+                      </p>
+                    </div>
                   </button>
-                ))}
+
+                  {/* Executive Standee (Best Seller) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedPackageTier("EXECUTIVE_STANDEE");
+                      setNegotiatedPrice(HARDWARE_PACKAGES.EXECUTIVE_STANDEE.price);
+                    }}
+                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between relative ${
+                      selectedPackageTier === "EXECUTIVE_STANDEE"
+                        ? "bg-gradient-to-b from-amber-950/60 via-slate-900 to-slate-950 border-amber-400 ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/10"
+                        : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                    }`}
+                  >
+                    <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[8px] font-black uppercase tracking-wider shadow">
+                      Best Seller
+                    </span>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9px] font-bold text-amber-400/90 uppercase tracking-wider">
+                          Retail Showpiece
+                        </span>
+                        <span className="text-xs font-black text-amber-400">₹2,499</span>
+                      </div>
+                      <div className="text-xs font-black text-white">Executive Standee Kit</div>
+                      <p className="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                        1x 4″×6″ Acrylic Standee + 1x PVC Card + Google G Badge
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* All-in-One Multi-Counter Hub */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedPackageTier("ALL_IN_ONE_HUB");
+                      setNegotiatedPrice(HARDWARE_PACKAGES.ALL_IN_ONE_HUB.price);
+                    }}
+                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                      selectedPackageTier === "ALL_IN_ONE_HUB"
+                        ? "bg-gradient-to-b from-emerald-950/60 via-slate-900 to-slate-950 border-emerald-400 ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-500/10"
+                        : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9px] font-bold text-emerald-400/90 uppercase tracking-wider">
+                          VIP Complete
+                        </span>
+                        <span className="text-xs font-black text-emerald-400">₹2,999</span>
+                      </div>
+                      <div className="text-xs font-black text-white">All-in-One Hub</div>
+                      <p className="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                        Standee + 2x PVC Cards + A4 Glass Door Poster + Menu Hub
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
+
+              {/* Selected Tier Hardware Checklist Display */}
+              {(() => {
+                const pkg = HARDWARE_PACKAGES[selectedPackageTier];
+                return (
+                  <div className="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5 text-amber-400" />
+                        Deliverables for &ldquo;{pkg.name}&rdquo;:
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Standard: ₹{pkg.price}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-300">
+                      {pkg.hardwareDeliverables.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 flex items-center gap-1">
+                      <span className="text-indigo-400 font-bold">💡 Price Defense:</span> If this merchant compares with another shop, note that pricing corresponds to hardware deliverables (PVC card vs Acrylic Standee vs Full Multi-card Kit).
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Commission badge */}
               <div className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
@@ -987,34 +1111,36 @@ export default function AgentPosPage() {
                 </span>
               </div>
 
-              {/* Custom Negotiated Amount Input */}
-              <div>
-                <label className="block text-[10px] text-slate-400 font-semibold mb-1">
-                  Custom Price (₹)
-                </label>
-                <input
-                  type="number"
-                  min={1999}
-                  required
-                  value={negotiatedPrice}
-                  onChange={(e) => setNegotiatedPrice(Number(e.target.value))}
-                  className="w-full text-sm font-bold p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                />
-              </div>
+              {/* Custom Agreed Amount Input */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] text-slate-400 font-semibold mb-1">
+                    Agreed Closing Price (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min={1999}
+                    required
+                    value={negotiatedPrice}
+                    onChange={(e) => setNegotiatedPrice(Number(e.target.value))}
+                    className="w-full text-sm font-bold p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  />
+                </div>
 
-              {/* Optional UTR Ref */}
-              <div>
-                <label className="block text-[10px] text-slate-400 font-semibold mb-1">
-                  12-Digit UPI UTR Ref No. (Optional or enter after merchant pays)
-                </label>
-                <input
-                  type="text"
-                  maxLength={12}
-                  value={utrNumber}
-                  onChange={(e) => setUtrNumber(e.target.value)}
-                  placeholder="e.g. 423456789012"
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                {/* Optional UTR Ref */}
+                <div>
+                  <label className="block text-[10px] text-slate-400 font-semibold mb-1">
+                    12-Digit UPI UTR Ref No. (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={utrNumber}
+                    onChange={(e) => setUtrNumber(e.target.value)}
+                    placeholder="e.g. 423456789012"
+                    className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
               </div>
             </div>
 

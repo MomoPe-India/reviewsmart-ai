@@ -268,6 +268,18 @@ export default function HomePage() {
     "https://wa.me/918639831132?text=" +
     encodeURIComponent("Hi ReviewSmart AI, I want to get a SmartReview Card & Counter Standee for my business.");
 
+  const whatsappStarterUrl =
+    "https://wa.me/918639831132?text=" +
+    encodeURIComponent("Hi ReviewSmart AI, I want to order the Starter PVC Card Pack (₹1,999) for my shop.");
+
+  const whatsappExecutiveUrl =
+    "https://wa.me/918639831132?text=" +
+    encodeURIComponent("Hi ReviewSmart AI, I want to order the Executive Counter Standee Kit (₹2,499) for my shop.");
+
+  const whatsappAllInOneUrl =
+    "https://wa.me/918639831132?text=" +
+    encodeURIComponent("Hi ReviewSmart AI, I want to order the All-in-One Multi-Counter Hub (₹2,999) for my business.");
+
   const whatsappAgentJoinUrl =
     "https://wa.me/918639831132?text=" +
     encodeURIComponent("Hi ReviewSmart AI, I want to become an authorized Marketing Agent / Sales Partner in my city.");
@@ -1371,115 +1383,216 @@ export default function HomePage() {
 
       {/* ─── PACKAGES & PRICING PREVIEW ───────────────────────────────────── */}
       <section id="packages" className="py-20 px-4 sm:px-6 bg-slate-900/40 border-y border-white/5 scroll-mt-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-xs font-bold mb-3">
-              <Package className="w-3.5 h-3.5 text-amber-400" /> Straightforward Pricing
+              <Package className="w-3.5 h-3.5 text-amber-400" /> Transparent Counter Hardware Packages
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
-              Get Started with ReviewSmart AI
+              Choose the Right Counter Setup for Your Store
             </h2>
-            <p className="text-slate-400 text-sm max-w-lg mx-auto">
-              No complicated contracts. Fast setup in 10 minutes, with free courier delivery to your shop counter.
+            <p className="text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed">
+              Every package includes our complete Gemini AI 5-Star review engine, WhatsApp negative feedback shield, and 100% ad-free smart hub. Pricing is strictly based on the physical counter display hardware &amp; station deliverables needed for your shop.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Card 1: Digital Starter Pack */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 space-y-5 flex flex-col justify-between">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Card 1: Starter PVC Card Pack */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-slate-900 border border-slate-800 space-y-5 flex flex-col justify-between hover:border-slate-700 transition">
               <div>
-                <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  ONLINE &amp; DIGITAL
-                </span>
-                <h3 className="text-xl font-black text-white mt-1 mb-2">Digital Review Card</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
+                    Compact Entry
+                  </span>
+                  <CreditCard className="w-4 h-4 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-black text-white mt-1 mb-1">Starter PVC Card Pack</h3>
+                <div className="flex items-baseline gap-1.5 my-2">
+                  <span className="text-3xl font-black text-white">₹1,999</span>
+                  <span className="text-xs text-slate-400 font-semibold">one-time payment</span>
+                </div>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Ideal for businesses wanting to share their smart review link via WhatsApp, SMS, or print their own QR cards.
+                  Ideal for compact cash counters, tea/coffee desks, small boutique tills, and takeaway counters.
                 </p>
 
                 <div className="pt-4 border-t border-slate-800 space-y-2.5 text-xs text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Dedicated Branded URL (<code>/r/your-shop</code>)</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">1x Vertical PVC Smart Display Card</strong> (CR80 standard)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Unlimited AI 5-Star Review Generations</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>High-density dynamic QR code (waterproof &amp; scratch-proof)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Private Negative Feedback Shield</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Gemini AI 5-Star Review Generation Engine</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Merchant Dashboard &amp; Real-time Scan Analytics</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Private WhatsApp Negative Feedback Shield</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Print-Ready High-Res A4 Poster &amp; PVC Card PDF</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>100% Ad-Free Smart Hub Card with Direct UPI</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">Free Courier Delivery</strong> to your shop</span>
                   </div>
                 </div>
               </div>
 
               <a
-                href={whatsappInquiryUrl}
+                href={whatsappStarterUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 transition"
+                className="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 transition active:scale-98"
               >
                 <MessageCircle className="w-4 h-4" />
-                Inquire on WhatsApp
+                Order Starter PVC Kit (₹1,999)
               </a>
             </div>
 
-            {/* Card 2: Turnkey Physical Display Kit Bundle (Popular) */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-purple-950/60 border-2 border-indigo-500/50 space-y-5 flex flex-col justify-between relative shadow-2xl shadow-indigo-950/50">
+            {/* Card 2: Executive Counter Standee Kit (Most Popular) */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-indigo-950/70 via-slate-900 to-purple-950/70 border-2 border-indigo-500/60 space-y-5 flex flex-col justify-between relative shadow-2xl shadow-indigo-950/60 scale-[1.02]">
               <div className="absolute -top-3 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg">
-                Most Popular ★
+                ★ Retail Best Seller
               </div>
 
               <div>
-                <span className="text-[10px] font-bold tracking-widest text-amber-400 uppercase">
-                  COUNTER &amp; DISPLAY HARDWARE BUNDLE
-                </span>
-                <h3 className="text-xl font-black text-white mt-1 mb-2">Turnkey Physical Display Kit</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                    Executive Kit
+                  </span>
+                  <Printer className="w-4 h-4 text-amber-400" />
+                </div>
+                <h3 className="text-xl font-black text-white mt-1 mb-1">Executive Counter Standee Kit</h3>
+                <div className="flex items-baseline gap-1.5 my-2">
+                  <span className="text-3xl font-black text-white">₹2,499</span>
+                  <span className="text-xs text-slate-400 font-semibold">one-time payment</span>
+                </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Complete turnkey package with 4&quot;×6&quot; Acrylic Standee, Vertical PVC Pocket Card, and A4 Wall Poster.
+                  Our flagship package for retail stores, apparel boutiques, restaurants, clinics, and salons.
                 </p>
 
                 <div className="pt-4 border-t border-indigo-500/20 space-y-2.5 text-xs text-slate-200">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">4&quot;×6&quot; Portrait Acrylic Standee</strong> with UV crystal gloss</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">1x 4″×6″ (A6) Crystal Acrylic L-Standee</strong> (Retail standard)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">Vertical PVC Card (CR80)</strong> with scratch-proof lamination</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">1x Vertical PVC Display Card</strong> (CR80 PAN card size)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">A4 Wall &amp; Door Poster</strong> (300 DPI high-res print)</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Official Google &quot;G&quot; Circular Badge Authentic Brand Styling</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-amber-300">Zero-Reprint Dynamic QR Guarantee</strong> (edit anytime)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     <span>Full Digital Card + Unlimited AI Review Engine</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong className="text-white">Free Doorstep Courier Delivery</strong> to your shop</span>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">Priority Doorstep Courier Delivery</strong></span>
                   </div>
                 </div>
               </div>
 
               <a
-                href={whatsappInquiryUrl}
+                href={whatsappExecutiveUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/40 transition active:scale-98"
               >
                 <MessageCircle className="w-4 h-4" />
-                Order Display Kit on WhatsApp
+                Order Executive Kit (₹2,499)
                 <ArrowRight className="w-4 h-4" />
               </a>
+            </div>
+
+            {/* Card 3: All-in-One Multi-Counter Hub */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-slate-900 border border-slate-800 space-y-5 flex flex-col justify-between hover:border-slate-700 transition">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                    VIP Complete
+                  </span>
+                  <Award className="w-4 h-4 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-black text-white mt-1 mb-1">All-in-One Multi-Counter Hub</h3>
+                <div className="flex items-baseline gap-1.5 my-2">
+                  <span className="text-3xl font-black text-white">₹2,999</span>
+                  <span className="text-xs text-slate-400 font-semibold">one-time payment</span>
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Complete multi-point storefront presentation for multi-counter showrooms, fine dining &amp; studios.
+                </p>
+
+                <div className="pt-4 border-t border-slate-800 space-y-2.5 text-xs text-slate-300">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">1x 4″×6″ Crystal Acrylic Counter Standee</strong></span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">2x Vertical PVC Cards</strong> (Billing &amp; Dining/Desks)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">1x A4 Framed Glass Door / Wall Poster</strong></span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Digital Menu &amp; Product Showcase URL integration</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Staff Attribution QR Badges for team members</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">VIP Dedicated Support &amp; Fast Courier</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href={whatsappAllInOneUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 transition active:scale-98"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Order All-in-One VIP Hub (₹2,999)
+              </a>
+            </div>
+          </div>
+
+          {/* Hardware Deliverables & Price Defense Note */}
+          <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-white block">
+                  💡 Transparent Hardware Deliverables · 100% Zero-Reprint Guarantee
+                </span>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  All packages include our complete Gemini AI review engine, private WhatsApp shield, and zero ads. Package pricing strictly corresponds to physical counter hardware units (PVC Card vs Acrylic Standee vs Multi-Station Kit).
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0">
+              <span className="text-xs font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3.5 py-2 rounded-xl">
+                Starting from ₹1,999
+              </span>
             </div>
           </div>
         </div>

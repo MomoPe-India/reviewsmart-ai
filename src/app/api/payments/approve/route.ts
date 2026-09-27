@@ -43,11 +43,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 4. Auto-activate the business card
+      // 4. Auto-activate the business card & update package tier
       if (payment.businessId) {
         await prisma.business.update({
           where: { id: payment.businessId },
-          data: { isPaid: true },
+          data: {
+            isPaid: true,
+            ...(payment.packageTier ? { packageTier: payment.packageTier } : {}),
+          },
         });
       }
 

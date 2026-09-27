@@ -84,6 +84,7 @@ model Business {
   qrMode             String            @default("SMART_HUB") // "SMART_HUB" | "REVIEW_BOOSTER"
   menuUrl            String?
   customUpiId        String?
+  packageTier        String            @default("EXECUTIVE_STANDEE") // "STARTER_PVC" | "EXECUTIVE_STANDEE" | "ALL_IN_ONE_HUB" | "ENTERPRISE_CUSTOM"
   isPaid             Boolean           @default(false) // false until admin explicitly approves payment
   demoExpiresAt      DateTime?         // If set and in future, card is temporarily active for evaluation
   demoActivatedAt    DateTime?         // Timestamp when demo was started
@@ -136,6 +137,7 @@ model UpiPayment {
   status         String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
   commission     Float?   // Auto-calculated: 40% of amount for agent deals (on approval)
   commissionPaid Boolean  @default(false)
+  packageTier    String?  @default("EXECUTIVE_STANDEE") // "STARTER_PVC" | "EXECUTIVE_STANDEE" | "ALL_IN_ONE_HUB" | "ENTERPRISE_CUSTOM"
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

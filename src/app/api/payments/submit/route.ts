@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { utrNumber, amount, planType, customerPhone } = await req.json();
+    const { utrNumber, amount, planType, packageTier, customerPhone } = await req.json();
 
     if (!utrNumber || utrNumber.trim().length < 6) {
       return NextResponse.json(
@@ -22,12 +22,22 @@ export async function POST(req: NextRequest) {
       where: { userId: user.id },
     });
 
+    const paymentAmount = Number(amount) || 1999;
+    const resolvedTier =
+      packageTier ||
+      (paymentAmount >= 2800
+        ? "ALL_IN_ONE_HUB"
+        : paymentAmount >= 2200
+        ? "EXECUTIVE_STANDEE"
+        : "STARTER_PVC");
+
     const payment = await prisma.upiPayment.create({
       data: {
         userId: user.id,
         businessId: business?.id,
-        planType: planType || "MONTHLY_299",
-        amount: Number(amount) || 299,
+        planType: planType || "ONLINE_DIRECT",
+        packageTier: resolvedTier,
+        amount: paymentAmount,
         utrNumber: utrNumber.trim(),
         customerPhone: customerPhone || null,
         status: "PENDING",
