@@ -55,7 +55,13 @@ interface ReviewOption {
   tone: string;
 }
 
-export default function ReviewExperience({ business }: { business: BusinessData }) {
+export default function ReviewExperience({
+  business,
+  staff,
+}: {
+  business: BusinessData;
+  staff?: string | null;
+}) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
 
@@ -208,23 +214,24 @@ export default function ReviewExperience({ business }: { business: BusinessData 
   const buildInstantDrafts = (tags: string[] = selectedTags, note: string = customNote): ReviewOption[] => {
     const joinedTags = tags.length > 0 ? tags.join(", ") : "";
     const drafts = industry.reviewDrafts;
+    const staffMention = staff ? ` Special thanks to ${staff} for the attentive service!` : "";
     return [
       {
         id: 1,
         headline: drafts.direct.headline,
-        text: drafts.direct.text(business.name, joinedTags, note),
+        text: drafts.direct.text(business.name, joinedTags, note) + staffMention,
         tone: "Quick & Direct",
       },
       {
         id: 2,
         headline: drafts.detailed.headline,
-        text: drafts.detailed.text(business.name, joinedTags, note),
+        text: drafts.detailed.text(business.name, joinedTags, note) + staffMention,
         tone: "Detailed & Helpful",
       },
       {
         id: 3,
         headline: drafts.enthusiastic.headline,
-        text: drafts.enthusiastic.text(business.name, joinedTags, note),
+        text: drafts.enthusiastic.text(business.name, joinedTags, note) + staffMention,
         tone: "Warm Recommendation",
       },
     ];
@@ -586,6 +593,16 @@ export default function ReviewExperience({ business }: { business: BusinessData 
             </div>
           )}
         </div>
+
+        {/* Staff Attribution Badge */}
+        {staff && (
+          <div className="flex items-center justify-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold shadow-lg shadow-amber-950/40 animate-fadeIn">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Assisted today by <strong className="text-white font-black">{staff}</strong> · Rate your experience</span>
+            </div>
+          </div>
+        )}
 
         {/* ─── STAR RATING SECTION ──────────────────────────────────────────── */}
         <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl text-center space-y-3">

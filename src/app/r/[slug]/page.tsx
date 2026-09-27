@@ -35,8 +35,10 @@ export async function generateMetadata({
 
 export default async function PublicReviewPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams?: { staff?: string };
 }) {
   const business = await prisma.business.findUnique({
     where: { slug: params.slug },
@@ -106,7 +108,7 @@ export default async function PublicReviewPage({
     <main className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-0 sm:py-8 sm:px-4 selection:bg-amber-500 selection:text-slate-950 relative">
       {/* Review card — blurred when unpaid */}
       <div className={showWatermark ? "w-full blur-sm brightness-50 pointer-events-none select-none" : "w-full"}>
-        <ReviewExperience business={business} />
+        <ReviewExperience business={business} staff={searchParams?.staff || null} />
       </div>
 
       {/* Payment Pending Watermark Overlay */}
