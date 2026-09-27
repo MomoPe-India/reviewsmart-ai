@@ -60,6 +60,9 @@ interface BusinessData {
   keywords: string;
   tagChips: string;
   reviewPromptTone: string;
+  qrMode?: string | null;
+  menuUrl?: string | null;
+  customUpiId?: string | null;
   isPaid: boolean;
   customerType: string;
   demoExpiresAt?: string | null;
@@ -109,6 +112,9 @@ export default function AgentManageMerchantPage() {
     reviewPromptTone: "friendly",
     logoUrl: "",
     primaryColor: "#4f46e5",
+    qrMode: "SMART_HUB",
+    menuUrl: "",
+    customUpiId: "",
   });
 
   const [saving, setSaving] = useState(false);
@@ -167,6 +173,9 @@ export default function AgentManageMerchantPage() {
           reviewPromptTone: b.reviewPromptTone || "friendly",
           logoUrl: b.logoUrl || "",
           primaryColor: b.primaryColor || "#4f46e5",
+          qrMode: b.qrMode || "SMART_HUB",
+          menuUrl: b.menuUrl || "",
+          customUpiId: b.customUpiId || "",
         });
 
         // Set initial WhatsApp recipient from merchant phone or WhatsApp
@@ -764,6 +773,68 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
               )}
 
               <form onSubmit={handleSaveProfile} className="space-y-6">
+                {/* QR Display Mode Selector */}
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        Counter QR Display Mode (Zero-Reprint Guarantee)
+                      </h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Configure what customers experience when scanning the printed counter standee or PVC card.
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded">
+                      Dynamic Redirect
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div
+                      onClick={() => handleInputChange("qrMode", "SMART_HUB")}
+                      className={`p-3.5 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between ${
+                        formData.qrMode === "SMART_HUB"
+                          ? "border-amber-500 bg-amber-500/10"
+                          : "border-slate-800 bg-slate-900/60 hover:border-slate-700"
+                      }`}
+                    >
+                      <div>
+                        <span className="text-xs font-bold text-white block mb-1">
+                          🌟 All-in-One Smart Hub (Recommended)
+                        </span>
+                        <p className="text-[11px] text-slate-400 leading-snug">
+                          Replaces counter clutter: Google Reviews hero + WhatsApp orders + Digital Menu + Direct UPI in 1 hub.
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-bold mt-2.5 block ${formData.qrMode === "SMART_HUB" ? "text-amber-400" : "text-slate-500"}`}>
+                        {formData.qrMode === "SMART_HUB" ? "● Active Mode" : "○ Select"}
+                      </span>
+                    </div>
+
+                    <div
+                      onClick={() => handleInputChange("qrMode", "REVIEW_BOOSTER")}
+                      className={`p-3.5 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between ${
+                        formData.qrMode === "REVIEW_BOOSTER"
+                          ? "border-indigo-500 bg-indigo-500/10"
+                          : "border-slate-800 bg-slate-900/60 hover:border-slate-700"
+                      }`}
+                    >
+                      <div>
+                        <span className="text-xs font-bold text-white block mb-1">
+                          🎯 Direct Review Booster
+                        </span>
+                        <p className="text-[11px] text-slate-400 leading-snug">
+                          Customer scans and lands directly into the Gemini AI Review generator and private shield.
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-bold mt-2.5 block ${formData.qrMode === "REVIEW_BOOSTER" ? "text-indigo-400" : "text-slate-500"}`}>
+                        {formData.qrMode === "REVIEW_BOOSTER" ? "● Active Mode" : "○ Select"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -942,6 +1013,41 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
                       placeholder="@srigurufashions"
                     />
+                  </div>
+                </div>
+
+                {/* Digital Menu & Custom Counter UPI ID */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Digital Menu / Catalog URL
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.menuUrl}
+                      onChange={(e) => handleInputChange("menuUrl", e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition"
+                      placeholder="https://drive.google.com/... or online menu link"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Adds a &quot;View Menu&quot; button to the merchant&apos;s Smart Hub.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Merchant Counter UPI ID (0% Fee Direct Payment)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.customUpiId}
+                      onChange={(e) => handleInputChange("customUpiId", e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+                      placeholder="e.g. 9553545324@ybl or store@okhdfcbank"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Enables customers to pay using GPay, PhonePe, or Paytm with 0% fee.
+                    </p>
                   </div>
                 </div>
 

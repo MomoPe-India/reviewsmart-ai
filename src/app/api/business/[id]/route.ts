@@ -91,6 +91,9 @@ export async function PUT(
         keywords: body.keywords !== undefined ? body.keywords : business.keywords,
         tagChips: body.tagChips !== undefined ? body.tagChips : business.tagChips,
         reviewPromptTone: body.reviewPromptTone || business.reviewPromptTone,
+        qrMode: body.qrMode !== undefined ? body.qrMode : (business.qrMode || "SMART_HUB"),
+        menuUrl: body.menuUrl !== undefined ? body.menuUrl : business.menuUrl,
+        customUpiId: body.customUpiId !== undefined ? body.customUpiId : business.customUpiId,
       },
     });
 

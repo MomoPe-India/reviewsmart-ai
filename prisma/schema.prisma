@@ -81,6 +81,9 @@ model Business {
   keywords           String            @default("exceptional service, highly recommended, friendly staff, prompt delivery, great experience")
   tagChips           String            @default("Friendly Staff,Fast Service,Great Quality,Fair Pricing,Clean Ambiance")
   reviewPromptTone   String            @default("friendly")
+  qrMode             String            @default("SMART_HUB") // "SMART_HUB" | "REVIEW_BOOSTER"
+  menuUrl            String?
+  customUpiId        String?
   isPaid             Boolean           @default(false) // false until admin explicitly approves payment
   demoExpiresAt      DateTime?         // If set and in future, card is temporarily active for evaluation
   demoActivatedAt    DateTime?         // Timestamp when demo was started

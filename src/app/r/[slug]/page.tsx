@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ReviewExperience from "@/components/review/ReviewExperience";
+import SmartHubExperience from "@/components/review/SmartHubExperience";
 import type { Metadata } from "next";
 import { MessageCircle, Sparkles, Clock } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
@@ -71,6 +72,9 @@ export default async function PublicReviewPage({
       tagChips: true,
       keywords: true,
       reviewPromptTone: true,
+      qrMode: true,
+      menuUrl: true,
+      customUpiId: true,
       isPaid: true,
       demoExpiresAt: true,
       demoUsed: true,
@@ -146,9 +150,13 @@ export default async function PublicReviewPage({
         </div>
       )}
 
-      {/* Review card — blurred when unpaid and demo not active */}
+      {/* Review card or Smart Hub — blurred when unpaid and demo not active */}
       <div className={showWatermark ? "w-full blur-sm brightness-50 pointer-events-none select-none" : "w-full"}>
-        <ReviewExperience business={business} staff={searchParams?.staff || null} />
+        {business.qrMode === "SMART_HUB" ? (
+          <SmartHubExperience business={business} staff={searchParams?.staff || null} />
+        ) : (
+          <ReviewExperience business={business} staff={searchParams?.staff || null} />
+        )}
       </div>
 
       {/* Payment / Expiry Watermark Overlay */}

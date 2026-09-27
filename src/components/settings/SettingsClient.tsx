@@ -56,6 +56,9 @@ interface BusinessData {
   tagChips: string;
   reviewPromptTone: string;
   isPaid: boolean;
+  qrMode?: string | null;
+  menuUrl?: string | null;
+  customUpiId?: string | null;
 }
 
 interface GoogleSearchResult {
@@ -96,6 +99,9 @@ export default function SettingsClient({ business }: { business: BusinessData })
     keywords: business.keywords || "",
     tagChips: business.tagChips || "Friendly Staff,Fast Service,Great Quality,Fair Pricing,Clean Ambiance",
     reviewPromptTone: business.reviewPromptTone || "friendly",
+    qrMode: business.qrMode || "SMART_HUB",
+    menuUrl: business.menuUrl || "",
+    customUpiId: business.customUpiId || "",
   });
 
   // State for Google Places Typeahead Search
@@ -442,6 +448,84 @@ export default function SettingsClient({ business }: { business: BusinessData })
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 0. QR Experience Mode & Counter Destination */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    QR Code Display Mode (Zero-Reprint Guarantee)
+                  </h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Choose what customers see when scanning your printed counter standee, card, or poster.
+                  </p>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Dynamic Redirect
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                {/* Option A: Smart Hub */}
+                <div
+                  onClick={() => setForm((prev) => ({ ...prev, qrMode: "SMART_HUB" }))}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition relative flex flex-col justify-between ${
+                    form.qrMode === "SMART_HUB"
+                      ? "border-amber-500 bg-amber-50/40 shadow-sm"
+                      : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <Store className="w-3.5 h-3.5 text-amber-600" />
+                        All-in-One Smart Hub
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/70 px-1.5 py-0.5 rounded">
+                        Recommended
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Replaces counter clutter! Google Reviews hero + WhatsApp direct + Digital Menu + Instant UPI payments in one branded hub.
+                    </p>
+                  </div>
+                  <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-amber-700">
+                    <span className={`w-2 h-2 rounded-full ${form.qrMode === "SMART_HUB" ? "bg-amber-500 animate-pulse" : "bg-slate-300"}`} />
+                    <span>{form.qrMode === "SMART_HUB" ? "Active Mode" : "Tap to Select"}</span>
+                  </div>
+                </div>
+
+                {/* Option B: Direct Review Booster */}
+                <div
+                  onClick={() => setForm((prev) => ({ ...prev, qrMode: "REVIEW_BOOSTER" }))}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition relative flex flex-col justify-between ${
+                    form.qrMode === "REVIEW_BOOSTER"
+                      ? "border-indigo-600 bg-indigo-50/40 shadow-sm"
+                      : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <Star className="w-3.5 h-3.5 text-indigo-600" />
+                        Direct Review Booster
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
+                        Direct Focus
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Customer scans and goes directly into leaving a 5-star Google review with the Gemini AI assistant.
+                    </p>
+                  </div>
+                  <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-indigo-700">
+                    <span className={`w-2 h-2 rounded-full ${form.qrMode === "REVIEW_BOOSTER" ? "bg-indigo-600 animate-pulse" : "bg-slate-300"}`} />
+                    <span>{form.qrMode === "REVIEW_BOOSTER" ? "Active Mode" : "Tap to Select"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 1. Google Business Profile & Review Link Typeahead */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
               <div className="flex items-start justify-between gap-2">
@@ -873,6 +957,42 @@ export default function SettingsClient({ business }: { business: BusinessData })
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Digital Menu / Product Catalog URL
+                  </label>
+                  <input
+                    type="url"
+                    name="menuUrl"
+                    value={form.menuUrl}
+                    onChange={handleChange}
+                    placeholder="https://drive.google.com/... or menu link"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Link to your online PDF menu, price sheet, or food catalog.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Custom UPI ID (for Direct Counter Payments)
+                  </label>
+                  <input
+                    type="text"
+                    name="customUpiId"
+                    value={form.customUpiId}
+                    onChange={handleChange}
+                    placeholder="e.g. 9553545324@ybl or shop@okhdfcbank"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Enables customers to pay your store directly from the Smart Hub at 0% fee.
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Website URL
@@ -1167,16 +1287,27 @@ export default function SettingsClient({ business }: { business: BusinessData })
                       WhatsApp ✓
                     </span>
                   )}
+                  {form.menuUrl && (
+                    <span className="text-orange-400 font-bold flex items-center gap-1">
+                      Menu ✓
+                    </span>
+                  )}
+                  {form.customUpiId && (
+                    <span className="text-indigo-400 font-bold flex items-center gap-1">
+                      UPI Pay ✓
+                    </span>
+                  )}
                   {form.instagram && (
                     <span className="text-pink-400 font-bold flex items-center gap-1">
                       Instagram ✓
                     </span>
                   )}
-                  {form.website && (
-                    <span className="text-indigo-400 font-bold flex items-center gap-1">
-                      Website ✓
-                    </span>
-                  )}
+                </div>
+
+                <div className="pt-2 text-center">
+                  <span className="inline-block text-[9px] font-bold text-emerald-400/90 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+                    ✓ 100% Ad-Free • Zero Distractions
+                  </span>
                 </div>
               </div>
 

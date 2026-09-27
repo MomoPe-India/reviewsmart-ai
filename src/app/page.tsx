@@ -125,6 +125,20 @@ const FEATURES = [
     desc: "3 physical formats: 4\"×6\" Acrylic Standee, Vertical PVC Card, and A4 Wall Poster. Zero app install needed.",
   },
   {
+    icon: ShieldCheck,
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
+    title: "100% Ad-Free • Zero Distractions",
+    desc: "Zero third-party ads, zero popups, and zero sponsored trackers. A clean, premium experience that honors your brand reputation.",
+  },
+  {
+    icon: Store,
+    color: "text-amber-300",
+    bg: "bg-amber-500/10 border-amber-500/20",
+    title: "All-in-One Smart Business Hub",
+    desc: "Replaces counter clutter! Your single QR handles 5-star Google Reviews, WhatsApp chat, digital menu, and instant UPI payments.",
+  },
+  {
     icon: BarChart2,
     color: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
@@ -407,6 +421,9 @@ export default function HomePage() {
 
           {/* Trust Guarantees */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-6 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5 text-emerald-300 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Ad-Free • Zero Distractions
+            </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Free Doorstep Delivery Across India
             </span>

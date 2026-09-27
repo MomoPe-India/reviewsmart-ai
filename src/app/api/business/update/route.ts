@@ -26,6 +26,9 @@ export async function PATCH(req: NextRequest) {
       googleAddress,
       googleReviewUrl,
       logoUrl,
+      qrMode,
+      menuUrl,
+      customUpiId,
     } = body;
 
     let business;
@@ -74,6 +77,9 @@ export async function PATCH(req: NextRequest) {
         ...(googleAddress !== undefined && { googleAddress }),
         ...(googleReviewUrl !== undefined && { googleReviewUrl }),
         ...(logoUrl !== undefined && { logoUrl }),
+        ...(qrMode !== undefined && { qrMode }),
+        ...(menuUrl !== undefined && { menuUrl }),
+        ...(customUpiId !== undefined && { customUpiId }),
         ...(minRatingForGoogle !== undefined && { minRatingForGoogle: Number(minRatingForGoogle) }),
       },
     });
