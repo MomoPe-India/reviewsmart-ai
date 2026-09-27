@@ -173,13 +173,16 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <BrandIcon size="xl" className="mb-3.5 scale-110 drop-shadow-2xl" />
           <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-1.5">
-            Review<span className="text-indigo-400">Smart</span>
-            <span className="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-2 py-0.5 rounded-md border border-amber-300 shadow-sm">
+            Review
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-blue-200 bg-clip-text text-transparent font-black">
+              Smart
+            </span>
+            <span className="text-xs font-black uppercase tracking-widest bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full border border-amber-300/80 shadow-md shadow-amber-500/20">
               AI
             </span>
           </h1>
-          <p className="text-slate-400 text-xs mt-1 font-medium tracking-wide">
-            Invite-only merchant platform
+          <p className="text-slate-400 text-xs mt-1.5 font-medium tracking-wide">
+            Invite-only merchant &amp; partner platform
           </p>
         </div>
 
