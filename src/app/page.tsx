@@ -58,7 +58,7 @@ const DEMO_MERCHANTS = [
     id: "food",
     name: "Vijaya's Yummy Food",
     category: "Restaurant & Cloud Kitchen",
-    location: "Kadapa & Bangalore",
+    location: "Kadugodi, Bengaluru",
     icon: UtensilsCrossed,
     color: "#ea580c",
     logo: null,
@@ -349,7 +349,7 @@ export default function HomePage() {
               🛍️ Sri Guru Fashions <span className="text-[10px] text-amber-400">(Kadapa)</span>
             </span>
             <span className="font-semibold text-white flex items-center gap-1">
-              🍽️ Vijaya's Yummy Food <span className="text-[10px] text-amber-400">(Kadapa)</span>
+              🍽️ Vijaya's Yummy Food <span className="text-[10px] text-amber-400">(Bengaluru)</span>
             </span>
             <span className="font-semibold text-white flex items-center gap-1">
               📸 Anand Fashion Studio <span className="text-[10px] text-amber-400">(Kadapa)</span>
@@ -707,7 +707,7 @@ export default function HomePage() {
                   Vijaya's Yummy Food
                 </h4>
                 <p className="text-[11px] text-slate-400 line-clamp-2 mb-3">
-                  Authentic homemade dining &amp; multi-cuisine delights.
+                  Kadugodi, Bengaluru · Authentic homemade dining &amp; multi-cuisine delights.
                 </p>
               </div>
 
