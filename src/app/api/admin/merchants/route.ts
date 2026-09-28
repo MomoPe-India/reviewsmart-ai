@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, phone, customerType = "ONLINE", businessName, category, googleReviewUrl } = body;
+    const { name, phone, customerType = "ONLINE", businessName, category, googleReviewUrl, logoUrl } = body;
 
     if (!name || !phone) {
       return NextResponse.json({ error: "Name and phone number are required." }, { status: 400 });
@@ -141,6 +141,7 @@ export async function POST(req: NextRequest) {
             isPaid: false,
             phone: cleanPhone,
             whatsapp: cleanPhone,
+            logoUrl: logoUrl ? String(logoUrl).trim() : null,
             googleReviewUrl: googleReviewUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((businessName || name).trim())}`,
           },
         },
@@ -186,6 +187,7 @@ export async function PUT(req: NextRequest) {
       slug,
       category,
       tagline,
+      logoUrl,
       googlePlaceId,
       googleReviewUrl,
       googleAddress,
@@ -264,6 +266,7 @@ export async function PUT(req: NextRequest) {
           ...(whatsapp !== undefined ? { whatsapp } : cleanPhone !== undefined ? { whatsapp: cleanPhone } : {}),
           ...(website !== undefined && { website }),
           ...(minRatingForGoogle !== undefined && { minRatingForGoogle: Number(minRatingForGoogle) }),
+          ...(logoUrl !== undefined && { logoUrl: logoUrl ? String(logoUrl).trim() : null }),
           ...(isPaid !== undefined && { isPaid }),
           ...(customerType !== undefined && { customerType }),
         },

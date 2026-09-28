@@ -146,11 +146,11 @@ export default function SmartHubExperience({
         {/* Logo Container with Adaptive Display */}
         <div className="relative mb-3.5 mt-1">
           {business.logoUrl ? (
-            <div className="w-20 h-20 rounded-2xl bg-white/10 border-2 border-white/20 p-1.5 shadow-xl flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-2xl bg-white border-2 border-white/90 p-2 shadow-2xl flex items-center justify-center overflow-hidden">
               <img
                 src={business.logoUrl}
                 alt={business.name}
-                className="w-full h-full object-contain rounded-xl"
+                className="w-full h-full object-contain"
               />
             </div>
           ) : (

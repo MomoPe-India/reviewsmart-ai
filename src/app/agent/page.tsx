@@ -865,15 +865,15 @@ export default function AgentPosPage() {
                 <div className="space-y-3 pt-2">
                   <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 border border-amber-400 flex items-center justify-center font-bold text-white overflow-hidden shrink-0">
+                      <div className="w-11 h-11 rounded-xl bg-white border border-amber-400/80 flex items-center justify-center font-bold text-slate-900 overflow-hidden shrink-0 p-1 shadow-sm">
                         {selectedPlace.logoUrl ? (
                           <img
                             src={selectedPlace.logoUrl}
                             alt={selectedPlace.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         ) : (
-                          <span className="text-amber-400 font-bold">
+                          <span className="text-indigo-600 font-black text-sm">
                             {selectedPlace.name.slice(0, 2).toUpperCase()}
                           </span>
                         )}
@@ -890,6 +890,36 @@ export default function AgentPosPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Logo quick upload */}
+                      <label
+                        className="px-2 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition"
+                        title="Upload/Snap Store Brand Logo"
+                      >
+                        <Camera className="w-3 h-3" />
+                        <span>{selectedPlace.logoUrl ? "Logo ✓" : "Add Logo"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert("Please select an image smaller than 5MB");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                if (typeof ev.target?.result === "string") {
+                                  setSelectedPlace((prev) => prev ? { ...prev, logoUrl: ev.target?.result as string } : null);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+
                       {/* Standee Demo Button */}
                       <button
                         type="button"
@@ -994,6 +1024,88 @@ export default function AgentPosPage() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* STEP 2A: Store Brand Logo (Digital Review Card) */}
+            <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-indigo-400" />
+                  Step 2A: Store Brand Logo (Shown on Digital Review Page)
+                  {selectedPlace?.logoUrl && <CheckCircle2 className="w-4 h-4 text-emerald-500 animate-in zoom-in" />}
+                </label>
+                <span className="text-[10px] font-bold text-indigo-300 bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 rounded-full">
+                  Shown on Customer's Phone
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-slate-300 font-semibold">
+                    Snap or upload the store's board/visiting card logo:
+                  </span>
+                  <label className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer transition">
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Upload / Snap</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert("Please select an image smaller than 5MB");
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            if (typeof ev.target?.result === "string") {
+                              setSelectedPlace((prev) => prev ? { ...prev, logoUrl: ev.target?.result as string } : null);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-white border border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-md p-1.5">
+                    {selectedPlace?.logoUrl ? (
+                      <img
+                        src={selectedPlace.logoUrl}
+                        alt="Logo preview"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <span className="text-base font-black text-indigo-600">
+                        {selectedPlace?.name ? selectedPlace.name.slice(0, 2).toUpperCase() : "RS"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="text"
+                      value={selectedPlace?.logoUrl || ""}
+                      onChange={(e) => setSelectedPlace((prev) => prev ? { ...prev, logoUrl: e.target.value } : null)}
+                      placeholder="Or paste direct image URL (https://...)"
+                      className="w-full text-[11px] p-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    {selectedPlace?.logoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlace((prev) => prev ? { ...prev, logoUrl: null } : null)}
+                        className="text-[10px] text-red-400 hover:text-red-300 font-semibold"
+                      >
+                        Remove Logo
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

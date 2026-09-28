@@ -29,6 +29,8 @@ import {
   MapPin,
   Sparkles,
   Clock,
+  ImageIcon,
+  Camera,
 } from "lucide-react";
 import { getAppUrl } from "@/lib/utils";
 
@@ -78,6 +80,7 @@ export default function AdminMerchantsPage() {
   const [createPhone, setCreatePhone] = useState("");
   const [createBusinessName, setCreateBusinessName] = useState("");
   const [createCategory, setCreateCategory] = useState("");
+  const [createLogoUrl, setCreateLogoUrl] = useState("");
   const [createType, setCreateType] = useState<"ONLINE" | "OFFLINE">("ONLINE");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -107,6 +110,7 @@ export default function AdminMerchantsPage() {
     whatsapp: "",
     website: "",
     minRatingForGoogle: 4,
+    logoUrl: "",
     isPaid: true,
   });
   const [savingEdit, setSavingEdit] = useState(false);
@@ -167,6 +171,7 @@ export default function AdminMerchantsPage() {
           businessName: createBusinessName || createName,
           category: createCategory,
           customerType: createType,
+          logoUrl: createLogoUrl ? createLogoUrl.trim() : undefined,
         }),
       });
       let data: any = null;
@@ -191,6 +196,7 @@ export default function AdminMerchantsPage() {
       setCreatePhone("");
       setCreateBusinessName("");
       setCreateCategory("");
+      setCreateLogoUrl("");
       fetchMerchants();
     } catch (err: any) {
       setCreateError(err?.message || "Network error. Please try again.");
@@ -220,6 +226,7 @@ export default function AdminMerchantsPage() {
       whatsapp: b.whatsapp || m.phone || "",
       website: b.website || "",
       minRatingForGoogle: b.minRatingForGoogle ?? 4,
+      logoUrl: b.logoUrl || "",
       isPaid: b.isPaid ?? true,
     });
   };
@@ -277,6 +284,7 @@ export default function AdminMerchantsPage() {
                         whatsapp: editForm.whatsapp,
                         website: editForm.website,
                         minRatingForGoogle: editForm.minRatingForGoogle,
+                        logoUrl: editForm.logoUrl || null,
                         isPaid: editForm.isPaid,
                         customerType: editForm.customerType,
                       }
@@ -546,52 +554,69 @@ export default function AdminMerchantsPage() {
               >
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-black text-white text-sm truncate">{m.name}</h3>
-                      {isOnline ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
-                          <Globe className="w-2.5 h-2.5" /> Online
-                        </span>
+                  <div className="flex items-start gap-3 min-w-0">
+                    {/* Merchant / Business Brand Logo */}
+                    <div className="w-10 h-10 rounded-2xl bg-white border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0 shadow-sm p-1">
+                      {biz?.logoUrl ? (
+                        <img
+                          src={biz.logoUrl}
+                          alt={biz.name || m.name || "Merchant"}
+                          className="w-full h-full object-contain"
+                        />
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
-                          <UserCheck className="w-2.5 h-2.5" /> Offline
-                        </span>
-                      )}
-                      {isSuspended ? (
-                        <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 text-[10px] font-bold">
-                          Suspended
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                          Active
-                        </span>
+                        <div className="w-full h-full rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-black text-xs">
+                          {(biz?.name || m.name || "RS").slice(0, 2).toUpperCase()}
+                        </div>
                       )}
                     </div>
-                    {biz && (
-                      <div className="text-xs text-slate-300 mt-1 flex items-center gap-1.5 flex-wrap">
-                        <Store className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span className="font-semibold text-white truncate">{biz.name}</span>
-                        {biz.isPaid ? (
-                          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                            ✓ Live Card
-                          </span>
-                        ) : biz.isDemoActive ? (
-                          <span className="text-[10px] text-emerald-300 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/40 flex items-center gap-1 animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            🟢 24h Demo Active
-                          </span>
-                        ) : biz.demoUsed ? (
-                          <span className="text-[10px] text-amber-300 font-bold bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30">
-                            ⏳ Demo Expired
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-black text-white text-sm truncate">{m.name}</h3>
+                        {isOnline ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
+                            <Globe className="w-2.5 h-2.5" /> Online
                           </span>
                         ) : (
-                          <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
-                            ⏳ Unpaid
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                            <UserCheck className="w-2.5 h-2.5" /> Offline
+                          </span>
+                        )}
+                        {isSuspended ? (
+                          <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 text-[10px] font-bold">
+                            Suspended
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                            Active
                           </span>
                         )}
                       </div>
-                    )}
+                      {biz && (
+                        <div className="text-xs text-slate-300 mt-1 flex items-center gap-1.5 flex-wrap">
+                          <Store className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                          <span className="font-semibold text-white truncate">{biz.name}</span>
+                          {biz.isPaid ? (
+                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                              ✓ Live Card
+                            </span>
+                          ) : biz.isDemoActive ? (
+                            <span className="text-[10px] text-emerald-300 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/40 flex items-center gap-1 animate-pulse">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                              🟢 24h Demo Active
+                            </span>
+                          ) : biz.demoUsed ? (
+                            <span className="text-[10px] text-amber-300 font-bold bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30">
+                              ⏳ Demo Expired
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
+                              ⏳ Unpaid
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Actions dropdown or quick buttons */}
@@ -837,6 +862,76 @@ export default function AdminMerchantsPage() {
                   />
                 </div>
 
+                {/* Store Brand Logo */}
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Store Brand Logo (Optional)</span>
+                    </label>
+                    <label className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer transition">
+                      <Camera className="w-3 h-3" />
+                      <span>Upload / Snap</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("Please select an image smaller than 5MB");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              if (typeof ev.target?.result === "string") {
+                                setCreateLogoUrl(ev.target?.result as string);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-md p-1.5">
+                      {createLogoUrl ? (
+                        <img
+                          src={createLogoUrl}
+                          alt="Logo preview"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <span className="text-sm font-black text-indigo-600">
+                          {(createBusinessName || createName).slice(0, 2).toUpperCase() || "RS"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-1">
+                      <input
+                        type="text"
+                        value={createLogoUrl}
+                        onChange={(e) => setCreateLogoUrl(e.target.value)}
+                        placeholder="Or paste direct image URL (https://...)"
+                        className="w-full text-[11px] p-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      {createLogoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setCreateLogoUrl("")}
+                          className="text-[10px] text-red-400 hover:text-red-300 font-semibold"
+                        >
+                          Remove Logo
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
                     Customer Channel *
@@ -1053,6 +1148,76 @@ export default function AdminMerchantsPage() {
                       placeholder="e.g. Kadapa, Andhra Pradesh"
                       className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
+                  </div>
+
+                  {/* Store Brand Logo */}
+                  <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Store Brand Logo (Shown on /r/{editForm.slug || "card"})</span>
+                      </label>
+                      <label className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer transition">
+                        <Camera className="w-3 h-3" />
+                        <span>Upload / Change</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert("Please select an image smaller than 5MB");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                if (typeof ev.target?.result === "string") {
+                                  setEditForm((prev) => ({ ...prev, logoUrl: ev.target?.result as string }));
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-white border-2 border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-md p-1.5">
+                        {editForm.logoUrl ? (
+                          <img
+                            src={editForm.logoUrl}
+                            alt="Logo preview"
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <span className="text-base font-black text-indigo-600">
+                            {editForm.businessName.slice(0, 2).toUpperCase() || "RS"}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-1">
+                        <input
+                          type="text"
+                          value={editForm.logoUrl}
+                          onChange={(e) => setEditForm((prev) => ({ ...prev, logoUrl: e.target.value }))}
+                          placeholder="Or paste direct image URL (https://...)"
+                          className="w-full text-[11px] p-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                        {editForm.logoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setEditForm((prev) => ({ ...prev, logoUrl: "" }))}
+                            className="text-[10px] text-red-400 hover:text-red-300 font-semibold"
+                          >
+                            Remove Logo
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

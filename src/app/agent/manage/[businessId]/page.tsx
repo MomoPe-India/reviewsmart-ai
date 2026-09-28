@@ -35,6 +35,8 @@ import {
   Lock,
   Unlock,
   AlertTriangle,
+  Camera,
+  Trash2,
 } from "lucide-react";
 import PrintStudioClient from "@/components/studio/PrintStudioClient";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -889,42 +891,86 @@ Need changes, custom colors, or reprints? Contact your ReviewSmart marketing age
                   </p>
                 </div>
 
-                {/* Logo & Brand Color */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
-                      <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
-                      Merchant Logo Image URL
+                {/* Store Brand Logo */}
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
+                        Merchant Store Brand Logo
+                        {formData.logoUrl && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                      </label>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Shown prominently on the customer digital review card at /r/{business?.slug || "store"}
+                      </p>
+                    </div>
+
+                    <label className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 cursor-pointer transition px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{formData.logoUrl ? "Change Logo" : "Upload / Snap"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("Please select an image smaller than 5MB");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              if (typeof ev.target?.result === "string") {
+                                handleInputChange("logoUrl", ev.target?.result as string);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
                     </label>
-                    <input
-                      type="url"
-                      value={formData.logoUrl}
-                      onChange={(e) => handleInputChange("logoUrl", e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
-                      placeholder="https://.../logo.png (Supports square, wide, transparent PNG/PSD)"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Our new adaptive logo engine preserves natural aspect ratios (wide banners, badges, square logos) without ugly cropping.
-                    </p>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                      Logo Preview
-                    </label>
-                    <div className="w-full h-16 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden p-2">
+                  <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-900 border border-slate-800">
+                    <div className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-md p-1.5">
                       {formData.logoUrl ? (
                         <img
                           src={formData.logoUrl}
                           alt="Logo Preview"
-                          className="max-h-full max-w-full object-contain"
+                          className="w-full h-full object-contain"
                           onError={(e) => {
                             (e.target as HTMLElement).style.display = "none";
                           }}
                         />
                       ) : (
-                        <span className="text-[11px] text-slate-600">No Logo Provided</span>
+                        <span className="text-base font-black text-indigo-600">
+                          {formData.name.slice(0, 2).toUpperCase() || "RS"}
+                        </span>
                       )}
+                    </div>
+
+                    <div className="flex-1 space-y-1.5 min-w-0">
+                      <input
+                        type="text"
+                        value={formData.logoUrl}
+                        onChange={(e) => handleInputChange("logoUrl", e.target.value)}
+                        placeholder="Or paste direct image URL (https://...)"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                      />
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400">Supports PNG, JPG, WebP (up to 5MB)</span>
+                        {formData.logoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange("logoUrl", "")}
+                            className="text-red-400 hover:text-red-300 font-semibold flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Remove Logo</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

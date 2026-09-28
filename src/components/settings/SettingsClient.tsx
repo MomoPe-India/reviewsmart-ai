@@ -818,40 +818,50 @@ export default function SettingsClient({ business }: { business: BusinessData })
                       />
                     </label>
                   </div>
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-                      {form.logoUrl ? (
-                        <img
-                          src={form.logoUrl}
-                          alt={form.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-base font-black text-indigo-600">
-                          {form.name.slice(0, 2).toUpperCase() || "RS"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[11px] leading-snug flex-1">
-                      {form.logoUrl ? (
-                        <div className="flex items-center justify-between">
-                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                            <Check className="w-3.5 h-3.5" /> Custom Logo Set
+                  <div className="space-y-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner p-1">
+                        {form.logoUrl ? (
+                          <img
+                            src={form.logoUrl}
+                            alt={form.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <span className="text-base font-black text-indigo-600">
+                            {form.name.slice(0, 2).toUpperCase() || "RS"}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setForm((prev) => ({ ...prev, logoUrl: "" }))}
-                            className="text-[10px] text-red-500 hover:underline font-semibold"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-slate-500">
-                          No logo uploaded. Tap &apos;Upload Logo&apos; to pick an image or photo.
-                        </span>
-                      )}
+                        )}
+                      </div>
+                      <div className="text-[11px] leading-snug flex-1">
+                        {form.logoUrl ? (
+                          <div className="flex items-center justify-between">
+                            <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                              <Check className="w-3.5 h-3.5" /> Custom Logo Set
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setForm((prev) => ({ ...prev, logoUrl: "" }))}
+                              className="text-[10px] text-red-500 hover:underline font-semibold"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500">
+                            No logo uploaded. Tap &apos;Upload Logo&apos; to pick an image or photo.
+                          </span>
+                        )}
+                      </div>
                     </div>
+
+                    <input
+                      type="text"
+                      value={form.logoUrl}
+                      onChange={(e) => setForm((prev) => ({ ...prev, logoUrl: e.target.value }))}
+                      placeholder="Or paste direct image URL (https://...)"
+                      className="w-full text-[11px] p-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
                   </div>
                 </div>
 
