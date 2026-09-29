@@ -104,6 +104,7 @@ model Business {
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   feedbacks          PrivateFeedback[]
   analytics          ReviewAnalytics[]
+  reviewMemories     GeneratedReviewMemory[]
 }
 
 // ─── PRIVATE FEEDBACK (negative review intercept) ─────────────────────────────
@@ -167,3 +168,28 @@ model PlatformSetting {
   commissionRate     Float    @default(0.30)  // 30% default agent commission on verified sales
   updatedAt          DateTime @updatedAt
 }
+
+// ─── GENERATED REVIEW MEMORY (Zero-Duplicate Engine) ──────────────────────────
+model GeneratedReviewMemory {
+  id                  String   @id @default(cuid())
+  businessId          String?
+  businessName        String
+  category            String?
+  reviewText          String
+  openingPhrase       String   // lowercased first 4-6 words normalized
+  closingPhrase       String   // lowercased last 4-6 words normalized
+  structureTag        String   // "STRUCTURE_A", "STRUCTURE_B", "SHORT_CASUAL", etc.
+  writingStyle        String   // "short_casual", "detailed_helpful", "enthusiastic", "story_like", "minimal", etc.
+  languageMix         String   // "ENGLISH", "TELUGU_SCRIPT", "TELUGU_ENGLISH", "TELUGU_ROMAN"
+  tagsUsed            String?  // comma-separated tags or chips
+  ngramHash           String?  // token-level fingerprint for fast set-intersection similarity
+  createdAt           DateTime @default(now())
+
+  business            Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([openingPhrase])
+  @@index([structureTag])
+  @@index([createdAt])
+}
+

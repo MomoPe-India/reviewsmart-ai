@@ -339,19 +339,19 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     keywords: "best photo studio, creative photography, custom gifts, photo framing, event photoshoot, kadapa studio",
     reviewDrafts: {
       direct: {
-        headline: "Exceptional Photography & Wonderful Gifts!",
+        headline: "Neat Work & Timely Delivery",
         text: (name, tags, note) =>
-          `Had a wonderful experience with ${name}! Their ${tags || "creative photography and prompt delivery"} made our memories truly special.${note ? ` Loved how they handled ${note}.` : ""} Highly recommended studio and gift center!`,
+          `Ordered photo frames and custom work from ${name}. The finishing is very neat, and the print clarity turned out sharp.${note ? ` Loved how they handled ${note}.` : ""} Delivered right on time, really satisfied!`,
       },
       detailed: {
-        headline: "Professional, Creative & Superb Quality",
+        headline: "Professional & Creative Studio",
         text: (name, tags, note) =>
-          `Visited ${name} for photography services and custom gifts. The team is genuinely skilled, patient, and creative. Their ${tags || "high-quality prints and friendly service"} exceeded all expectations.${note ? ` Especially happy with the ${note}.` : ""} The best studio in town!`,
+          `Visited ${name} for ${tags || "photo framing and prints"}. The team took the time to show sample borders and paper types patiently. Output exceeded expectations with solid frame borders.${note ? ` Handled ${note} with great care.` : ""} A dependable studio.`,
       },
       enthusiastic: {
-        headline: "10/10 Photos & Beautiful Gift Customization!",
+        headline: "Super Quality on Photo Frames!",
         text: (name, tags, note) =>
-          `Cannot say enough good things about ${name}! From capturing stunning shots to crafting the perfect customized gifts, their work is pure perfection.${note ? ` Loved the ${note}.` : ""} 5 stars all the way!`,
+          `The photo quality and acrylic finishing from ${name} came out super neat! Everyone at home was really pleased with the output.${note ? ` Special thanks for sorting out ${note}.` : ""} Prompt communication and honest pricing.`,
       },
     },
   },

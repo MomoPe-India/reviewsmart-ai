@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { detectIndustry } from "@/lib/industry";
 import { copyToClipboard } from "@/lib/clipboard";
+import { synthesizeUniqueReviews, LanguageMode } from "@/lib/review-synthesizer";
 
 interface BusinessData {
   id: string;
@@ -53,6 +54,9 @@ interface ReviewOption {
   headline: string;
   text: string;
   tone: string;
+  structureTag?: string;
+  writingStyle?: string;
+  languageMix?: string;
 }
 
 export default function ReviewExperience({
@@ -64,6 +68,9 @@ export default function ReviewExperience({
 }) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
+
+  // Language & Cadence mode state
+  const [languageMode, setLanguageMode] = useState<LanguageMode>("AUTO");
 
   // Private direct feedback state
   const [customerName, setCustomerName] = useState("");
@@ -210,31 +217,34 @@ export default function ReviewExperience({
     }).catch(() => {});
   }, [business.id, business.slug]);
 
-  // Helper to build instant local drafts without waiting
-  const buildInstantDrafts = (tags: string[] = selectedTags, note: string = customNote): ReviewOption[] => {
-    const joinedTags = tags.length > 0 ? tags.join(", ") : "";
-    const drafts = industry.reviewDrafts;
+  // Dynamic client-side synthesis: zero hardcoded templates, non-repeating
+  const buildInstantDrafts = (
+    tags: string[] = selectedTags,
+    note: string = customNote,
+    lang: LanguageMode = languageMode
+  ): ReviewOption[] => {
     const staffMention = staff ? ` Special thanks to ${staff} for the attentive service!` : "";
-    return [
-      {
-        id: 1,
-        headline: drafts.direct.headline,
-        text: drafts.direct.text(business.name, joinedTags, note) + staffMention,
-        tone: "Quick & Direct",
-      },
-      {
-        id: 2,
-        headline: drafts.detailed.headline,
-        text: drafts.detailed.text(business.name, joinedTags, note) + staffMention,
-        tone: "Detailed & Helpful",
-      },
-      {
-        id: 3,
-        headline: drafts.enthusiastic.headline,
-        text: drafts.enthusiastic.text(business.name, joinedTags, note) + staffMention,
-        tone: "Warm Recommendation",
-      },
-    ];
+    const combinedNote = note ? `${note} ${staffMention}`.trim() : staffMention.trim();
+
+    const synthesized = synthesizeUniqueReviews({
+      businessName: business.name,
+      category: business.category || industry.label,
+      tagline: business.tagline,
+      selectedTags: tags,
+      customNote: combinedNote || undefined,
+      tone: business.reviewPromptTone || "friendly",
+      languageMode: lang,
+    });
+
+    return synthesized.map((s) => ({
+      id: s.id,
+      headline: s.headline,
+      text: s.text,
+      tone: s.tone,
+      structureTag: s.structureTag,
+      writingStyle: s.writingStyle,
+      languageMix: s.languageMix,
+    }));
   };
 
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -242,21 +252,20 @@ export default function ReviewExperience({
   const handleRatingClick = async (star: number) => {
     setRating(star);
 
-    // For 4 or 5 stars, instantly initialize and copy the draft
+    // For 4 or 5 stars, instantly initialize and copy the unique dynamic draft
     if (star >= 4) {
-      const currentDrafts = reviewOptions.length > 0 ? reviewOptions : buildInstantDrafts([]);
-      const activeDraft = currentDrafts.find((r) => r.id === selectedOptionId) || currentDrafts[0];
-      if (activeDraft) {
-        setEditableDraftText(activeDraft.text);
-        await copyToClipboard(activeDraft.text);
-      }
-      if (reviewOptions.length === 0) {
-        setReviewOptions(currentDrafts);
-        setSelectedOptionId(1);
-      }
+      const currentDrafts = buildInstantDrafts(selectedTags, customNote, languageMode);
+      setReviewOptions(currentDrafts);
+      setSelectedOptionId(1);
+      setEditableDraftText(currentDrafts[0].text);
+      await copyToClipboard(currentDrafts[0].text);
+
       setTimeout(() => {
         reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
+
+      // Background AI / memory check & registration
+      triggerAiGeneration(selectedTags, customNote, languageMode);
     }
 
     fetch("/api/analytics/track", {
@@ -275,24 +284,22 @@ export default function ReviewExperience({
     const next = selectedTags.includes(tag)
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
-    const updated = buildInstantDrafts(next, customNote);
-    const activeDraft = updated.find((r) => r.id === selectedOptionId) || updated[0];
-    if (activeDraft) {
-      setEditableDraftText(activeDraft.text);
-      copyToClipboard(activeDraft.text);
-    }
     setSelectedTags(next);
+    const updated = buildInstantDrafts(next, customNote, languageMode);
     setReviewOptions(updated);
+    setSelectedOptionId(1);
+    setEditableDraftText(updated[0].text);
+    copyToClipboard(updated[0].text);
+    triggerAiGeneration(next, customNote, languageMode);
   };
 
   const handleNoteChange = (note: string) => {
     setCustomNote(note);
-    const updated = buildInstantDrafts(selectedTags, note);
-    const activeDraft = updated.find((r) => r.id === selectedOptionId) || updated[0];
-    if (activeDraft) {
-      setEditableDraftText(activeDraft.text);
-    }
+    const updated = buildInstantDrafts(selectedTags, note, languageMode);
     setReviewOptions(updated);
+    if (updated[0]) {
+      setEditableDraftText(updated[0].text);
+    }
   };
 
   const handleSelectOption = (opt: ReviewOption) => {
@@ -301,8 +308,22 @@ export default function ReviewExperience({
     copyToClipboard(opt.text);
   };
 
-  // AI regeneration from server with fallback
-  const triggerAiGeneration = async () => {
+  const handleLanguageChange = (newMode: LanguageMode) => {
+    setLanguageMode(newMode);
+    const updated = buildInstantDrafts(selectedTags, customNote, newMode);
+    setReviewOptions(updated);
+    setSelectedOptionId(1);
+    setEditableDraftText(updated[0].text);
+    copyToClipboard(updated[0].text);
+    triggerAiGeneration(selectedTags, customNote, newMode);
+  };
+
+  // AI generation from server with memory check and fallback
+  const triggerAiGeneration = async (
+    tags: string[] = selectedTags,
+    note: string = customNote,
+    lang: LanguageMode = languageMode
+  ) => {
     setIsGenerating(true);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 7000);
@@ -313,14 +334,16 @@ export default function ReviewExperience({
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
+          businessId: business.id,
           businessName: business.name,
           category: business.category || industry.label,
           tagline: business.tagline,
           keywords: business.keywords,
-          selectedTags,
-          customNote,
+          selectedTags: tags,
+          customNote: note,
           rating,
           tone: business.reviewPromptTone || "friendly",
+          languageMode: lang,
         }),
       });
 
@@ -331,16 +354,9 @@ export default function ReviewExperience({
         setSelectedOptionId(data.reviews[0].id || 1);
         setEditableDraftText(data.reviews[0].text);
         await copyToClipboard(data.reviews[0].text);
-      } else {
-        const fallback = buildInstantDrafts(selectedTags, customNote);
-        setReviewOptions(fallback);
-        setEditableDraftText(fallback[0].text);
       }
     } catch {
       clearTimeout(timeoutId);
-      const fallback = buildInstantDrafts(selectedTags, customNote);
-      setReviewOptions(fallback);
-      setEditableDraftText(fallback[0].text);
     } finally {
       clearTimeout(timeoutId);
       setIsGenerating(false);
@@ -795,12 +811,49 @@ export default function ReviewExperience({
               </div>
               <button
                 type="button"
-                onClick={triggerAiGeneration}
+                onClick={() => triggerAiGeneration(selectedTags, customNote, languageMode)}
                 disabled={isGenerating}
                 className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition disabled:opacity-50"
               >
                 {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                 <span>Regenerate with AI</span>
+              </button>
+            </div>
+
+            {/* Language & Cadence Selector */}
+            <div className="flex items-center justify-between gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800">
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("AUTO")}
+                className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                  languageMode === "AUTO"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🌐 All Styles</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("ENGLISH")}
+                className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                  languageMode === "ENGLISH"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇬🇧 English</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("TELUGU_SCRIPT")}
+                className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                  languageMode === "TELUGU_SCRIPT"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>తెలుగు + English</span>
               </button>
             </div>
 
@@ -870,7 +923,10 @@ export default function ReviewExperience({
                             : "border-slate-800 bg-slate-800/50 text-slate-400 hover:text-slate-200"
                         }`}
                       >
-                        <span className="text-[10px] block truncate">{opt.tone}</span>
+                        <span className="text-[10px] block truncate font-bold">{opt.headline || opt.tone}</span>
+                        {opt.languageMix === "TELUGU_SCRIPT" && (
+                          <span className="text-[8px] text-amber-400 block font-semibold">తెలుగు</span>
+                        )}
                       </button>
                     );
                   })}

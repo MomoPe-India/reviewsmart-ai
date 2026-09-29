@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       customNote,
       keywords: directKeywords,
       tone: directTone,
+      languageMode = "AUTO",
     } = body;
 
     let businessName = directName || "Our Store";
@@ -21,7 +22,6 @@ export async function POST(req: NextRequest) {
     let keywords = directKeywords || "";
     let tone = directTone || "friendly";
     let foundBusinessId: string | null = null;
-
     let category = body.category || "";
 
     if (businessId || slug) {
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const reviews = await generateAiReviews({
+      businessId: foundBusinessId || businessId || undefined,
       businessName,
       tagline,
       selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
@@ -52,28 +53,27 @@ export async function POST(req: NextRequest) {
       tone,
       customNote,
       category,
+      languageMode,
     });
 
     // Log analytics in the background if business exists
     if (foundBusinessId) {
-      try {
-        await prisma.reviewAnalytics.create({
+      prisma.reviewAnalytics
+        .create({
           data: {
             businessId: foundBusinessId,
             eventType: "AI_GENERATED",
             rating: 5,
             deviceType: "mobile",
           },
-        });
-      } catch (e) {
-        console.warn("Analytics error:", e);
-      }
+        })
+        .catch(() => {});
     }
 
     return NextResponse.json({
       success: true,
       reviews,
-      review: reviews[0]?.text || "Excellent service and high quality! Highly recommended.",
+      review: reviews[0]?.text || "Really liked their service. Clean work and timely delivery!",
     });
   } catch (error) {
     console.error("Generate review error:", error);
