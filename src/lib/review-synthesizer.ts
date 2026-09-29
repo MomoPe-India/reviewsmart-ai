@@ -54,8 +54,12 @@ const DOMAIN_LEXICONS: Record<string, DomainLexicon> = {
       "fashion and portfolio shoot",
       "headshots and corporate portraits",
       "corporate event coverage",
-      "product photography",
-      "food photography",
+      "customized gifts",
+      "cup printing",
+      "pillow printing",
+      "magic pillow",
+      "keychain printing",
+      "big size photo frame",
       "photo frame",
       "photo prints",
       "acrylic wall frame",
@@ -70,8 +74,11 @@ const DOMAIN_LEXICONS: Record<string, DomainLexicon> = {
       "cinematic color grading, drone footage, and background music in the film",
       "candid moments captured naturally without staged poses",
       "sharp focus, studio lighting, and clean background in the portfolio",
-      "crisp product lighting and rich texture capture",
-      "appetizing food presentation and accurate color tones",
+      "ceramic cup print gloss and vibrant durable colors",
+      "magic pillow sequin flip smoothness and crisp hidden photo reveal",
+      "pillow print fabric softness and stitch durability",
+      "acrylic keychain border cut and scratch-resistant photo finish",
+      "big size photo frame clarity, high-res canvas texture, and wall presence",
       "print resolution, album binding, and photo clarity",
       "punctuality and polite coordination during the entire shoot",
       "prompt delivery of the edited teaser, highlights, and full album",
@@ -99,10 +106,10 @@ const DOMAIN_LEXICONS: Record<string, DomainLexicon> = {
     occasions: [
       "for our wedding ceremony",
       "for our pre-wedding outdoor shoot",
-      "for our brand catalog launch",
+      "for a personalized surprise gift",
       "for my professional corporate profile",
       "for our corporate conference",
-      "for our new restaurant menu launch",
+      "for an anniversary surprise gift",
       "for a family celebration",
       "recently",
       "last month",
@@ -731,13 +738,16 @@ function generateTeluguRoman(bName: string, tags: string[], note: string, lex: D
     `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
     `${item} quality super ga vachindi, expected danikante better undi.`,
     `Time ki ready chesi icharu, photo clarity taggakunda chusukunnaru.`,
-    `Kadapa lo good shop for ${item} and framing works.`,
+    `Kadapa lo good shop for ${item}, customized gifts and framing works.`,
+    `Cup printing and magic pillow gift kosam visit ayyamu, quality awesome ga undi.`,
+    `Big size photo frame print resolution and framing finish top notch undi.`,
   ];
   const middles = [
     `Staff chala patient ga requirements vinnaaru.`,
     `Colors and frame border quality chala solid ga unai.`,
     `Pricing kuda fair ga undi, no unnecessary delays.`,
     `Family members andariki chala nachindi output.`,
+    `Print colors chala vibrant ga unnai, packaging kuda safe ga chesi icharu.`,
   ];
   const closers = [
     `Will visit again for sure!`,
@@ -787,6 +797,8 @@ function generateTeluguOccasion(bName: string, tags: string[], note: string, lex
     `అమ్మనాన్నల యానివర్సరీ కోసం ${item} చేయించాము, చాలా బాగా వచ్చింది.`,
     `మా పాప పుట్టినరోజు కోసం స్పెషల్ ${item} చేయించాము.`,
     `మా ఈవెంట్ కవరేజ్ మరియు ${item} చాలా ప్రొఫెషనల్ గా చేశారు.`,
+    `ఫ్రెండ్‌కి స్పెషల్ సర్ప్రైజ్ కోసం కప్ ప్రింటింగ్ మరియు మ్యాజిక్ పిల్లో ఆర్డర్ ఇచ్చాము.`,
+    `హాల్ కోసం పెద్ద సైజు ఫోటో ఫ్రేమ్ (big size photo) చేయించాము, ఇంట్లో అందరికీ చాలా నచ్చింది.`,
   ];
   const middles = [
     `డ్రోన్ షాట్స్ మరియు సినిమాటిక్ ఎడిటింగ్ చాలా రిచ్ గా వచ్చాయి.`,
@@ -796,11 +808,12 @@ function generateTeluguOccasion(bName: string, tags: string[], note: string, lex
     `లైటింగ్ మరియు కలర్ గ్రేడింగ్ హై ఎండ్ సినిమా రేంజ్ లో ఉంది.`,
     `ఆల్బమ్ డిజైన్ మరియు ప్రింట్ క్వాలిటీ చూసి ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
     `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, ఫ్రేమ్ లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
+    `మ్యాజిక్ పిల్లో రివీల్ ఎఫెక్ట్ మరియు కప్ ప్రింటింగ్ క్లారిటీ అదిరిపోయింది.`,
   ];
   const closers = [
     `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
     `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
-    `వెడ్డింగ్ ఫోటోగ్రఫీ మరియు ఫ్రేమ్స్ కి కడపలో బెస్ట్ ప్లేస్.`,
+    `వెడ్డింగ్ ఫోటోగ్రఫీ, కస్టమైజ్డ్ గిఫ్ట్స్ మరియు ఫ్రేమ్స్ కి కడపలో బెస్ట్ ప్లేస్.`,
     `టీమ్ ఎఫర్ట్ మరియు డెడికేషన్ కి హ్యాట్సాఫ్!`,
     `చాలా తృప్తిగా ఉంది.`,
   ];
@@ -842,13 +855,20 @@ function buildDynamicHeadline(text: string, lang: string): string {
     ]);
   }
 
-  if (text.toLowerCase().includes("finish") || text.toLowerCase().includes("frame") || text.toLowerCase().includes("print")) {
+  if (
+    text.toLowerCase().includes("finish") ||
+    text.toLowerCase().includes("frame") ||
+    text.toLowerCase().includes("print") ||
+    text.toLowerCase().includes("gift") ||
+    text.toLowerCase().includes("pillow")
+  ) {
     return pickRandom([
       "Neat Finishing & Solid Quality",
       "Sharp Resolution & Clean Output",
       "Delivered On Schedule",
       "Clean Workmanship",
       "Precise Detailing",
+      "Superb Custom Prints",
     ]);
   }
 
