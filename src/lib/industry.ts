@@ -325,18 +325,19 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
 
   PHOTOGRAPHY_STUDIO: {
     type: "PHOTOGRAPHY_STUDIO",
-    label: "Photography Studios & Gift Shops",
-    tagline: "Creative Photography, Custom Gifts & Framing Services",
+    label: "Photography & Photo Framing Studios",
+    tagline: "Creative Photography, High-Resolution Prints & Photo Framing Services",
     tags: [
       "Creative Photography",
       "High-Quality Prints",
-      "Customized Gifts",
+      "Photo Frames",
       "Friendly Photographers",
       "Prompt Delivery",
-      "Beautiful Framing",
+      "Album Design",
+      "Acrylic Wall Frames",
     ],
-    placeholder: "Mention photo shoot, gift item, frame or event (optional)...",
-    keywords: "best photo studio, creative photography, custom gifts, photo framing, event photoshoot, kadapa studio",
+    placeholder: "Mention photo shoot, frame border, album or print (optional)...",
+    keywords: "best photo studio, creative photography, photo framing, event photoshoot, kadapa studio, portraits, album design",
     reviewDrafts: {
       direct: {
         headline: "Neat Work & Timely Delivery",

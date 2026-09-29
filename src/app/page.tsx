@@ -75,15 +75,15 @@ const DEMO_MERCHANTS = [
   {
     id: "studio",
     name: "Anand Fashion Studio",
-    category: "Photography & Gift Shop",
+    category: "Photography & Framing Studio",
     location: "Kadapa, Andhra Pradesh",
     icon: Camera,
     color: "#db2777",
     logo: null,
     slug: "anand-fashion-studio-bf84",
-    chips: ["Creative Photos", "High Quality Prints", "Quick Delivery", "Polite Staff", "Best Gift Items"],
+    chips: ["Creative Photos", "High Quality Prints", "Quick Delivery", "Polite Staff", "Photo Frames"],
     aiDraft:
-      "Best photography studio and personalized gift shop in Kadapa! The portraits came out stunning and their framing quality is top-notch. Truly memorable service!",
+      "Best photography and photo framing studio in Kadapa! The portraits came out stunning and their framing quality is top-notch. Truly memorable service!",
     author: "Suresh V.",
   },
   {
@@ -810,7 +810,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-200">
-                    Photography &amp; Gifts
+                    Photography &amp; Framing
                   </span>
                   <span className="text-amber-500 text-xs font-bold flex items-center gap-0.5">
                     ★ 4.9
@@ -823,7 +823,7 @@ export default function HomePage() {
                   Anand Fashion Studio
                 </h4>
                 <p className="text-[11px] text-slate-500 line-clamp-2 mb-3">
-                  Premium photography, customized gifts &amp; portraits in Kadapa.
+                  Premium photography, custom framing &amp; portraits in Kadapa.
                 </p>
               </div>
 
