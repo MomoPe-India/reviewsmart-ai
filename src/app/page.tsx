@@ -75,15 +75,15 @@ const DEMO_MERCHANTS = [
   {
     id: "studio",
     name: "Anand Fashion Studio",
-    category: "Photography & Framing Studio",
+    category: "Wedding, Fashion & Commercial Studio",
     location: "Kadapa, Andhra Pradesh",
     icon: Camera,
     color: "#db2777",
     logo: null,
     slug: "anand-fashion-studio-bf84",
-    chips: ["Creative Photos", "High Quality Prints", "Quick Delivery", "Polite Staff", "Photo Frames"],
+    chips: ["Pre-Wedding Shoots", "Candid Wedding", "Cinematic Films", "Fashion & Portfolio", "Product Photography"],
     aiDraft:
-      "Best photography and photo framing studio in Kadapa! The portraits came out stunning and their framing quality is top-notch. Truly memorable service!",
+      "Booked Anand Fashion Studio for our pre-wedding shoot and candid wedding photography in Kadapa! The cinematic film and photo album turned out breathtaking. Truly top-tier team!",
     author: "Suresh V.",
   },
   {
@@ -810,7 +810,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-200">
-                    Photography &amp; Framing
+                    Wedding &amp; Fashion Studio
                   </span>
                   <span className="text-amber-500 text-xs font-bold flex items-center gap-0.5">
                     ★ 4.9
@@ -823,7 +823,7 @@ export default function HomePage() {
                   Anand Fashion Studio
                 </h4>
                 <p className="text-[11px] text-slate-500 line-clamp-2 mb-3">
-                  Premium photography, custom framing &amp; portraits in Kadapa.
+                  Pre-wedding shoots, candid weddings, cinematic films &amp; portfolios in Kadapa.
                 </p>
               </div>
 
