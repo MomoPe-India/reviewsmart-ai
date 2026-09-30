@@ -240,7 +240,6 @@ const DOMAIN_LEXICONS: Record<string, DomainLexicon> = {
       "pamphlets and brochures",
       "customized mug printing",
       "customized t-shirt printing",
-      "custom photo frames",
       "book printing",
       "acrylic lettering board",
       "roll-up standee",

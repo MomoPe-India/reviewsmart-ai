@@ -377,7 +377,6 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
       "Visiting Cards",
       "Graphic Design",
       "Mug Printing",
-      "Custom Frames",
       "T-Shirt Printing",
       "Brochures & Pamphlets",
       "Fast Delivery",

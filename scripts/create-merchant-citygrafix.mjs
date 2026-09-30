@@ -19,7 +19,7 @@ const PRIMARY_COLOR   = "#0284c7";
 const SLUG            = "citygrafix";
 const ADDRESS         = "21/135, Seven Roads Cir, opp. Tirumala hospital, beside New AF Automart street, Ganagapeta, Kadapa, Andhra Pradesh 516001";
 const GOOGLE_REVIEW_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("CITY GRAFIX - KADAPA 21/135, Seven Roads Cir, opp. Tirumala hospital, beside New AF Automart street, Ganagapeta, Kadapa, Andhra Pradesh 516001")}`;
-const TAG_CHIPS       = "Flex Printing,Sign Boards,Banner Printing,Visiting Cards,Graphic Design,Mug Printing,Custom Frames,T-Shirt Printing,Brochures & Pamphlets,Fast Delivery";
+const TAG_CHIPS       = "Flex Printing,Sign Boards,Banner Printing,Visiting Cards,Graphic Design,Mug Printing,T-Shirt Printing,Brochures & Pamphlets,Fast Delivery";
 const KEYWORDS        = "city grafix kadapa flex printing sign boards banners graphic design visiting cards mug printing t-shirt printing seven roads ganagapeta kadapa";
 const CATEGORY        = "Flex Printing, Sign Boards & Graphic Design";
 const TAGLINE         = "Premier Flex Printing, Sign Boards, Banners & Graphic Design in Kadapa";
