@@ -230,10 +230,81 @@ const DOMAIN_LEXICONS: Record<string, DomainLexicon> = {
     actions: ["availed", "purchased", "ordered", "took", "went for"],
     occasions: ["recently", "a couple days back", "this week"],
   },
+  printing: {
+    items: [
+      "flex banner printing",
+      "commercial sign board",
+      "visiting cards",
+      "vinyl stickers",
+      "glow sign board",
+      "pamphlets and brochures",
+      "customized mug printing",
+      "customized t-shirt printing",
+      "custom photo frames",
+      "book printing",
+      "acrylic lettering board",
+      "roll-up standee",
+      "offset printing",
+      "graphic design work",
+    ],
+    qualities: [
+      "sharp color printing, clean edges, and weather-proof outdoor flex durability",
+      "high-resolution vector graphics, accurate typography, and vibrant banner colors",
+      "thick card stock, premium matte laminate, and crisp font readability on visiting cards",
+      "strong frame structure, bright LED illumination, and clean installation on the sign board",
+      "ceramic mug print vibrancy and dishwasher-safe gloss",
+      "seamless color grading, creative layout balance, and quick file delivery",
+      "flawless printing speed, zero color banding, and punctual handover",
+      "patient design adjustments and accurate proof verification before final print",
+    ],
+    adjectives: [
+      "sharp and vibrant",
+      "clear and high resolution",
+      "super neat and professional",
+      "durable and eye-catching",
+      "clean and premium",
+      "flawless and creative",
+      "very crisp",
+      "reliable and fast",
+      "solid and well executed",
+    ],
+    actions: [
+      "ordered",
+      "got our",
+      "designed and printed",
+      "customized",
+      "hired them for",
+      "printed our",
+      "coordinated for",
+    ],
+    occasions: [
+      "for our shop grand opening",
+      "for our business marketing campaign",
+      "for our event promotion banners",
+      "for our brand visiting cards",
+      "for a college fest sponsorship flex",
+      "for a personal surprise gift mug",
+      "for our new office sign board",
+      "recently",
+      "last week",
+    ],
+  },
 };
 
 function getDomainLexicon(category = "", businessName = ""): DomainLexicon {
   const text = (category + " " + businessName).toLowerCase();
+  if (
+    text.includes("grafix") ||
+    text.includes("graphic") ||
+    text.includes("flex") ||
+    text.includes("banner") ||
+    text.includes("sign board") ||
+    text.includes("visiting card") ||
+    text.includes("offset") ||
+    (text.includes("print") && !text.includes("photo") && !text.includes("wedding"))
+  ) {
+    return DOMAIN_LEXICONS.printing;
+  }
   if (
     text.includes("photo") ||
     text.includes("studio") ||
@@ -741,6 +812,8 @@ function generateTeluguRoman(bName: string, tags: string[], note: string, lex: D
     `Kadapa lo good shop for ${item}, customized gifts and framing works.`,
     `Cup printing and magic pillow gift kosam visit ayyamu, quality awesome ga undi.`,
     `Big size photo frame print resolution and framing finish top notch undi.`,
+    `Shop opening ki flex banner and sign board cheyinchamu, colors and clarity superb ga vachayi.`,
+    `Visiting cards and brochures design chala professional ga chesi icharu.`,
   ];
   const middles = [
     `Staff chala patient ga requirements vinnaaru.`,
@@ -748,12 +821,15 @@ function generateTeluguRoman(bName: string, tags: string[], note: string, lex: D
     `Pricing kuda fair ga undi, no unnecessary delays.`,
     `Family members andariki chala nachindi output.`,
     `Print colors chala vibrant ga unnai, packaging kuda safe ga chesi icharu.`,
+    `Flex banner material quality thick ga undi, rain or sun ki fade avvadhu.`,
+    `Design layout and font alignment chala perfect ga set chesaru.`,
   ];
   const closers = [
     `Will visit again for sure!`,
     `Thanks to ${bName} team.`,
     `Worth it, satisfied customer!`,
     `Super service!`,
+    `Kadapa lo best place for printing and signage!`,
   ];
   let review = `${pickRandom(openers)} ${pickRandom(middles)} ${pickRandom(closers)}`;
   if (note) {
@@ -799,6 +875,8 @@ function generateTeluguOccasion(bName: string, tags: string[], note: string, lex
     `మా ఈవెంట్ కవరేజ్ మరియు ${item} చాలా ప్రొఫెషనల్ గా చేశారు.`,
     `ఫ్రెండ్‌కి స్పెషల్ సర్ప్రైజ్ కోసం కప్ ప్రింటింగ్ మరియు మ్యాజిక్ పిల్లో ఆర్డర్ ఇచ్చాము.`,
     `హాల్ కోసం పెద్ద సైజు ఫోటో ఫ్రేమ్ (big size photo) చేయించాము, ఇంట్లో అందరికీ చాలా నచ్చింది.`,
+    `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
+    `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
   ];
   const middles = [
     `డ్రోన్ షాట్స్ మరియు సినిమాటిక్ ఎడిటింగ్ చాలా రిచ్ గా వచ్చాయి.`,
@@ -809,11 +887,14 @@ function generateTeluguOccasion(bName: string, tags: string[], note: string, lex
     `ఆల్బమ్ డిజైన్ మరియు ప్రింట్ క్వాలిటీ చూసి ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
     `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, ఫ్రేమ్ లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
     `మ్యాజిక్ పిల్లో రివీల్ ఎఫెక్ట్ మరియు కప్ ప్రింటింగ్ క్లారిటీ అదిరిపోయింది.`,
+    `ఫ్లెక్స్ ప్రింట్ చాలా షార్ప్‌గా వచ్చింది, ఎండలో కూడా కలర్స్ ఏమాత్రం డల్ అవ్వలేదు.`,
+    `గ్రాఫిక్ డిజైనింగ్ చాలా క్రియేటివ్‌గా చేశారు, లేఅవుట్ చాలా నచ్చింది.`,
   ];
   const closers = [
     `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
     `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
     `వెడ్డింగ్ ఫోటోగ్రఫీ, కస్టమైజ్డ్ గిఫ్ట్స్ మరియు ఫ్రేమ్స్ కి కడపలో బెస్ట్ ప్లేస్.`,
+    `ఫ్లెక్స్ ప్రింటింగ్, సైన్ బోర్డ్స్ మరియు డిజైనింగ్ కి కడపలో బెస్ట్ షాప్.`,
     `టీమ్ ఎఫర్ట్ మరియు డెడికేషన్ కి హ్యాట్సాఫ్!`,
     `చాలా తృప్తిగా ఉంది.`,
   ];
@@ -832,6 +913,7 @@ function buildDynamicHeadline(text: string, lang: string): string {
       "Great Work, Family కి బాగా నచ్చింది",
       "Super Quality & Reasonable Price",
       "మంచి సర్వీస్ & సాలిడ్ క్వాలిటీ",
+      "Super Flex Printing & Great Design",
     ];
     return pickRandom(telHeadlines);
   }
@@ -842,6 +924,7 @@ function buildDynamicHeadline(text: string, lang: string): string {
       "Chala Baga Chesaru, Good Service",
       "Solid Quality & Friendly Staff",
       "Worth It & Happy with Output",
+      "Top Printing Quality in Kadapa",
     ]);
   }
 
@@ -860,7 +943,11 @@ function buildDynamicHeadline(text: string, lang: string): string {
     text.toLowerCase().includes("frame") ||
     text.toLowerCase().includes("print") ||
     text.toLowerCase().includes("gift") ||
-    text.toLowerCase().includes("pillow")
+    text.toLowerCase().includes("pillow") ||
+    text.toLowerCase().includes("flex") ||
+    text.toLowerCase().includes("banner") ||
+    text.toLowerCase().includes("board") ||
+    text.toLowerCase().includes("card")
   ) {
     return pickRandom([
       "Neat Finishing & Solid Quality",
@@ -869,6 +956,7 @@ function buildDynamicHeadline(text: string, lang: string): string {
       "Clean Workmanship",
       "Precise Detailing",
       "Superb Custom Prints",
+      "Vibrant Print Quality",
     ]);
   }
 

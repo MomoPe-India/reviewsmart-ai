@@ -100,6 +100,20 @@ const DEMO_MERCHANTS = [
       "Exceptional software development and AI engineering services. Momo IT delivered our custom app ahead of schedule with flawless quality and excellent ongoing support!",
     author: "Rajesh G.",
   },
+  {
+    id: "printing",
+    name: "City Grafix",
+    category: "Flex Printing & Graphic Design",
+    location: "Seven Roads Circle, Kadapa",
+    icon: Printer,
+    color: "#0284c7",
+    logo: null,
+    slug: "citygrafix",
+    chips: ["Flex Printing", "Sign Boards", "Banner Printing", "Visiting Cards", "Graphic Design"],
+    aiDraft:
+      "Ordered our business flex banners and visiting cards from City Grafix Kadapa! The print quality is super crisp and the colors came out very vibrant. Delivered right on schedule, great work!",
+    author: "Harish K.",
+  },
 ];
 
 const FEATURES = [
@@ -740,7 +754,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {/* Merchant 1: Sri Guru Fashions */}
             <div className="p-5 rounded-3xl bg-white border border-slate-200/80 hover:border-blue-400/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(66,133,244,0.08)] transition-all flex flex-col justify-between group">
               <div>
@@ -837,7 +851,39 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Merchant 4: Momo IT Technologies */}
+            {/* Merchant 4: City Grafix */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/80 hover:border-cyan-400/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(6,182,212,0.08)] transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200">
+                    Flex &amp; Graphics
+                  </span>
+                  <span className="text-amber-500 text-xs font-bold flex items-center gap-0.5">
+                    ★ 5.0
+                  </span>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center mb-3 shadow-sm">
+                  <Printer className="w-6 h-6 text-cyan-600" />
+                </div>
+                <h4 className="font-black text-slate-900 text-sm mb-1 group-hover:text-cyan-600 transition">
+                  City Grafix
+                </h4>
+                <p className="text-[11px] text-slate-500 line-clamp-2 mb-3">
+                  Seven Roads Circle, Kadapa · Flex banners, sign boards &amp; visiting cards.
+                </p>
+              </div>
+
+              <Link
+                href="/r/citygrafix"
+                target="_blank"
+                className="w-full py-2.5 px-3 rounded-full bg-slate-100 hover:bg-cyan-600 text-slate-700 hover:text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
+              >
+                <span>View Live Review Card</span>
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {/* Merchant 5: Momo IT Technologies */}
             <div className="p-5 rounded-3xl bg-white border border-slate-200/80 hover:border-blue-400/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(59,130,246,0.08)] transition-all flex flex-col justify-between group">
               <div>
                 <div className="flex items-center justify-between mb-3">

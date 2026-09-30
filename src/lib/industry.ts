@@ -9,6 +9,7 @@ export type IndustryType =
   | "HOTEL_HOSPITALITY"
   | "PROFESSIONAL_SERVICES"
   | "PHOTOGRAPHY_STUDIO"
+  | "PRINTING_GRAPHICS"
   | "GENERAL";
 
 export interface IndustryConfig {
@@ -365,6 +366,45 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     },
   },
 
+  PRINTING_GRAPHICS: {
+    type: "PRINTING_GRAPHICS",
+    label: "Flex Printing & Graphic Design Studios",
+    tagline: "High-Resolution Flex Banners, Sign Boards, Commercial Printing & Creative Graphics",
+    tags: [
+      "Flex Printing",
+      "Sign Boards",
+      "Banner Printing",
+      "Visiting Cards",
+      "Graphic Design",
+      "Mug Printing",
+      "Custom Frames",
+      "T-Shirt Printing",
+      "Brochures & Pamphlets",
+      "Fast Delivery",
+      "Vibrant Colors",
+      "Weather-Proof Quality",
+    ],
+    placeholder: "Mention flex banner, sign board, visiting card, mugs or graphic design (optional)...",
+    keywords: "city grafix kadapa flex printing sign boards banners graphic design visiting cards mug printing t-shirt printing brochures pamphlets offset printing weather proof quality",
+    reviewDrafts: {
+      direct: {
+        headline: "Vibrant Printing & Timely Delivery",
+        text: (name, tags, note) =>
+          `Ordered ${tags || "flex printing and banners"} from ${name}. The print quality is super crisp and the colors came out very vibrant.${note ? ` Handled ${note} quickly.` : ""} Delivered right on schedule, great work!`,
+      },
+      detailed: {
+        headline: "Outstanding Graphic Design & Print Finish",
+        text: (name, tags, note) =>
+          `Visited ${name} for ${tags || "sign boards and promotional printing"}. The graphic designer was very skilled, listened patiently to our requirements, and finalized the layout quickly. Output quality on the boards exceeded expectations.${note ? ` Really happy with how they did ${note}.` : ""} Truly dependable printing hub in Kadapa.`,
+      },
+      enthusiastic: {
+        headline: "Top Class Flex & Sign Board Work!",
+        text: (name, tags, note) =>
+          `Superb experience with ${name}! The banner colors, material durability, and neat finishing are top notch.${note ? ` Especially impressed with ${note}.` : ""} Reasonable prices and courteous staff. Highly recommended!`,
+      },
+    },
+  },
+
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
@@ -700,11 +740,23 @@ export function detectIndustry(
   if (
     normTag.includes("photography") ||
     normTag.includes("photo studio") ||
-    normTag.includes("custom gifts") ||
     normTag.includes("photo framing") ||
     normTag.includes("photo shoot")
   ) {
     return INDUSTRY_CONFIGS.PHOTOGRAPHY_STUDIO;
+  }
+
+  if (
+    normTag.includes("grafix") ||
+    normTag.includes("graphic") ||
+    normTag.includes("flex") ||
+    normTag.includes("banner") ||
+    normTag.includes("sign board") ||
+    normTag.includes("visiting card") ||
+    normTag.includes("offset") ||
+    normTag.includes("printing")
+  ) {
+    return INDUSTRY_CONFIGS.PRINTING_GRAPHICS;
   }
 
   if (
