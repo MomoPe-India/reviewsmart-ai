@@ -39,6 +39,7 @@ import {
   FileText,
   Layers,
   Palette,
+  Coins,
 } from "lucide-react";
 import BrandLogo, { BrandIcon } from "@/components/brand/BrandLogo";
 
@@ -113,6 +114,20 @@ const DEMO_MERCHANTS = [
     aiDraft:
       "Ordered our business flex banners and visiting cards from City Grafix Kadapa! The print quality is super crisp and the colors came out very vibrant. Delivered right on schedule, great work!",
     author: "Harish K.",
+  },
+  {
+    id: "gold",
+    name: "VR GOLD - KADAPA",
+    category: "Gold Buyers & Pledged Gold Release",
+    location: "Kadapa, Andhra Pradesh",
+    icon: Coins,
+    color: "#d97706",
+    logo: "/images/vr-gold-logo.png",
+    slug: "vrgold",
+    chips: ["Sell Gold for Cash", "Release Pledged Gold", "Instant Bank Transfer", "German Purity Testing", "Best Market Rate"],
+    aiDraft:
+      "Sold old gold jewellery at VR GOLD Kadapa! Purity was tested transparently on their German computerized machine, got live market bullion rate, and instant bank transfer in 2 minutes. Honest and reliable service!",
+    author: "Prasad R.",
   },
 ];
 

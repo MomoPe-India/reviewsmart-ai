@@ -288,10 +288,67 @@ const DOMAIN_LEXICONS: Record<string, DomainLexicon> = {
       "last week",
     ],
   },
+  gold: {
+    items: [
+      "selling old gold jewellery",
+      "releasing pledged gold from bank",
+      "purity testing on German XRF machine",
+      "instant bank transfer",
+      "gold valuation",
+      "gold coin sale",
+      "releasing gold loan from pawn broker",
+      "old broken gold ornaments",
+      "transparent digital weighing",
+      "live market gold rate",
+    ],
+    qualities: [
+      "German computerized XRF purity testing without damaging ornaments",
+      "100% transparent digital weighing right before our eyes",
+      "live bullion market gold rate without unnecessary melting deduction",
+      "quick 10-minute hassle-free verification process",
+      "spot IMPS / RTGS bank transfer credited within 2 minutes",
+      "friendly, respectful, and confidential handling of pledged gold release",
+      "releasing pledged gold from Muthoot / Manappuram / bank directly with complete paperwork",
+    ],
+    adjectives: [
+      "transparent and honest",
+      "safe and confidential",
+      "quick and professional",
+      "genuine and trustworthy",
+      "best market rate",
+      "smooth and hassle-free",
+      "reliable and polite",
+    ],
+    actions: [
+      "visited for",
+      "sold our",
+      "released our",
+      "got our",
+      "approached them for",
+      "checked gold valuation for",
+    ],
+    occasions: [
+      "for an urgent financial need",
+      "to close an existing gold loan",
+      "to sell old unused jewellery",
+      "for a quick bank transfer",
+      "recently",
+      "last week",
+      "yesterday",
+    ],
+  },
 };
 
 function getDomainLexicon(category = "", businessName = ""): DomainLexicon {
   const text = (category + " " + businessName).toLowerCase();
+  if (
+    text.includes("gold") ||
+    text.includes("pledge") ||
+    text.includes("bullion") ||
+    text.includes("jewel")
+  ) {
+    return DOMAIN_LEXICONS.gold;
+  }
   if (
     text.includes("grafix") ||
     text.includes("graphic") ||
@@ -344,6 +401,22 @@ function getDomainLexicon(category = "", businessName = ""): DomainLexicon {
     return DOMAIN_LEXICONS.health;
   }
   return DOMAIN_LEXICONS.general;
+}
+
+// ─── DOMAIN IDENTIFIER HELPERS ─────────────────────────────────────────────
+function isGoldDomain(bName: string, lex: DomainLexicon): boolean {
+  return (
+    bName.toLowerCase().includes("gold") ||
+    lex.items.some((i) => i.includes("gold") || i.includes("bullion") || i.includes("pledge"))
+  );
+}
+
+function isPrintingDomain(bName: string, lex: DomainLexicon): boolean {
+  return (
+    bName.toLowerCase().includes("grafix") ||
+    bName.toLowerCase().includes("flex") ||
+    lex.items.some((i) => i.includes("flex") || i.includes("banner") || i.includes("sign board"))
+  );
 }
 
 // ─── 18 HIGH-ENTROPY GENERATIVE WRITING STYLES ──────────────────────────────
@@ -411,36 +484,68 @@ function generateProductQuality(bName: string, tags: string[], note: string, lex
 function generateProblemSolution(bName: string, tags: string[], note: string, lex: DomainLexicon): string {
   const item = tags[0] || pickRandom(lex.items);
   const occasion = pickRandom(lex.occasions);
-  const problems = [
-    `Was searching for a trustworthy place for ${item} ${occasion}.`,
-    `Needed ${item} on relatively short notice.`,
-    `Had specific custom requirements for our ${item}.`,
-    `Was looking for someone who could do ${item} with proper care.`,
-    `Had an urgent order for ${item} and walked in here.`,
-    `Was looking around seven roads for good quality ${item}.`,
-    `Needed reliable assistance to finalize our ${item}.`,
-    `Wanted a custom ${item} done with high attention to detail.`,
-  ];
-  const solutions = [
-    `The team at ${bName} patiently understood the requirement and suggested the right options.`,
-    `They showed samples upfront and helped finalize the size and finish without rushing.`,
-    `Staff walked me through the choices clearly and gave a realistic delivery timeframe.`,
-    `They accommodated my preferences without making a fuss.`,
-    `The designer spent time showing multiple layouts before confirming.`,
-    `They guided me on the right finish and frame thickness without overselling.`,
-    `Team was quick to respond and gave honest feedback on photo resolution.`,
-    `Everything was handled transparently with clear delivery timing.`,
-  ];
-  const results = [
-    `Delivered right on time with flawless finishing.`,
-    `The final output exceeded what I anticipated.`,
-    `Everything was handed over smoothly in secure packaging.`,
-    `Very satisfied with the quick turnaround and neat outcome.`,
-    `The print clarity and frame border turned out spotless.`,
-    `Received the finished piece in pristine condition.`,
-    `Output matched the preview exactly, great workmanship.`,
-    `Turned out super crisp, happy with the choice.`,
-  ];
+  const gold = isGoldDomain(bName, lex);
+
+  const problems = gold
+    ? [
+        `Was searching for a trustworthy place for ${item} ${occasion}.`,
+        `Needed ${item} on relatively short notice.`,
+        `Was looking for someone who could handle ${item} with proper care and honesty.`,
+        `Had an urgent requirement for ${item} and walked in here.`,
+        `Needed reliable assistance to finalize our ${item}.`,
+        `Wanted genuine live rate and transparent valuation for our ${item}.`,
+      ]
+    : [
+        `Was searching for a trustworthy place for ${item} ${occasion}.`,
+        `Needed ${item} on relatively short notice.`,
+        `Had specific custom requirements for our ${item}.`,
+        `Was looking for someone who could do ${item} with proper care.`,
+        `Had an urgent order for ${item} and walked in here.`,
+        `Was looking around seven roads for good quality ${item}.`,
+        `Needed reliable assistance to finalize our ${item}.`,
+        `Wanted a custom ${item} done with high attention to detail.`,
+      ];
+
+  const solutions = gold
+    ? [
+        `The team at ${bName} patiently understood the requirement and explained the valuation steps.`,
+        `They tested purity right in front of me on German computerized equipment without any damage.`,
+        `Staff walked me through the live market bullion rate clearly and gave an accurate quote.`,
+        `They accommodated my preferences without making any fuss.`,
+        `Everything was weighed transparently on a digital scale with zero deductions.`,
+        `Everything was handled transparently with immediate bank transfer.`,
+      ]
+    : [
+        `The team at ${bName} patiently understood the requirement and suggested the right options.`,
+        `They showed samples upfront and helped finalize the size and finish without rushing.`,
+        `Staff walked me through the choices clearly and gave a realistic delivery timeframe.`,
+        `They accommodated my preferences without making a fuss.`,
+        `The designer spent time showing multiple layouts before confirming.`,
+        `They guided me on the right finish and frame thickness without overselling.`,
+        `Team was quick to respond and gave honest feedback on photo resolution.`,
+        `Everything was handled transparently with clear delivery timing.`,
+      ];
+
+  const results = gold
+    ? [
+        `Transaction was completed in 10 minutes with instant payment.`,
+        `The payout exceeded what other local shops were offering.`,
+        `Everything was handed over smoothly with proper paperwork.`,
+        `Very satisfied with the quick turnaround and transparent outcome.`,
+        `Received the full amount directly in my bank account via IMPS.`,
+        `Great honesty and courteous staff behavior throughout.`,
+      ]
+    : [
+        `Delivered right on time with flawless finishing.`,
+        `The final output exceeded what I anticipated.`,
+        `Everything was handed over smoothly in secure packaging.`,
+        `Very satisfied with the quick turnaround and neat outcome.`,
+        `The print clarity and frame border turned out spotless.`,
+        `Received the finished piece in pristine condition.`,
+        `Output matched the preview exactly, great workmanship.`,
+        `Turned out super crisp, happy with the choice.`,
+      ];
+
   const notePart = note ? ` Handled ${note.toLowerCase()} seamlessly.` : "";
   return `${pickRandom(problems)} ${pickRandom(solutions)}${notePart} ${pickRandom(results)}`;
 }
@@ -523,26 +628,45 @@ function generateDetailedReview(bName: string, tags: string[], note: string, lex
   const item1 = tags[0] || pickRandom(lex.items);
   const remaining = lex.items.filter((i) => i.toLowerCase() !== item1.toLowerCase());
   const item2 = tags[1] && tags[1].toLowerCase() !== item1.toLowerCase() ? tags[1] : pickRandom(remaining.length > 0 ? remaining : lex.items);
+  const gold = isGoldDomain(bName, lex);
 
-  const openers = [
-    `Coordinated with ${bName} for our ${item1} order.`,
-    `Had customized work done here for ${item1}.`,
-    `Visited ${bName} specifically for ${item1} and framing.`,
-    `Went to ${bName} after a colleague recommended their ${item1}.`,
-    `Needed a high quality finish for ${item1} and stopped by here.`,
-  ];
-  const middles = [
-    `First, the team patiently helped choose the right border and dimensions. Second, delivery was prompt.`,
-    `Communication was clear from the start and they didn't try to rush any stage of the work.`,
-    `The sharpness of the output and clean alignment on ${item2} exceeded expectations.`,
-    `Charges were explained clearly upfront and the final output looks really premium.`,
-    `They handled the color grading and packaging with genuine care and precision.`,
-  ];
+  const openers = gold
+    ? [
+        `Coordinated with ${bName} for our ${item1}.`,
+        `Had service done here for ${item1}.`,
+        `Visited ${bName} specifically for ${item1} and gold valuation.`,
+        `Went to ${bName} after a colleague recommended their ${item1}.`,
+        `Needed a transparent and reliable service for ${item1} and stopped by here.`,
+      ]
+    : [
+        `Coordinated with ${bName} for our ${item1} order.`,
+        `Had customized work done here for ${item1}.`,
+        `Visited ${bName} specifically for ${item1} and framing.`,
+        `Went to ${bName} after a colleague recommended their ${item1}.`,
+        `Needed a high quality finish for ${item1} and stopped by here.`,
+      ];
+
+  const middles = gold
+    ? [
+        `First, the team patiently tested purity on their German machine. Second, bank payment was immediate.`,
+        `Communication was clear from the start and they didn't try to rush any stage of the valuation.`,
+        `The accuracy of digital weighing and fair live market rate on ${item2} exceeded expectations.`,
+        `Charges and live bullion rates were explained clearly upfront with zero hidden deductions.`,
+        `They handled the verification and paperwork with genuine care, safety, and complete confidentiality.`,
+      ]
+    : [
+        `First, the team patiently helped choose the right border and dimensions. Second, delivery was prompt.`,
+        `Communication was clear from the start and they didn't try to rush any stage of the work.`,
+        `The sharpness of the output and clean alignment on ${item2} exceeded expectations.`,
+        `Charges were explained clearly upfront and the final output looks really premium.`,
+        `They handled the color grading and packaging with genuine care and precision.`,
+      ];
+
   const closers = [
     `A well-managed spot that takes pride in quality.`,
     `Dependable service from start to finish.`,
     `Five stars for reliability and neat execution.`,
-    `Completely satisfied with both the process and product.`,
+    `Completely satisfied with both the process and service.`,
     `Will certainly be coming back for future requirements.`,
   ];
   const notePart = note ? ` Especially liked how they handled ${note.toLowerCase()}.` : "";
@@ -724,32 +848,81 @@ function generateStaffService(bName: string, tags: string[], note: string, lex: 
 // Style 16: Telugu Conversational Experience (Telugu Script)
 function generateTeluguConversational(bName: string, tags: string[], note: string, lex: DomainLexicon): string {
   const item = tags[0] || pickRandom(lex.items);
-  const openers = [
-    `మా requirement ని అర్థం చేసుకుని ${item} చాలా neat గా చేశారు.`,
-    `${bName} లో సర్వీస్ చాలా బాగుంది.`,
-    `రీసెంట్‌గా ఇక్కడ ${item} ఆర్డర్ ఇచ్చాను.`,
-    `ఫ్యామిలీ ఫంక్షన్ కోసం ${item} చేయించాము.`,
-    `స్టాఫ్ చాలా ఫ్రెండ్లీగా రిసీవ్ చేసుకున్నారు.`,
-    `${bName} లో మొదటిసారి ${item} చేయించాము.`,
-    `మంచి ఫోటో స్టూడియో కోసం చూసి ఇక్కడికి వెళ్ళాము.`,
-    `కస్టమైజ్డ్ ${item} కోసం ఇక్కడికి వెళ్ళాము, చాలా మంచి అనుభవం.`,
-  ];
-  const middles = [
-    `స్టాఫ్ చాలా ఓపికగా ఆప్షన్స్ చూపించారు, ఎక్కడా కంగారు పెట్టలేదు.`,
-    `వర్క్ చాలా ప్రొఫెషనల్‌గా చేశారు, మాకు చాలా బాగా నచ్చింది.`,
-    `టైమ్‌కి రెడీ చేసి ఇచ్చారు, క్వాలిటీ లో ఎక్కడా రాజీ పడలేదు.`,
-    `మా బడ్జెట్‌కి తగినట్లు మంచి సలహాలు ఇచ్చి చాలా చక్కగా చేశారు.`,
-    `ఫోటో క్రాపింగ్ మరియు కలర్ కరెక్షన్ చాలా జాగ్రత్తగా చేశారు.`,
-    `కమ్యూనికేషన్ చాలా బాగుంది, ఆర్డర్ స్టేటస్ కూడా క్లియర్ గా చెప్పారు.`,
-  ];
-  const closers = [
-    `Thank you ${bName}!`,
-    `ఖచ్చితంగా మళ్ళీ ఇక్కడే చేయించుకుంటాము.`,
-    `మంచి షాప్, definitely recommend!`,
-    `చాలా సంతోషంగా ఉంది.`,
-    `మా ఫ్యామిలీ అందరికీ నచ్చింది, ధన్యవాదాలు!`,
-    `కడపలో బెస్ట్ సర్వీస్ ఇచ్చే షాప్.`,
-  ];
+  const gold = isGoldDomain(bName, lex);
+  const printing = isPrintingDomain(bName, lex);
+
+  const openers = gold
+    ? [
+        `పాత బంగారం అమ్మడానికి ${bName} కి వెళ్ళాము, చాలా మంచి అనుభవం.`,
+        `బ్యాంకులో తాకట్టు పెట్టిన బంగారం విడిపించడానికి ${bName} ని సంప్రదించాము.`,
+        `గోల్డ్ వాల్యుయేషన్ మరియు సెల్లింగ్ ప్రాసెస్ ${bName} లో చాలా ఫాస్ట్‌గా జరిగింది.`,
+        `${bName} లో సర్వీస్ మరియు స్టాఫ్ రెస్పాన్స్ చాలా బాగుంది.`,
+        `మా requirement ని అర్థం చేసుకుని ${item} చాలా genuine గా చేశారు.`,
+      ]
+    : printing
+    ? [
+        `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
+        `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
+        `${bName} లో ఫ్లెక్స్ ప్రింటింగ్ సర్వీస్ చాలా బాగుంది.`,
+        `మా requirement ని అర్థం చేసుకుని ${item} చాలా neat గా చేశారు.`,
+      ]
+    : [
+        `మా requirement ని అర్థం చేసుకుని ${item} చాలా neat గా చేశారు.`,
+        `${bName} లో సర్వీస్ చాలా బాగుంది.`,
+        `రీసెంట్‌గా ఇక్కడ ${item} ఆర్డర్ ఇచ్చాను.`,
+        `ఫ్యామిలీ ఫంక్షన్ కోసం ${item} చేయించాము.`,
+        `స్టాఫ్ చాలా ఫ్రెండ్లీగా రిసీవ్ చేసుకున్నారు.`,
+        `${bName} లో మొదటిసారి ${item} చేయించాము.`,
+        `మంచి ఫోటో స్టూడియో కోసం చూసి ఇక్కడికి వెళ్ళాము.`,
+        `కస్టమైజ్డ్ ${item} కోసం ఇక్కడికి వెళ్ళాము, చాలా మంచి అనుభవం.`,
+      ];
+
+  const middles = gold
+    ? [
+        `స్టాఫ్ చాలా ఓపికగా వివరాలు చెప్పారు, ఎక్కడా కంగారు పెట్టలేదు.`,
+        `కంప్యూటరైజ్డ్ జర్మన్ మెషిన్ లో ప్యూరిటీ చెక్ చేసి ట్రాన్స్‌పరెంట్ గా రేట్ ఇచ్చారు.`,
+        `లైవ్ మార్కెట్ రేటు ప్రకారం కరెక్ట్ గా క్యాలిక్యులేట్ చేసి స్పాట్ లో పేమెంట్ చేశారు.`,
+        `డిజిటల్ వెయింగ్ లో ఎక్కడా తేడా లేకుండా కరెక్ట్ గా తూకం వేశారు.`,
+      ]
+    : printing
+    ? [
+        `స్టాఫ్ చాలా ఓపికగా ఆప్షన్స్ చూపించారు, ఎక్కడా కంగారు పెట్టలేదు.`,
+        `వర్క్ చాలా ప్రొఫెషనల్‌గా చేశారు, మాకు చాలా బాగా నచ్చింది.`,
+        `టైమ్‌కి రెడీ చేసి ఇచ్చారు, క్వాలిటీ లో ఎక్కడా రాజీ పడలేదు.`,
+        `కలర్ ప్రింటింగ్ మరియు బోర్డర్ అలైన్‌మెంట్ చాలా సాలిడ్‌గా వచ్చాయి.`,
+      ]
+    : [
+        `స్టాఫ్ చాలా ఓపికగా ఆప్షన్స్ చూపించారు, ఎక్కడా కంగారు పెట్టలేదు.`,
+        `వర్క్ చాలా ప్రొఫెషనల్‌గా చేశారు, మాకు చాలా బాగా నచ్చింది.`,
+        `టైమ్‌కి రెడీ చేసి ఇచ్చారు, క్వాలిటీ లో ఎక్కడా రాజీ పడలేదు.`,
+        `మా బడ్జెట్‌కి తగినట్లు మంచి సలహాలు ఇచ్చి చాలా చక్కగా చేశారు.`,
+        `ఫోటో క్రాపింగ్ మరియు కలర్ కరెక్షన్ చాలా జాగ్రత్తగా చేశారు.`,
+        `కమ్యూనికేషన్ చాలా బాగుంది, ఆర్డర్ స్టేటస్ కూడా క్లియర్ గా చెప్పారు.`,
+      ];
+
+  const closers = gold
+    ? [
+        `బంగారం అమ్మడానికి కడపలో బెస్ట్ మరియు నమ్మకమైన గోల్డ్ బయర్స్!`,
+        `100% సేఫ్ మరియు ట్రాన్స్‌పరెంట్ సర్వీస్, థాంక్యూ ${bName}!`,
+        `Thank you ${bName}!`,
+        `కడపలో బెస్ట్ సర్వీస్ ఇచ్చే షాప్.`,
+      ]
+    : printing
+    ? [
+        `ఫ్లెక్స్ ప్రింటింగ్ మరియు సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ షాప్.`,
+        `Thank you ${bName}!`,
+        `మంచి షాప్, definitely recommend!`,
+        `కడపలో బెస్ట్ సర్వీస్ ఇచ్చే షాప్.`,
+      ]
+    : [
+        `Thank you ${bName}!`,
+        `ఖచ్చితంగా మళ్ళీ ఇక్కడే చేయించుకుంటాము.`,
+        `మంచి షాప్, definitely recommend!`,
+        `చాలా సంతోషంగా ఉంది.`,
+        `మా ఫ్యామిలీ అందరికీ నచ్చింది, ధన్యవాదాలు!`,
+        `కడపలో బెస్ట్ సర్వీస్ ఇచ్చే షాప్.`,
+      ];
+
   let review = `${pickRandom(openers)} ${pickRandom(middles)} ${pickRandom(closers)}`;
   if (note) review += ` ${note} కూడా proper గా handle చేశారు.`;
   return review;
@@ -758,28 +931,70 @@ function generateTeluguConversational(bName: string, tags: string[], note: strin
 // Style 17: Telugu Craftsmanship & Quality Focus (Telugu Script)
 function generateTeluguCraftsmanship(bName: string, tags: string[], note: string, lex: DomainLexicon): string {
   const item = tags[0] || pickRandom(lex.items);
-  const openers = [
-    `${item} ఫినిషింగ్ అయితే super rich గా వచ్చింది.`,
-    `ఫొటో ప్రింట్స్ మరియు ఫ్రేమ్ వర్క్ చాలా neat గా చేశారు.`,
-    `వర్క్ చాలా clean గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
-    `${bName} దగ్గర వర్క్‌మెన్‌షిప్ చాలా పర్ఫెక్ట్‌గా ఉంది.`,
-    `${item} క్లారిటీ విషయంలో అస్సలు రాజీ పడలేదు.`,
-    `ప్రింట్ క్వాలిటీ మరియు బోర్డర్ అలైన్‌మెంట్ చాలా సాలిడ్.`,
-  ];
-  const middles = [
-    `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, ఎక్కడా బ్లర్ లేదు.`,
-    `ఫ్రేమ్ క్వాలిటీ మరియు బ్యాకింగ్ చాలా సాలిడ్‌గా ఉంది.`,
-    `ఫినిషింగ్ మరియు గ్లాస్ వర్క్ చాలా క్లీన్‌గా ఉన్నాయి.`,
-    `ప్రీమియం లుక్ వచ్చింది, వాల్ డెకరేషన్‌కి పర్ఫెక్ట్‌గా సెట్ అయ్యింది.`,
-    `మంచి మన్నికైన మెటీరియల్ వాడారు, వర్క్ చాలా జెన్యూన్.`,
-  ];
-  const closers = [
-    `వర్త్ ఎవ్రీ రూపీ!`,
-    `క్వాలిటీ విషయంలో సూపర్బ్.`,
-    `హైలీ శాటిస్‌ఫైడ్ విత్ ది అవుట్‌పుట్!`,
-    `మంచి క్వాలిటీ వర్క్, థాంక్యూ.`,
-    `క్వాలిటీ వర్క్ కోరుకునేవారికి ది బెస్ట్ ఛాయిస్.`,
-  ];
+  const gold = isGoldDomain(bName, lex);
+  const printing = isPrintingDomain(bName, lex);
+
+  const openers = gold
+    ? [
+        `${item} టెస్టింగ్ మరియు వెయింగ్ లో 100% ట్రాన్స్‌పరెన్సీ చూపించారు.`,
+        `${bName} లో గోల్డ్ వాల్యుయేషన్ మరియు లైవ్ మార్కెట్ రేటు చాలా జెన్యూన్ గా ఇచ్చారు.`,
+        `ప్యూరిటీ టెస్టింగ్ విధానం చాలా పర్ఫెక్ట్‌గా మరియు శాస్త్రీయంగా ఉంది.`,
+      ]
+    : printing
+    ? [
+        `${item} క్వాలిటీ మరియు ప్రింట్ ఫినిషింగ్ super rich గా వచ్చింది.`,
+        `ఫ్లెక్స్ బోర్డ్స్ మరియు విజిటింగ్ కార్డ్స్ చాలా neat గా చేశారు.`,
+        `వర్క్ చాలా clean గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
+      ]
+    : [
+        `${item} ఫినిషింగ్ అయితే super rich గా వచ్చింది.`,
+        `ఫొటో ప్రింట్స్ మరియు ఫ్రేమ్ వర్క్ చాలా neat గా చేశారు.`,
+        `వర్క్ చాలా clean గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
+        `${bName} దగ్గర వర్క్‌మెన్‌షిప్ చాలా పర్ఫెక్ట్‌గా ఉంది.`,
+        `${item} క్లారిటీ విషయంలో అస్సలు రాజీ పడలేదు.`,
+        `ప్రింట్ క్వాలిటీ మరియు బోర్డర్ అలైన్‌మెంట్ చాలా సాలిడ్.`,
+      ];
+
+  const middles = gold
+    ? [
+        `కంటి ముందే డిజిటల్ స్కేల్ మీద బరువు తూచారు, వేస్టేజ్ ఏమీ కట్ చేయలేదు.`,
+        `కంప్యూటర్ టెస్టింగ్ తో బంగారం ప్యూరిటీ కరెక్ట్ గా నిర్ధారించారు.`,
+        `లైవ్ గోల్డ్ రేట్ ఇచ్చి వెంటనే బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+      ]
+    : printing
+    ? [
+        `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, ఎండకి ఏమాత్రం ఫేడ్ అవ్వవు.`,
+        `మెటీరియల్ మన్నిక మరియు ప్రింటింగ్ క్వాలిటీ చాలా సాలిడ్‌గా ఉన్నాయి.`,
+        `డిజైనింగ్ మరియు కటింగ్ చాలా క్లీన్‌గా ఉన్నాయి.`,
+      ]
+    : [
+        `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, ఎక్కడా బ్లర్ లేదు.`,
+        `ఫ్రేమ్ క్వాలిటీ మరియు బ్యాకింగ్ చాలా సాలిడ్‌గా ఉంది.`,
+        `ఫినిషింగ్ మరియు గ్లాస్ వర్క్ చాలా క్లీన్‌గా ఉన్నాయి.`,
+        `ప్రీమియం లుక్ వచ్చింది, వాల్ డెకరేషన్‌కి పర్ఫెక్ట్‌గా సెట్ అయ్యింది.`,
+        `మంచి మన్నికైన మెటీరియల్ వాడారు, వర్క్ చాలా జెన్యూన్.`,
+      ];
+
+  const closers = gold
+    ? [
+        `వర్త్ ఎవ్రీ రూపీ!`,
+        `కడపలో బెస్ట్ మరియు జెన్యూన్ గోల్డ్ బయర్స్.`,
+        `హైలీ శాటిస్‌ఫైడ్ విత్ ది సర్వీస్!`,
+      ]
+    : printing
+    ? [
+        `వర్త్ ఎవ్రీ రూపీ!`,
+        `క్వాలిటీ ప్రింటింగ్ కోరుకునేవారికి ది బెస్ట్ ఛాయిస్.`,
+        `హైలీ శాటిస్‌ఫైడ్ విత్ ది అవుట్‌పుట్!`,
+      ]
+    : [
+        `వర్త్ ఎవ్రీ రూపీ!`,
+        `క్వాలిటీ విషయంలో సూపర్బ్.`,
+        `హైలీ శాటిస్‌ఫైడ్ విత్ ది అవుట్‌పుట్!`,
+        `మంచి క్వాలిటీ వర్క్, థాంక్యూ.`,
+        `క్వాలిటీ వర్క్ కోరుకునేవారికి ది బెస్ట్ ఛాయిస్.`,
+      ];
+
   let review = `${pickRandom(openers)} ${pickRandom(middles)} ${pickRandom(closers)}`;
   if (note) review += ` ${note} వర్క్ కూడా బాగా చేశారు.`;
   return review;
@@ -788,13 +1003,32 @@ function generateTeluguCraftsmanship(bName: string, tags: string[], note: string
 // Style 18: Telugu Short & Punchy (Telugu Script)
 function generateTeluguPunchy(bName: string, tags: string[], note: string, lex: DomainLexicon): string {
   const item = tags[0] || pickRandom(lex.items);
-  const variations = [
-    `మంచి క్వాలిటీ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
-    `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
-    `చక్కటి సర్వీస్. అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
-    `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. ఫ్యామిలీ అందరికీ బాగా నచ్చింది.`,
-    `మంచి రెస్పాన్స్, ప్రాంప్ట్ వర్క్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
-  ];
+  const gold = isGoldDomain(bName, lex);
+  const printing = isPrintingDomain(bName, lex);
+
+  const variations = gold
+    ? [
+        `కంప్యూటర్ టెస్టింగ్ మరియు లైవ్ రేట్ ఇచ్చారు. ప్రాసెస్ చాలా ఫాస్ట్.`,
+        `${item} చాలా జెన్యూన్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `చక్కటి సర్వీస్. స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు నమ్మకమైన డీలింగ్స్. 10 నిమిషాల్లో కంప్లీట్ అయ్యింది.`,
+        `మంచి రెస్పాన్స్, జెన్యూన్ గోల్డ్ రేట్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
+      ]
+    : printing
+    ? [
+        `మంచి క్వాలిటీ ప్రింటింగ్ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
+        `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `చక్కటి సర్వీస్. ప్రింట్ అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. బ్యానర్ కలర్స్ సూపర్.`,
+        `మంచి రెస్పాన్స్, ప్రాంప్ట్ వర్క్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
+      ]
+    : [
+        `మంచి క్వాలిటీ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
+        `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `చక్కటి సర్వీస్. అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. ఫ్యామిలీ అందరికీ బాగా నచ్చింది.`,
+        `మంచి రెస్పాన్స్, ప్రాంప్ట్ వర్క్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
+      ];
   let chosen = pickRandom(variations);
   if (note) chosen += ` ${note} బాగా చేశారు.`;
   return chosen;
@@ -803,33 +1037,76 @@ function generateTeluguPunchy(bName: string, tags: string[], note: string, lex: 
 // Style 19: Telugu Romanized Code-Mixing (Tanglish)
 function generateTeluguRoman(bName: string, tags: string[], note: string, lex: DomainLexicon): string {
   const item = tags[0] || pickRandom(lex.items);
-  const openers = [
-    `Chala baga chesaru, ${item} finishing aithe super neat ga vachindi.`,
-    `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
-    `${item} quality super ga vachindi, expected danikante better undi.`,
-    `Time ki ready chesi icharu, photo clarity taggakunda chusukunnaru.`,
-    `Kadapa lo good shop for ${item}, customized gifts and framing works.`,
-    `Cup printing and magic pillow gift kosam visit ayyamu, quality awesome ga undi.`,
-    `Big size photo frame print resolution and framing finish top notch undi.`,
-    `Shop opening ki flex banner and sign board cheyinchamu, colors and clarity superb ga vachayi.`,
-    `Visiting cards and brochures design chala professional ga chesi icharu.`,
-  ];
-  const middles = [
-    `Staff chala patient ga requirements vinnaaru.`,
-    `Colors and frame border quality chala solid ga unai.`,
-    `Pricing kuda fair ga undi, no unnecessary delays.`,
-    `Family members andariki chala nachindi output.`,
-    `Print colors chala vibrant ga unnai, packaging kuda safe ga chesi icharu.`,
-    `Flex banner material quality thick ga undi, rain or sun ki fade avvadhu.`,
-    `Design layout and font alignment chala perfect ga set chesaru.`,
-  ];
-  const closers = [
-    `Will visit again for sure!`,
-    `Thanks to ${bName} team.`,
-    `Worth it, satisfied customer!`,
-    `Super service!`,
-    `Kadapa lo best place for printing and signage!`,
-  ];
+  const gold = isGoldDomain(bName, lex);
+  const printing = isPrintingDomain(bName, lex);
+
+  const openers = gold
+    ? [
+        `Old gold sell cheyadaniki ${bName} visit ayyamu, pure transparent testing chesaru.`,
+        `Bank lo unna pledged gold release cheyinchamu, instant ga account lo money transfer ayyindi.`,
+        `Kadapa lo best gold buyers, accurate weighing and live market bullion rate icharu.`,
+        `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
+      ]
+    : printing
+    ? [
+        `Shop opening ki flex banner and sign board cheyinchamu, colors and clarity superb ga vachayi.`,
+        `Visiting cards and brochures design chala professional ga chesi icharu.`,
+        `Chala baga chesaru, ${item} printing aithe super neat ga vachindi.`,
+        `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
+      ]
+    : [
+        `Chala baga chesaru, ${item} finishing aithe super neat ga vachindi.`,
+        `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
+        `${item} quality super ga vachindi, expected danikante better undi.`,
+        `Time ki ready chesi icharu, photo clarity taggakunda chusukunnaru.`,
+        `Kadapa lo good shop for ${item}, customized gifts and framing works.`,
+        `Cup printing and magic pillow gift kosam visit ayyamu, quality awesome ga undi.`,
+        `Big size photo frame print resolution and framing finish top notch undi.`,
+      ];
+
+  const middles = gold
+    ? [
+        `German machine lo purity test chesi clear ga explain chesaru.`,
+        `Spot payment direct ga bank transfer chesaru without any delay.`,
+        `Staff chala patient ga explain chesaru, 100% transparent.`,
+        `Live market bullion rate icharu, no unnecessary deductions.`,
+      ]
+    : printing
+    ? [
+        `Flex banner material quality thick ga undi, rain or sun ki fade avvadhu.`,
+        `Design layout and font alignment chala perfect ga set chesaru.`,
+        `Print colors chala vibrant ga unnai, packaging kuda safe ga chesi icharu.`,
+        `Pricing kuda fair ga undi, no unnecessary delays.`,
+      ]
+    : [
+        `Staff chala patient ga requirements vinnaaru.`,
+        `Colors and frame border quality chala solid ga unai.`,
+        `Pricing kuda fair ga undi, no unnecessary delays.`,
+        `Family members andariki chala nachindi output.`,
+        `Print colors chala vibrant ga unnai, packaging kuda safe ga chesi icharu.`,
+      ];
+
+  const closers = gold
+    ? [
+        `Kadapa lo best place to sell old gold and release pledged gold!`,
+        `Thanks to ${bName} team.`,
+        `Worth it, satisfied customer!`,
+        `Super service and genuine valuation!`,
+      ]
+    : printing
+    ? [
+        `Kadapa lo best place for printing and signage!`,
+        `Thanks to ${bName} team.`,
+        `Worth it, satisfied customer!`,
+        `Super service!`,
+      ]
+    : [
+        `Will visit again for sure!`,
+        `Thanks to ${bName} team.`,
+        `Worth it, satisfied customer!`,
+        `Super service!`,
+      ];
+
   let review = `${pickRandom(openers)} ${pickRandom(middles)} ${pickRandom(closers)}`;
   if (note) {
     review += ` ${note} kuda chala baga manage chesaru.`;
@@ -862,41 +1139,79 @@ function generateValuePricing(bName: string, tags: string[], note: string, lex: 
 // Style 20: Telugu Occasion, Wedding & Event Context (Telugu Script)
 function generateTeluguOccasion(bName: string, tags: string[], note: string, lex: DomainLexicon): string {
   const item = tags[0] || pickRandom(lex.items);
-  const openers = [
-    `మా పెళ్ళికి candid wedding photography మరియు cinematic video కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
-    `Pre-wedding shoot కోసం ${bName} టీమ్ ని సెలెక్ట్ చేశాము, చాలా మంచి అవుట్‌పుట్ ఇచ్చారు.`,
-    `బర్త్‌డే సర్ప్రైజ్ గిఫ్ట్ కోసం ${item} చేయించాము.`,
-    `మ్యారేజ్ యానివర్సరీ ఫోటో ఫ్రేమ్ ${bName} లో చేయించాము.`,
-    `ఫ్రెండ్స్ అందరం కలిసి ఒక మెమరీ ${item} ఆర్డర్ ఇచ్చాము.`,
-    `కొత్త ఇంటి గృహప్రవేశం కోసం పెద్ద వాల్ ఫ్రేమ్ చేయించాము.`,
-    `అమ్మనాన్నల యానివర్సరీ కోసం ${item} చేయించాము, చాలా బాగా వచ్చింది.`,
-    `మా పాప పుట్టినరోజు కోసం స్పెషల్ ${item} చేయించాము.`,
-    `మా ఈవెంట్ కవరేజ్ మరియు ${item} చాలా ప్రొఫెషనల్ గా చేశారు.`,
-    `ఫ్రెండ్‌కి స్పెషల్ సర్ప్రైజ్ కోసం కప్ ప్రింటింగ్ మరియు మ్యాజిక్ పిల్లో ఆర్డర్ ఇచ్చాము.`,
-    `హాల్ కోసం పెద్ద సైజు ఫోటో ఫ్రేమ్ (big size photo) చేయించాము, ఇంట్లో అందరికీ చాలా నచ్చింది.`,
-    `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
-    `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
-  ];
-  const middles = [
-    `డ్రోన్ షాట్స్ మరియు సినిమాటిక్ ఎడిటింగ్ చాలా రిచ్ గా వచ్చాయి.`,
-    `ఫోటోలలో నాచురల్ స్మైల్స్ మరియు ప్రతి క్షణాన్ని చాలా అందంగా క్యాప్చర్ చేశారు.`,
-    `ఫోటో సెలెక్షన్ మరియు క్రాపింగ్ లో స్టాఫ్ చాలా ఓపికగా సహాయం చేశారు.`,
-    `ఫినిషింగ్ చూసి ఇంట్లో అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
-    `లైటింగ్ మరియు కలర్ గ్రేడింగ్ హై ఎండ్ సినిమా రేంజ్ లో ఉంది.`,
-    `ఆల్బమ్ డిజైన్ మరియు ప్రింట్ క్వాలిటీ చూసి ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
-    `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, ఫ్రేమ్ లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
-    `మ్యాజిక్ పిల్లో రివీల్ ఎఫెక్ట్ మరియు కప్ ప్రింటింగ్ క్లారిటీ అదిరిపోయింది.`,
-    `ఫ్లెక్స్ ప్రింట్ చాలా షార్ప్‌గా వచ్చింది, ఎండలో కూడా కలర్స్ ఏమాత్రం డల్ అవ్వలేదు.`,
-    `గ్రాఫిక్ డిజైనింగ్ చాలా క్రియేటివ్‌గా చేశారు, లేఅవుట్ చాలా నచ్చింది.`,
-  ];
-  const closers = [
-    `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
-    `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
-    `వెడ్డింగ్ ఫోటోగ్రఫీ, కస్టమైజ్డ్ గిఫ్ట్స్ మరియు ఫ్రేమ్స్ కి కడపలో బెస్ట్ ప్లేస్.`,
-    `ఫ్లెక్స్ ప్రింటింగ్, సైన్ బోర్డ్స్ మరియు డిజైనింగ్ కి కడపలో బెస్ట్ షాప్.`,
-    `టీమ్ ఎఫర్ట్ మరియు డెడికేషన్ కి హ్యాట్సాఫ్!`,
-    `చాలా తృప్తిగా ఉంది.`,
-  ];
+  const gold = isGoldDomain(bName, lex);
+  const printing = isPrintingDomain(bName, lex);
+
+  const openers = gold
+    ? [
+        `అర్జెంట్ ఫైనాన్షియల్ అవసరం కోసం పాత బంగారం అమ్మడానికి ${bName} కి వెళ్ళాము.`,
+        `బ్యాంక్ గోల్డ్ లోన్ క్లోజ్ చేసి ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసుకోవడానికి ${bName} టీమ్ సహాయం తీసుకున్నాము.`,
+        `పాత గోల్డ్ ఆర్నమెంట్స్ సేల్ చేయడానికి ${bName} కి వెళ్ళాము, ప్రాసెస్ చాలా స్పీడ్‌గా జరిగింది.`,
+        `ఇంట్లో ఉన్న పాత బంగారం అమ్మడానికి మంచి షాప్ కోసం చూసి ${bName} ని సంప్రదించాము.`,
+      ]
+    : printing
+    ? [
+        `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
+        `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
+        `ఈవెంట్ ప్రమోషన్ కోసం flex banners మరియు posters ఆర్డర్ ఇచ్చాము.`,
+      ]
+    : [
+        `మా పెళ్ళికి candid wedding photography మరియు cinematic video కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
+        `Pre-wedding shoot కోసం ${bName} టీమ్ ని సెలెక్ట్ చేశాము, చాలా మంచి అవుట్‌పుట్ ఇచ్చారు.`,
+        `బర్త్‌డే సర్ప్రైజ్ గిఫ్ట్ కోసం ${item} చేయించాము.`,
+        `మ్యారేజ్ యానివర్సరీ ఫోటో ఫ్రేమ్ ${bName} లో చేయించాము.`,
+        `ఫ్రెండ్స్ అందరం కలిసి ఒక మెమరీ ${item} ఆర్డర్ ఇచ్చాము.`,
+        `కొత్త ఇంటి గృహప్రవేశం కోసం పెద్ద వాల్ ఫ్రేమ్ చేయించాము.`,
+        `అమ్మనాన్నల యానివర్సరీ కోసం ${item} చేయించాము, చాలా బాగా వచ్చింది.`,
+        `మా పాప పుట్టినరోజు కోసం స్పెషల్ ${item} చేయించాము.`,
+        `మా ఈవెంట్ కవరేజ్ మరియు ${item} చాలా ప్రొఫెషనల్ గా చేశారు.`,
+        `ఫ్రెండ్‌కి స్పెషల్ సర్ప్రైజ్ కోసం కప్ ప్రింటింగ్ మరియు మ్యాజిక్ పిల్లో ఆర్డర్ ఇచ్చాము.`,
+        `హాల్ కోసం పెద్ద సైజు ఫోటో ఫ్రేమ్ (big size photo) చేయించాము, ఇంట్లో అందరికీ చాలా నచ్చింది.`,
+      ];
+
+  const middles = gold
+    ? [
+        `వాళ్ళే స్వయంగా బ్యాంక్ కి వచ్చి పేపర్ వర్క్ క్లియర్ చేసి గోల్డ్ రిలీజ్ చేయించారు.`,
+        `10 నిమిషాల్లో ప్యూరిటీ చెక్ పూర్తి చేసి లైవ్ బులియన్ రేటు ప్రకారం అమౌంట్ సెటిల్ చేశారు.`,
+        `కంప్యూటరైజ్డ్ జర్మన్ మెషిన్ లో ప్యూరిటీ చెక్ చేసి ఎక్కడా వేస్టేజ్ లేకుండా రేట్ ఇచ్చారు.`,
+        `డిజిటల్ స్కేల్ మీద మా కంటి ముందే తూకం వేసి స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+      ]
+    : printing
+    ? [
+        `ఫ్లెక్స్ ప్రింట్ చాలా షార్ప్‌గా వచ్చింది, ఎండలో కూడా కలర్స్ ఏమాత్రం డల్ అవ్వలేదు.`,
+        `గ్రాఫిక్ డిజైనింగ్ చాలా క్రియేటివ్‌గా చేశారు, లేఅవుట్ చాలా నచ్చింది.`,
+        `కలర్ క్వాలిటీ మరియు మెటీరియల్ మన్నిక చాలా బాగుంది.`,
+      ]
+    : [
+        `డ్రోన్ షాట్స్ మరియు సినిమాటిక్ ఎడిటింగ్ చాలా రిచ్ గా వచ్చాయి.`,
+        `ఫోటోలలో నాచురల్ స్మైల్స్ మరియు ప్రతి క్షణాన్ని చాలా అందంగా క్యాప్చర్ చేశారు.`,
+        `ఫోటో సెలెక్షన్ మరియు క్రాపింగ్ లో స్టాఫ్ చాలా ఓపికగా సహాయం చేశారు.`,
+        `ఫినిషింగ్ చూసి ఇంట్లో అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
+        `లైటింగ్ మరియు కలర్ గ్రేడింగ్ హై ఎండ్ సినిమా రేంజ్ లో ఉంది.`,
+        `ఆల్బమ్ డిజైన్ మరియు ప్రింట్ క్వాలిటీ చూసి ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
+        `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, ఫ్రేమ్ లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
+        `మ్యాజిక్ పిల్లో రివీల్ ఎఫెక్ట్ మరియు కప్ ప్రింటింగ్ క్లారిటీ అదిరిపోయింది.`,
+      ];
+
+  const closers = gold
+    ? [
+        `కడపలో తాకట్టు బంగారం విడిపించడానికి మరియు అమ్మడానికి ది బెస్ట్ సర్వీస్!`,
+        `బంగారం అమ్మడానికి కడపలో 100% నమ్మకమైన షాప్, థాంక్యూ ${bName}!`,
+        `చాలా జెన్యూన్ సర్వీస్, అందరికీ రికమండ్ చేస్తున్నాను.`,
+      ]
+    : printing
+    ? [
+        `ఫ్లెక్స్ ప్రింటింగ్, సైన్ బోర్డ్స్ మరియు డిజైనింగ్ కి కడపలో బెస్ట్ షాప్.`,
+        `థాంక్యూ ${bName}, క్వాలిటీ వర్క్ కి బెస్ట్ ప్లేస్!`,
+      ]
+    : [
+        `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
+        `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
+        `వెడ్డింగ్ ఫోటోగ్రఫీ, కస్టమైజ్డ్ గిఫ్ట్స్ మరియు ఫ్రేమ్స్ కి కడపలో బెస్ట్ ప్లేస్.`,
+        `టీమ్ ఎఫర్ట్ మరియు డెడికేషన్ కి హ్యాట్సాఫ్!`,
+        `చాలా తృప్తిగా ఉంది.`,
+      ];
+
   let review = `${pickRandom(openers)} ${pickRandom(middles)} ${pickRandom(closers)}`;
   if (note) review += ` ${note} వర్క్ కూడా పర్ఫెక్ట్‌గా చేశారు.`;
   return review;
@@ -913,6 +1228,8 @@ function buildDynamicHeadline(text: string, lang: string): string {
       "Super Quality & Reasonable Price",
       "మంచి సర్వీస్ & సాలిడ్ క్వాలిటీ",
       "Super Flex Printing & Great Design",
+      "100% Genuine Gold Rate & Instant Cash",
+      "Spot Bank Transfer & Best Valuation",
     ];
     return pickRandom(telHeadlines);
   }
@@ -924,6 +1241,8 @@ function buildDynamicHeadline(text: string, lang: string): string {
       "Solid Quality & Friendly Staff",
       "Worth It & Happy with Output",
       "Top Printing Quality in Kadapa",
+      "Instant Bank Transfer & Best Gold Rate",
+      "Honest Testing & Quick Cash in Kadapa",
     ]);
   }
 
@@ -934,6 +1253,24 @@ function buildDynamicHeadline(text: string, lang: string): string {
       "Simple & Dependable",
       "Prompt Service",
       "Spot On",
+    ]);
+  }
+
+  if (
+    text.toLowerCase().includes("gold") ||
+    text.toLowerCase().includes("pledge") ||
+    text.toLowerCase().includes("purity") ||
+    text.toLowerCase().includes("bullion") ||
+    text.toLowerCase().includes("valuation")
+  ) {
+    return pickRandom([
+      "Instant Payment & Best Market Rate",
+      "100% Transparent Purity Testing",
+      "Quick & Honest Gold Valuation",
+      "Smooth Pledged Gold Release",
+      "Spot Bank Transfer & Genuine Rate",
+      "Hassle-Free 10-Minute Process",
+      "Trustworthy & Safe Experience",
     ]);
   }
 
@@ -978,32 +1315,80 @@ function generateProceduralFallback(
   roundSeed: number,
   isTelugu: boolean
 ): string {
+  const gold = isGoldDomain(bName, lex);
+  const printing = isPrintingDomain(bName, lex);
+
   if (isTelugu) {
-    const starters = [
-      `వర్క్ ఫినిషింగ్ చాలా neat గా ఉంది.`,
-      `మా ఆర్డర్ ని టైమ్‌కి రెడీ చేసి ఇచ్చారు.`,
-      `${tag} క్వాలిటీ అనుకున్నదానికంటే బాగుంది.`,
-      `స్టాఫ్ చాలా పద్ధతిగా మాట్లాడారు.`,
-      `${bName} లో వర్క్ చాలా genuine గా చేశారు.`,
-      `కస్టమైజ్డ్ ${tag} చాలా చక్కగా అమర్చారు.`,
-      `మంచి క్వాలిటీ ప్రింట్స్ మరియు ఫ్రేమింగ్ ఇచ్చారు.`,
-      `ఫోటో క్లారిటీ ఏమాత్రం తగ్గకుండా చూసుకున్నారు.`,
-      `స్టోర్ లో రెస్పాన్స్ చాలా మర్యాదగా ఉంది.`,
-      `సకాలంలో మా ఆర్డర్ పూర్తి చేశారు.`,
-      `కడపలో మంచి ఫోటో మరియు గిఫ్ట్ సర్వీస్.`,
-      `${tag} డిజైన్ చాలా రిచ్‌గా వచ్చింది.`,
-    ];
-    const middles = [
-      `కలర్ ప్రింటింగ్ మరియు బోర్డర్ నీట్‌గా వచ్చాయి.`,
-      `ప్రైస్ కూడా చాలా రీజనబుల్ గా అనిపించింది.`,
-      `ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
-      `ఎక్కడా అనవసర ఆలస్యం చేయలేదు.`,
-      `మంచి క్వాలిటీ గ్లాస్ మరియు బోర్డర్ మెటీరియల్ వాడారు.`,
-      `మా రిక్వైర్మెంట్‌కి సరిపోయే ఆప్షన్స్ చూపించారు.`,
-      `ఫ్రేమ్ వెనుక హ్యాంగింగ్ మరియు సపోర్ట్ చాలా స్ట్రాంగ్ గా ఉంది.`,
-      `ప్యాకింగ్ చాలా సేఫ్ గా చేసి ఇచ్చారు.`,
-      `ఫోటో కలర్స్ చాలా నేచురల్‌గా అనిపించాయి.`,
-    ];
+    const starters = gold
+      ? [
+          `బంగారం ప్యూరిటీని కంప్యూటరైజ్డ్ మెషిన్‌లో పారదర్శకంగా చెక్ చేశారు.`,
+          `కంటి ముందే డిజిటల్ స్కేల్‌లో తూకం వేసి కరెక్ట్ రేటు ఇచ్చారు.`,
+          `ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసి వెంటనే బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+          `${bName} లో సర్వీస్ చాలా genuine గా ఉంది.`,
+          `స్టాఫ్ చాలా పద్ధతిగా మాట్లాడారు.`,
+          `కడపలో బెస్ట్ గోల్డ్ బయర్స్ మరియు తాకట్టు బంగారం రిలీజ్ సర్వీస్.`,
+          `${tag} కోసం ${bName} ని సంప్రదించాము, మంచి అనుభవం.`,
+          `10 నిమిషాల్లో ప్రొసీజర్ మొత్తం కంప్లీట్ చేశారు.`,
+        ]
+      : printing
+      ? [
+          `వర్క్ ఫినిషింగ్ చాలా neat గా ఉంది.`,
+          `మా ఆర్డర్ ని టైమ్‌కి రెడీ చేసి ఇచ్చారు.`,
+          `${tag} క్వాలిటీ అనుకున్నదానికంటే బాగుంది.`,
+          `స్టాఫ్ చాలా పద్ధతిగా మాట్లాడారు.`,
+          `${bName} లో వర్క్ చాలా genuine గా చేశారు.`,
+          `ఫ్లెక్స్ మరియు బోర్డ్స్ డిజైనింగ్ చాలా చక్కగా అమర్చారు.`,
+          `మంచి క్వాలిటీ ప్రింట్స్ మరియు బ్యానర్స్ ఇచ్చారు.`,
+          `ప్రింట్ కలర్స్ ఏమాత్రం తగ్గకుండా చూసుకున్నారు.`,
+          `స్టోర్ లో రెస్పాన్స్ చాలా మర్యాదగా ఉంది.`,
+          `సకాలంలో మా ఆర్డర్ పూర్తి చేశారు.`,
+          `కడపలో మంచి ప్రింటింగ్ మరియు సైనేజ్ సర్వీస్.`,
+        ]
+      : [
+          `వర్క్ ఫినిషింగ్ చాలా neat గా ఉంది.`,
+          `మా ఆర్డర్ ని టైమ్‌కి రెడీ చేసి ఇచ్చారు.`,
+          `${tag} క్వాలిటీ అనుకున్నదానికంటే బాగుంది.`,
+          `స్టాఫ్ చాలా పద్ధతిగా మాట్లాడారు.`,
+          `${bName} లో వర్క్ చాలా genuine గా చేశారు.`,
+          `కస్టమైజ్డ్ ${tag} చాలా చక్కగా అమర్చారు.`,
+          `మంచి క్వాలిటీ ప్రింట్స్ మరియు ఫ్రేమింగ్ ఇచ్చారు.`,
+          `ఫోటో క్లారిటీ ఏమాత్రం తగ్గకుండా చూసుకున్నారు.`,
+          `స్టోర్ లో రెస్పాన్స్ చాలా మర్యాదగా ఉంది.`,
+          `సకాలంలో మా ఆర్డర్ పూర్తి చేశారు.`,
+          `కడపలో మంచి ఫోటో మరియు గిఫ్ట్ సర్వీస్.`,
+          `${tag} డిజైన్ చాలా రిచ్‌గా వచ్చింది.`,
+        ];
+
+    const middles = gold
+      ? [
+          `లైవ్ మార్కెట్ బులియన్ రేటు ప్రకారం అమౌంట్ సెటిల్ చేశారు.`,
+          `అనవసరమైన కటింగ్స్ లేదా డిడక్షన్స్ ఏమీ లేవు.`,
+          `వెంటనే బ్యాంక్ ఖాతాకి అమౌంట్ క్రెడిట్ అయిపోయింది.`,
+          `ఎక్కడా అనవసర ఆలస్యం చేయలేదు.`,
+          `కంప్యూటర్ టెస్టింగ్ లో 100% పారదర్శకత చూపించారు.`,
+          `మా రిక్వైర్మెంట్‌కి సరిపోయే వివరాలు ఓపికగా చెప్పారు.`,
+        ]
+      : printing
+      ? [
+          `కలర్ ప్రింటింగ్ మరియు బోర్డర్ నీట్‌గా వచ్చాయి.`,
+          `ప్రైస్ కూడా చాలా రీజనబుల్ గా అనిపించింది.`,
+          `కలర్స్ చాలా వైబ్రంట్ గా మరియు షార్ప్‌గా ఉన్నాయి.`,
+          `ఎక్కడా అనవసర ఆలస్యం చేయలేదు.`,
+          `మంచి మన్నికైన బోర్డర్ మెటీరియల్ వాడారు.`,
+          `ప్యాకింగ్ చాలా సేఫ్ గా చేసి ఇచ్చారు.`,
+        ]
+      : [
+          `కలర్ ప్రింటింగ్ మరియు బోర్డర్ నీట్‌గా వచ్చాయి.`,
+          `ప్రైస్ కూడా చాలా రీజనబుల్ గా అనిపించింది.`,
+          `ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
+          `ఎక్కడా అనవసర ఆలస్యం చేయలేదు.`,
+          `మంచి క్వాలిటీ గ్లాస్ మరియు బోర్డర్ మెటీరియల్ వాడారు.`,
+          `మా రిక్వైర్మెంట్‌కి సరిపోయే ఆప్షన్స్ చూపించారు.`,
+          `ఫ్రేమ్ వెనుక హ్యాంగింగ్ మరియు సపోర్ట్ చాలా స్ట్రాంగ్ గా ఉంది.`,
+          `ప్యాకింగ్ చాలా సేఫ్ గా చేసి ఇచ్చారు.`,
+          `ఫోటో కలర్స్ చాలా నేచురల్‌గా అనిపించాయి.`,
+        ];
+
     const ends = [
       `Thank you team!`,
       `ఖచ్చితంగా మళ్ళీ వస్తాము.`,
@@ -1026,43 +1411,101 @@ function generateProceduralFallback(
     return `${s} ${m}`;
   }
 
-  const starters = [
-    `Cleanly executed ${tag} work.`,
-    `Got my ${tag} done without any delays.`,
-    `Appreciated the prompt turnaround for the ${tag}.`,
-    `Solid build and accurate colors on the ${tag}.`,
-    `Fair pricing and polite coordination at ${bName}.`,
-    `Very smooth transaction for the ${tag}.`,
-    `High precision on the ${tag} assembly.`,
-    `Delighted with how the ${tag} turned out.`,
-    `Reliable and patient team handling the ${tag}.`,
-    `Straightforward experience getting our ${tag} ready.`,
-    `Neat attention paid to the edges of the ${tag}.`,
-    `Glad I relied on ${bName} for this order.`,
-    `Quick handover and respectful behavior.`,
-  ];
-  const middles = [
-    `The staff was patient and listened to the exact preferences.`,
-    `Everything was packaged neatly and handed over right on time.`,
-    `The finishing is crisp with great attention to the borders.`,
-    `Workmanship is dependable and looks very premium.`,
-    `No rushing or pushing unnecessary upgrades during the visit.`,
-    `Resolution came out sharp without any dullness in colors.`,
-    `Pricing was transparent with zero unexpected extra charges.`,
-    `They double checked dimensions before sealing the frame.`,
-    `Turnaround was prompt and communication was spot on.`,
-  ];
-  const ends = [
-    `Satisfied with the purchase.`,
-    `Will certainly come back for future needs.`,
-    `A trustworthy place for this kind of work.`,
-    `Glad I chose them.`,
-    `Dependable team all around.`,
-    `Much appreciated!`,
-    `Great local shop to support.`,
-    `No complaints whatsoever.`,
-    `Delivered exactly as discussed.`,
-  ];
+  const starters = gold
+    ? [
+        `100% transparent testing for ${tag}.`,
+        `Got immediate bank transfer for ${tag}.`,
+        `Accurate weighing and live rate for ${tag}.`,
+        `Smooth and confidential process for ${tag}.`,
+        `Fair pricing and polite coordination at ${bName}.`,
+        `Very smooth transaction for the ${tag}.`,
+        `Glad I relied on ${bName} for this service.`,
+        `Quick handover and respectful behavior.`,
+        `Straightforward experience getting our ${tag} completed.`,
+        `Reliable and patient team handling the ${tag}.`,
+      ]
+    : printing
+    ? [
+        `Cleanly executed ${tag} work.`,
+        `Got my ${tag} done without any delays.`,
+        `Appreciated the prompt turnaround for the ${tag}.`,
+        `Solid build and accurate colors on the ${tag}.`,
+        `Fair pricing and polite coordination at ${bName}.`,
+        `Very smooth transaction for the ${tag}.`,
+        `Delighted with how the ${tag} turned out.`,
+        `Reliable and patient team handling the ${tag}.`,
+        `Neat attention paid to the edges of the ${tag}.`,
+        `Glad I relied on ${bName} for this order.`,
+      ]
+    : [
+        `Cleanly executed ${tag} work.`,
+        `Got my ${tag} done without any delays.`,
+        `Appreciated the prompt turnaround for the ${tag}.`,
+        `Solid build and accurate colors on the ${tag}.`,
+        `Fair pricing and polite coordination at ${bName}.`,
+        `Very smooth transaction for the ${tag}.`,
+        `High precision on the ${tag} assembly.`,
+        `Delighted with how the ${tag} turned out.`,
+        `Reliable and patient team handling the ${tag}.`,
+        `Straightforward experience getting our ${tag} ready.`,
+        `Neat attention paid to the edges of the ${tag}.`,
+        `Glad I relied on ${bName} for this order.`,
+        `Quick handover and respectful behavior.`,
+      ];
+
+  const middles = gold
+    ? [
+        `Purity was checked right in front of me on their computerized German machine.`,
+        `The valuation was 100% transparent with zero unfair deductions.`,
+        `Payment was credited to my bank account in less than 2 minutes.`,
+        `The staff was patient, polite, and handled everything with complete confidentiality.`,
+        `Turnaround was prompt and communication was spot on.`,
+        `Accurate digital scale weighing with live bullion market rate.`,
+      ]
+    : printing
+    ? [
+        `The staff was patient and listened to the exact preferences.`,
+        `Everything was packaged neatly and handed over right on time.`,
+        `The banner finishing is crisp with great attention to borders.`,
+        `Print resolution came out sharp without any dullness in colors.`,
+        `Pricing was transparent with zero unexpected extra charges.`,
+        `Turnaround was prompt and communication was spot on.`,
+      ]
+    : [
+        `The staff was patient and listened to the exact preferences.`,
+        `Everything was packaged neatly and handed over right on time.`,
+        `The finishing is crisp with great attention to the borders.`,
+        `Workmanship is dependable and looks very premium.`,
+        `No rushing or pushing unnecessary upgrades during the visit.`,
+        `Resolution came out sharp without any dullness in colors.`,
+        `Pricing was transparent with zero unexpected extra charges.`,
+        `They double checked dimensions before sealing the frame.`,
+        `Turnaround was prompt and communication was spot on.`,
+      ];
+
+  const ends = gold
+    ? [
+        `Highly satisfied with the service.`,
+        `Will certainly come back for future needs.`,
+        `A trustworthy place for gold selling and loan release.`,
+        `Glad I chose them.`,
+        `Dependable team all around.`,
+        `Much appreciated!`,
+        `Great local service to trust.`,
+        `No complaints whatsoever.`,
+        `Smooth transaction from start to finish.`,
+      ]
+    : [
+        `Satisfied with the purchase.`,
+        `Will certainly come back for future needs.`,
+        `A trustworthy place for this kind of work.`,
+        `Glad I chose them.`,
+        `Dependable team all around.`,
+        `Much appreciated!`,
+        `Great local shop to support.`,
+        `No complaints whatsoever.`,
+        `Delivered exactly as discussed.`,
+      ];
 
   const s = pickRandom(starters);
   const m = pickRandom(middles);

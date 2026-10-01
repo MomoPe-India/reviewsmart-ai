@@ -10,6 +10,7 @@ export type IndustryType =
   | "PROFESSIONAL_SERVICES"
   | "PHOTOGRAPHY_STUDIO"
   | "PRINTING_GRAPHICS"
+  | "GOLD_BUYERS"
   | "GENERAL";
 
 export interface IndustryConfig {
@@ -404,6 +405,41 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     },
   },
 
+  GOLD_BUYERS: {
+    type: "GOLD_BUYERS",
+    label: "Gold Buyers & Pledged Gold Release",
+    tagline: "Instant Cash for Gold, Transparent Purity Testing & Pledged Gold Release",
+    tags: [
+      "Sell Gold for Cash",
+      "Release Pledged Gold",
+      "Instant Bank Transfer",
+      "Transparent Valuation",
+      "German Purity Testing",
+      "Best Market Rate",
+      "Old Gold Jewellery",
+      "Safe & Confidential",
+    ],
+    placeholder: "Mention selling old gold, releasing pledged gold or valuation (optional)...",
+    keywords: "sell gold for cash, release pledged gold, gold buyer kadapa, instant bank transfer, german purity testing, best market gold rate",
+    reviewDrafts: {
+      direct: {
+        headline: "Instant Payment & Best Market Rate!",
+        text: (name, tags, note) =>
+          `Superb experience with ${name}! The ${tags || "instant bank transfer and transparent valuation"} made the entire transaction smooth and trustworthy.${note ? ` Especially appreciated the help with ${note}.` : ""} Received highest market rate with zero hidden deductions.`,
+      },
+      detailed: {
+        headline: "100% Transparent & Trustworthy Gold Buyers",
+        text: (name, tags, note) =>
+          `Visited ${name} to sell old gold and was thoroughly impressed by their honesty. Purity was verified right in front of me on computerized German equipment, weighing was completely accurate, and payment was transferred to my bank account in 2 minutes.${note ? ` Handled ${note} with absolute transparency.` : ""} One of the most reliable gold buying services in town!`,
+      },
+      enthusiastic: {
+        headline: "Best Gold Buyers in Kadapa!",
+        text: (name, tags, note) =>
+          `Truly a 5-star experience with ${name}! If you want to release pledged gold or sell old gold jewellery at the highest market rate without any stress, this is the place to visit.${note ? ` Very impressed with ${note}.` : ""} Highly recommended to everyone!`,
+      },
+    },
+  },
+
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
@@ -615,6 +651,17 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.PROFESSIONAL_SERVICES;
   }
 
+  if (
+    hasWord(normCat, "gold") ||
+    hasWord(normCat, "gold buyer") ||
+    hasWord(normCat, "gold buyers") ||
+    hasWord(normCat, "pledged gold") ||
+    hasWord(normCat, "jewellery valuation") ||
+    hasWord(normCat, "gold loan release")
+  ) {
+    return INDUSTRY_CONFIGS.GOLD_BUYERS;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 2: BUSINESS NAME MATCHING (If category was generic/unspecified)
   // ═══════════════════════════════════════════════════════════════════════
@@ -723,6 +770,15 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.HOTEL_HOSPITALITY;
   }
 
+  if (
+    hasWord(normName, "gold") ||
+    normName.includes("vr gold") ||
+    normName.includes("gold buyer") ||
+    normName.includes("gold buyers")
+  ) {
+    return INDUSTRY_CONFIGS.GOLD_BUYERS;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 3: TAGLINE CONTEXTUAL MATCHING (Precise multi-word phrases)
   // ═══════════════════════════════════════════════════════════════════════
@@ -756,6 +812,14 @@ export function detectIndustry(
     normTag.includes("printing")
   ) {
     return INDUSTRY_CONFIGS.PRINTING_GRAPHICS;
+  }
+
+  if (
+    normTag.includes("gold") ||
+    normTag.includes("pledged gold") ||
+    normTag.includes("sell gold")
+  ) {
+    return INDUSTRY_CONFIGS.GOLD_BUYERS;
   }
 
   if (
