@@ -537,8 +537,92 @@ export const DOMAIN_LEXICONS: Record<IndustryType, DomainLexicon> = {
   },
 };
 
-export function getDomainLexicon(industryType: IndustryType): DomainLexicon {
-  return DOMAIN_LEXICONS[industryType] || DOMAIN_LEXICONS.GENERAL;
+export interface TagIntent {
+  isPledged: boolean;
+  isPurity: boolean;
+  isSellOld: boolean;
+  isValuation: boolean;
+  isPayment: boolean;
+  isDoorstep: boolean;
+  isSafe: boolean;
+  // Printing
+  isFlexBanner: boolean;
+  isSignBoard: boolean;
+  isVisitingCard: boolean;
+  isCustomMug: boolean;
+  isGraphicDesign: boolean;
+  // Photography
+  isWeddingShoots: boolean;
+  isCustomGifts: boolean;
+  isPhotoFraming: boolean;
+  rawTag: string;
+}
+
+export function detectTagIntent(tags: string[], ind: IndustryType): TagIntent {
+  const combined = (tags || []).join(" ").toLowerCase();
+  return {
+    isPledged: /pledge|loan|తాకట్టు|విడిపించ/i.test(combined),
+    isPurity: /purity|xrf|test|ప్యూరిటీ|టెస్ట్/i.test(combined),
+    isSellOld: /sell|old\s*gold|cash|అమ్మ|సేల్/i.test(combined),
+    isValuation: /valuation|pricing|rate|ధర|రేటు|వాల్యుయేషన్|బులియన్/i.test(combined),
+    isPayment: /instant|payment|quick|స్పాట్|పేమెంట్|డబ్బు/i.test(combined),
+    isDoorstep: /doorstep|door\s*step|ఇంటి/i.test(combined),
+    isSafe: /safe|confidential|నమ్మక|సెక్యూర్/i.test(combined),
+    // Printing
+    isFlexBanner: /flex|banner|బ్యానర్|ఫ్లెక్స్/i.test(combined),
+    isSignBoard: /sign\s*board|glow|acrylic|బోర్డు|సైన్/i.test(combined),
+    isVisitingCard: /visiting|card|brochure|pamphlet|కార్డ్|బ్రోచర్/i.test(combined),
+    isCustomMug: /mug|t-?shirt|మగ్|టీషర్ట్/i.test(combined),
+    isGraphicDesign: /graphic|design|డిజైన్/i.test(combined),
+    // Photography
+    isWeddingShoots: /wedding|candid|cinematic|shoot|వెడ్డింగ్|షూట్/i.test(combined),
+    isCustomGifts: /gift|cup|pillow|magic|keychain|గిఫ్ట్|పిల్లో|కీచైన్|మగ్/i.test(combined),
+    isPhotoFraming: /frame|framing|big\s*size|ఫ్రేమ్|ఫోటో/i.test(combined),
+    rawTag: tags[0] || "",
+  };
+}
+
+export function getDomainLexicon(
+  industryType: IndustryType,
+  activeTags: string[] = [],
+  profileContext: string = ""
+): DomainLexicon {
+  const base = DOMAIN_LEXICONS[industryType] || DOMAIN_LEXICONS.GENERAL;
+  if (industryType !== "GOLD_BUYERS") {
+    return base;
+  }
+
+  const tagsText = activeTags.join(" ").toLowerCase();
+  const fullContext = (tagsText + " " + profileContext).toLowerCase();
+  const allowDoorstep = fullContext.includes("doorstep") || fullContext.includes("door step");
+  const allowPledged = fullContext.includes("pledge") || fullContext.includes("loan") || fullContext.includes("తాకట్టు");
+
+  const filteredItems = base.items.filter((item) => {
+    const itemLower = item.toLowerCase();
+    if (!allowDoorstep && itemLower.includes("doorstep")) return false;
+    if (!allowPledged && (itemLower.includes("pledge") || itemLower.includes("loan"))) return false;
+    return true;
+  });
+
+  const filteredQualities = base.qualities.filter((q) => {
+    const qLower = q.toLowerCase();
+    if (!allowDoorstep && qLower.includes("doorstep")) return false;
+    if (!allowPledged && (qLower.includes("pledge") || qLower.includes("loan"))) return false;
+    return true;
+  });
+
+  const filteredOccasions = base.occasions.filter((o) => {
+    const oLower = o.toLowerCase();
+    if (!allowPledged && (oLower.includes("pledge") || oLower.includes("loan"))) return false;
+    return true;
+  });
+
+  return {
+    ...base,
+    items: filteredItems.length > 0 ? filteredItems : base.items,
+    qualities: filteredQualities.length > 0 ? filteredQualities : base.qualities,
+    occasions: filteredOccasions.length > 0 ? filteredOccasions : base.occasions,
+  };
 }
 
 // ─── DOMAIN-ISOLATED STYLES ─────────────────────────────────────────────────
@@ -551,29 +635,83 @@ function generateShortDirect(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
-  const openers = [
-    `Neat work on the ${item}.`,
-    `Quick turnaround and dependable handling of ${item}.`,
-    `Very pleased with the ${item} from ${bName}.`,
-    `Prompt work and polite staff at ${bName}.`,
-    `Solid quality ${item}, delivered right on time.`,
-    `Good service and fair rates here.`,
-    `Smooth experience getting ${item} handled.`,
-    `Got my ${item} sorted in no time.`,
-    `Happy with how the ${item} turned out.`,
-    `Clean work and respectful behavior.`,
-  ];
-  const closers = [
-    `Output was crisp.`,
-    `Delivered as promised.`,
-    `Totally satisfied.`,
-    `Thank you team!`,
-    `Will visit again.`,
-    `Worth every penny.`,
-    `No delays at all.`,
-    `Definitely coming back.`,
-  ];
+
+  let openers: string[];
+  let closers: string[];
+
+  if (ind === "GOLD_BUYERS") {
+    if (intent.isPledged) {
+      openers = [
+        `Quick turnaround and dependable handling of pledged gold release.`,
+        `Smooth experience getting our pledged gold loan settled.`,
+        `Very pleased with the pledged gold assistance from ${bName}.`,
+        `Prompt gold loan clearance and polite staff at ${bName}.`,
+        `Got my pledged gold released and settled in no time.`,
+      ];
+      closers = [
+        `Received the balance payout immediately.`,
+        `Bank loan closed with zero hassle.`,
+        `Totally satisfied with the loan assistance.`,
+        `Thank you team!`,
+        `Smooth and transparent transaction.`,
+      ];
+    } else if (intent.isPurity) {
+      openers = [
+        `Accurate and 100% transparent gold purity testing at ${bName}.`,
+        `Computerized German XRF testing with zero damage on our ornaments.`,
+        `Very pleased with the digital purity testing from ${bName}.`,
+        `Prompt gold purity test and polite staff at ${bName}.`,
+      ];
+      closers = [
+        `Output was scientifically precise.`,
+        `Accurate karat report in 2 minutes.`,
+        `Totally satisfied with the testing.`,
+        `Thank you team!`,
+      ];
+    } else {
+      openers = [
+        `Neat and transparent handling for selling our gold.`,
+        `Quick turnaround and fair live market rate at ${bName}.`,
+        `Very pleased with the instant payment from ${bName}.`,
+        `Clean digital weighing and respectful behavior at ${bName}.`,
+        `Smooth experience getting our gold evaluated and sold.`,
+      ];
+      closers = [
+        `Bank transfer was instant.`,
+        `Received full fair value.`,
+        `Totally satisfied with the payout.`,
+        `Thank you team!`,
+        `Will visit again.`,
+        `100% genuine dealing.`,
+      ];
+    }
+  } else {
+    openers = [
+      `Neat work on the ${item}.`,
+      `Quick turnaround and dependable handling of ${item}.`,
+      `Very pleased with the ${item} from ${bName}.`,
+      `Prompt work and polite staff at ${bName}.`,
+      `Solid quality ${item}, delivered right on time.`,
+      `Good service and fair rates here.`,
+      `Smooth experience getting ${item} handled.`,
+      `Got my ${item} sorted in no time.`,
+      `Happy with how the ${item} turned out.`,
+      `Clean work and respectful behavior.`,
+    ];
+    closers = [
+      `Output was crisp.`,
+      `Delivered as promised.`,
+      `Totally satisfied.`,
+      `Thank you team!`,
+      `Will visit again.`,
+      `Worth every penny.`,
+      `No delays at all.`,
+      `Definitely coming back.`,
+    ];
+  }
+
   const notePart = note ? ` ${note} was handled properly.` : "";
   return `${pickRandom(openers)}${notePart} ${pickRandom(closers)}`;
 }
@@ -586,30 +724,91 @@ function generateProductQuality(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
   const quality = pickRandom(lex.qualities);
   const adj = pickRandom(lex.adjectives);
-  const openers = [
-    `The ${quality} on the ${item} is ${adj}.`,
-    `Took their service for ${item} and the result is ${adj}.`,
-    `Noticeable attention to ${quality} here.`,
-    `Chose ${bName} specifically for ${item}.`,
-    `Checked out their ${item} work recently.`,
-  ];
-  const middles = [
-    `Everything was done cleanly without cutting any corners.`,
-    `The detailing and execution are very well maintained.`,
-    `You can clearly tell they value professional standards.`,
-    `Output matched exactly what was discussed before confirming.`,
-    `Turnaround was swift and communication was clear.`,
-  ];
-  const closers = [
-    `Reliable service and execution.`,
-    `Happy with the final outcome.`,
-    `Quality speaks for itself.`,
-    `Great value for the price charged.`,
-    `A solid place to get ${item} done.`,
-  ];
+
+  let openers: string[];
+  let middles: string[];
+  let closers: string[];
+
+  if (ind === "GOLD_BUYERS") {
+    if (intent.isPledged) {
+      openers = [
+        `Noticeable transparency during the pledged gold loan release at ${bName}.`,
+        `Assistance with the gold loan clearance was ${adj}.`,
+        `Chose ${bName} specifically to release pledged gold from the bank.`,
+      ];
+      middles = [
+        `Everything was handled cleanly with clear accounting and zero hidden deductions.`,
+        `The loan closure paperwork was prompt and staff explained the math clearly.`,
+        `The handover and balance settlement were done with complete professionalism.`,
+      ];
+      closers = [
+        `Reliable service and honest execution.`,
+        `Happy with the loan clearance outcome.`,
+        `Real peace of mind throughout.`,
+        `A dependable place to release pledged gold.`,
+      ];
+    } else if (intent.isPurity) {
+      openers = [
+        `The computerized German XRF testing on our gold was ${adj}.`,
+        `Noticeable precision in their digital gold purity testing.`,
+        `Chose ${bName} specifically for computerized purity analysis.`,
+      ];
+      middles = [
+        `Tested purity right in front of us without melting or cutting any ornament.`,
+        `The digital readings are clear and 100% scientific.`,
+        `Turnaround was swift and communication was clear.`,
+      ];
+      closers = [
+        `Scientific precision at its best.`,
+        `Happy with the transparent report.`,
+        `Accurate and dependable testing.`,
+      ];
+    } else {
+      openers = [
+        `The transparent digital weighing on our gold was ${adj}.`,
+        `Noticeable fairness in their live bullion rate calculation.`,
+        `Chose ${bName} specifically for old gold evaluation and selling.`,
+      ];
+      middles = [
+        `Everything was weighed transparently on a certified digital scale right before our eyes.`,
+        `Pricing matched the live bullion rate with zero unexpected deductions.`,
+        `Turnaround was swift and bank transfer was credited right away.`,
+      ];
+      closers = [
+        `Reliable service and execution.`,
+        `Happy with the final payout.`,
+        `Fair value for the gold sold.`,
+        `A solid place for gold transactions.`,
+      ];
+    }
+  } else {
+    openers = [
+      `The ${quality} on the ${item} is ${adj}.`,
+      `Took their service for ${item} and the result is ${adj}.`,
+      `Noticeable attention to ${quality} here.`,
+      `Chose ${bName} specifically for ${item}.`,
+      `Checked out their ${item} work recently.`,
+    ];
+    middles = [
+      `Everything was done cleanly without cutting any corners.`,
+      `The detailing and execution are very well maintained.`,
+      `You can clearly tell they value professional standards.`,
+      `Output matched exactly what was discussed before confirming.`,
+      `Turnaround was swift and communication was clear.`,
+    ];
+    closers = [
+      `Reliable service and execution.`,
+      `Happy with the final outcome.`,
+      `Quality speaks for itself.`,
+      `Great value for the price charged.`,
+      `A solid place to get ${item} done.`,
+    ];
+  }
+
   const notePart = note ? ` Also took good care of ${note.toLowerCase()}.` : "";
   return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
 }
@@ -622,34 +821,67 @@ function generateProblemSolution(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
   const occasion = pickRandom(lex.occasions);
-  const action = pickRandom(lex.actions);
 
-  const problem = pickRandom([
-    `Was searching for a trustworthy place for ${item} ${occasion}.`,
-    `Needed ${item} on relatively short notice.`,
-    `Was looking for someone who could handle ${item} with proper care and honesty.`,
-    `Had a specific requirement for ${item} and walked in here.`,
-    `Needed reliable assistance to finalize our ${item}.`,
-  ]);
-
+  let problem = "";
   let solution = "";
   let result = "";
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      solution = pickRandom([
-        `The team at ${bName} tested purity right in front of me on their computerized German XRF machine without melting or damage.`,
-        `Staff walked me through the live market bullion rate clearly and weighed everything transparently on a digital scale.`,
-        `They handled the entire verification and paperwork with genuine care, confidentiality, and zero hidden deductions.`,
-      ]);
-      result = pickRandom([
-        `Transaction was completed in 10 minutes with instant bank transfer credited right away.`,
-        `Received the full fair payout with complete peace of mind.`,
-        `Very satisfied with the quick turnaround and transparent outcome.`,
-      ]);
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        problem = pickRandom([
+          `Needed reliable assistance to close an existing bank gold loan and release our pledged gold.`,
+          `Was searching for a trustworthy service to help clear pledged gold from the bank without high interest.`,
+          `Had gold pledged with a lender and wanted to release it and settle the balance amount.`,
+        ]);
+        solution = pickRandom([
+          `The team at ${bName} stepped in, cleared the loan dues directly, and handled the complete process smoothly.`,
+          `Staff coordinated the bank release with total transparency and zero hidden deductions.`,
+          `They assisted throughout the bank formalities with complete professionalism and peace of mind.`,
+        ]);
+        result = pickRandom([
+          `Received the balance payout instantly via bank transfer without any hassle.`,
+          `Got the pledged gold released safely and the remaining cash credited immediately.`,
+          `Very relieved to have the loan settled and receive fair market value for the balance.`,
+        ]);
+      } else if (intent.isPurity) {
+        problem = pickRandom([
+          `Wanted to get our gold tested for exact purity without melting or damaging the ornaments.`,
+          `Was searching for an honest place with computerized testing to verify gold karats.`,
+          `Needed accurate gold purity valuation before making any decision.`,
+        ]);
+        solution = pickRandom([
+          `The team at ${bName} tested purity right in front of me on their computerized German XRF machine in 2 minutes.`,
+          `They showed the exact karat percentage digitally without melting or scratching any piece.`,
+          `Staff explained the computer readings clearly with 100% transparency.`,
+        ]);
+        result = pickRandom([
+          `Got a clear, trustworthy report with zero guesswork or melting loss.`,
+          `Very satisfied with the scientific precision and honest service.`,
+          `Gave complete confidence knowing the exact purity of my gold.`,
+        ]);
+      } else {
+        problem = pickRandom([
+          `Was searching for a trustworthy place to sell old gold ornaments at fair market rate.`,
+          `Needed instant funds and wanted to convert unused gold with zero hidden cuts.`,
+          `Wanted genuine valuation and spot payout for our old gold items.`,
+        ]);
+        solution = pickRandom([
+          `Staff walked me through the live market bullion rate clearly and weighed everything transparently on a digital scale.`,
+          `They handled the entire verification and paperwork with genuine care, confidentiality, and zero hidden deductions.`,
+          `Evaluated the ornaments right before my eyes and offered the highest prevailing rate.`,
+        ]);
+        result = pickRandom([
+          `Transaction was completed in 10 minutes with instant bank transfer credited right away.`,
+          `Received the full fair payout with complete peace of mind.`,
+          `Very satisfied with the quick turnaround and transparent outcome.`,
+        ]);
+      }
       break;
+    }
 
     case "PRINTING_GRAPHICS":
       solution = pickRandom([
@@ -829,24 +1061,85 @@ function generateOccasionContext(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
   const occasion = pickRandom(lex.occasions);
-  const openers = [
-    `Got ${item} done ${occasion}.`,
-    `Approached ${bName} ${occasion} for ${item}.`,
-    `Needed reliable ${item} ${occasion}.`,
-  ];
-  const middles = [
-    `Everything was ready on time and executed with high standards.`,
-    `The coordination and finish made the experience completely hassle-free.`,
-    `Quality and service came out top notch as promised.`,
-  ];
-  const closers = [
-    `Truly grateful for the prompt assistance.`,
-    `Made the entire experience so much smoother!`,
-    `Will surely rely on them again.`,
-    `Much appreciated!`,
-  ];
+
+  let openers: string[];
+  let middles: string[];
+  let closers: string[];
+
+  if (ind === "GOLD_BUYERS") {
+    if (intent.isPledged) {
+      openers = [
+        `Approached ${bName} to release our family's pledged gold from the bank.`,
+        `Needed reliable assistance to close our bank gold loan.`,
+        `Visited ${bName} to clear pledged gold and settle the balance payout.`,
+      ];
+      middles = [
+        `The bank formalities and loan closure were handled smoothly and on time.`,
+        `The coordination made the entire pledged gold release completely hassle-free.`,
+        `Balance settlement was credited directly to our account without delay.`,
+      ];
+      closers = [
+        `Truly grateful for the prompt assistance.`,
+        `Relieved to have the loan cleared so easily!`,
+        `Will surely rely on them again.`,
+        `Much appreciated!`,
+      ];
+    } else if (intent.isPurity) {
+      openers = [
+        `Got our gold purity tested at ${bName} on their German XRF machine.`,
+        `Approached ${bName} to get a precise computerized purity report.`,
+        `Needed reliable gold purity testing without damaging our ornaments.`,
+      ];
+      middles = [
+        `The testing was completed in 2 minutes right before our eyes without any melting.`,
+        `The computerized readings and honest explanation made the experience completely transparent.`,
+        `Accuracy and service came out top notch as promised.`,
+      ];
+      closers = [
+        `Truly grateful for the honest testing.`,
+        `Gave complete peace of mind!`,
+        `Accurate and dependable service.`,
+      ];
+    } else {
+      openers = [
+        `Approached ${bName} to sell old gold ornaments.`,
+        `Visited ${bName} for honest gold valuation and immediate payout.`,
+        `Needed to convert unused gold into funds on short notice.`,
+      ];
+      middles = [
+        `Weighed right before our eyes on a digital scale and live rate was given.`,
+        `The prompt coordination and spot IMPS payout made the transaction completely hassle-free.`,
+        `Transparent rates and prompt bank transfer as promised.`,
+      ];
+      closers = [
+        `Truly grateful for the fair payout.`,
+        `Made the transaction so much smoother!`,
+        `Will surely recommend to friends.`,
+        `Much appreciated!`,
+      ];
+    }
+  } else {
+    openers = [
+      `Got ${item} done ${occasion}.`,
+      `Approached ${bName} ${occasion} for ${item}.`,
+      `Needed reliable ${item} ${occasion}.`,
+    ];
+    middles = [
+      `Everything was ready on time and executed with high standards.`,
+      `The coordination and finish made the experience completely hassle-free.`,
+      `Quality and service came out top notch as promised.`,
+    ];
+    closers = [
+      `Truly grateful for the prompt assistance.`,
+      `Made the entire experience so much smoother!`,
+      `Will surely rely on them again.`,
+      `Much appreciated!`,
+    ];
+  }
+
   const notePart = note ? ` Handled ${note.toLowerCase()} very nicely.` : "";
   return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
 }
@@ -859,6 +1152,7 @@ function generateDetailedReview(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item1 = tags[0] || pickRandom(lex.items);
   const remaining = lex.items.filter((i) => i.toLowerCase() !== item1.toLowerCase());
   const item2 = tags[1] && tags[1].toLowerCase() !== item1.toLowerCase() ? tags[1] : pickRandom(remaining.length > 0 ? remaining : lex.items);
@@ -867,18 +1161,43 @@ function generateDetailedReview(
   let middle = `Communication was clear from the start and they didn't try to rush any stage of the work.`;
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      opener = pickRandom([
-        `Visited ${bName} specifically for ${item1} and valuation.`,
-        `Coordinated with ${bName} to handle our ${item1}.`,
-        `Needed a transparent and reliable service for ${item1} and stopped by here.`,
-      ]);
-      middle = pickRandom([
-        `First, the team patiently tested purity on their German XRF machine. Second, bank payment was immediate.`,
-        `The accuracy of digital weighing and fair live market rate on ${item2} exceeded expectations.`,
-        `Charges and live bullion rates were explained clearly upfront with zero hidden deductions.`,
-      ]);
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        opener = pickRandom([
+          `Visited ${bName} specifically to release our pledged gold and settle the bank loan.`,
+          `Coordinated with ${bName} to handle our pledged gold release.`,
+          `Needed reliable assistance to close an existing bank gold loan and stopped by here.`,
+        ]);
+        middle = pickRandom([
+          `First, the team helped clear the bank loan dues smoothly. Second, the balance payout was transferred immediately.`,
+          `All formalities and paperwork were handled with 100% transparency and zero hidden deductions.`,
+          `Loan closure charges and live bullion rates were explained clearly upfront with honest accounting.`,
+        ]);
+      } else if (intent.isPurity) {
+        opener = pickRandom([
+          `Visited ${bName} specifically for computerized gold purity testing.`,
+          `Coordinated with ${bName} to check our gold purity on their German machine.`,
+          `Needed a scientifically accurate purity check and stopped by here.`,
+        ]);
+        middle = pickRandom([
+          `First, the team tested purity on their German XRF machine without melting. Second, digital readings were explained clearly.`,
+          `The accuracy of digital testing and zero damage to the ornaments exceeded expectations.`,
+          `Everything was shown directly on the monitor with complete transparency.`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `Visited ${bName} specifically for old gold valuation and selling.`,
+          `Coordinated with ${bName} to convert unused gold into funds.`,
+          `Needed a transparent and reliable service for selling gold and stopped by here.`,
+        ]);
+        middle = pickRandom([
+          `First, digital weighing was completed right in front of me. Second, bank transfer was credited in 2 minutes.`,
+          `The accuracy of digital weighing and fair live market bullion rate exceeded expectations.`,
+          `Live bullion rates were explained clearly upfront with zero hidden melting losses.`,
+        ]);
+      }
       break;
+    }
 
     case "PRINTING_GRAPHICS":
       opener = pickRandom([
@@ -1035,14 +1354,42 @@ function generateMinimalist(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
-  const fragments = [
-    `Super neat ${item}. Fair price, on-time service.`,
-    `Clean work on ${item}. Polite staff. Happy with the result.`,
-    `Fast service. Crisp output. Dependable team at ${bName}.`,
-    `Great quality ${item}. No delays. 10/10 experience.`,
-    `Good outcome on the ${item}. Worth the money.`,
-  ];
+
+  let fragments: string[];
+  if (ind === "GOLD_BUYERS") {
+    if (intent.isPledged) {
+      fragments = [
+        `Fast pledged gold release. Clear loan settlement. Dependable team at ${bName}.`,
+        `Smooth gold loan clearance. Instant balance transfer. 10/10 experience.`,
+        `Hassle-free pledged gold release. Transparent paperwork at ${bName}.`,
+        `Quick loan closure. Full fair payout for the balance. Dependable service.`,
+      ];
+    } else if (intent.isPurity) {
+      fragments = [
+        `Computerized XRF purity test. 100% accurate. Polite staff at ${bName}.`,
+        `Fast purity testing. No melting or damage. Crisp digital report.`,
+        `Scientific precision. Transparent karat measurement at ${bName}.`,
+        `Accurate gold testing in 2 minutes. Very satisfied.`,
+      ];
+    } else {
+      fragments = [
+        `Transparent digital weighing. Live market rate. Instant bank transfer at ${bName}.`,
+        `Quick 10-minute transaction. Full fair payout. Dependable team.`,
+        `Clean weighing and honest rates. No delays at ${bName}.`,
+        `Spot bank payment. Transparent valuation. Highly recommend.`,
+      ];
+    }
+  } else {
+    fragments = [
+      `Super neat ${item}. Fair price, on-time service.`,
+      `Clean work on ${item}. Polite staff. Happy with the result.`,
+      `Fast service. Crisp output. Dependable team at ${bName}.`,
+      `Great quality ${item}. No delays. 10/10 experience.`,
+      `Good outcome on the ${item}. Worth the money.`,
+    ];
+  }
   let base = pickRandom(fragments);
   if (note) base += ` Handled ${note.toLowerCase()} properly.`;
   return base;
@@ -1140,22 +1487,81 @@ function generateRelief(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
-  const openers = [
-    `Was initially wondering about the turnaround on the ${item}.`,
-    `Was slightly skeptical whether they could deliver ${item} on time.`,
-    `Had high expectations for this ${item} requirement.`,
-  ];
-  const middles = [
-    `Thankfully, the team at ${bName} proved my doubts completely wrong.`,
-    `When I inspected the final outcome, the quality was spotless.`,
-    `They actually delivered right on schedule with zero compromises.`,
-  ];
-  const closers = [
-    `Relieved and very satisfied!`,
-    `Exceeded expectations in the best way possible.`,
-    `Great work by the team.`,
-  ];
+
+  let openers: string[];
+  let middles: string[];
+  let closers: string[];
+
+  if (ind === "GOLD_BUYERS") {
+    if (intent.isPledged) {
+      openers = [
+        `Was initially worried about the bank loan clearance process for our pledged gold.`,
+        `Had doubts whether closing our gold loan and releasing pledged gold would be smooth.`,
+        `Was wondering how long releasing our pledged gold would take.`,
+      ];
+      middles = [
+        `Thankfully, the team at ${bName} handled the bank formalities and balance payment seamlessly.`,
+        `They coordinated with the bank, cleared the dues, and transferred the remaining balance in minutes.`,
+        `The entire transaction was completed transparently with zero complications.`,
+      ];
+      closers = [
+        `Relieved and very satisfied!`,
+        `Exceeded expectations in the best way possible.`,
+        `Huge peace of mind knowing the loan is cleared.`,
+      ];
+    } else if (intent.isPurity) {
+      openers = [
+        `Was wondering if they would need to melt or damage our gold ornaments for testing.`,
+        `Was slightly skeptical about the accuracy of gold testing.`,
+        `Had high expectations for an honest and scientific purity evaluation.`,
+      ];
+      middles = [
+        `Thankfully, their computerized German XRF machine tested purity in 2 minutes without melting or scratching anything.`,
+        `They showed the exact karat percentage digitally right before my eyes.`,
+        `Staff was polite, transparent, and answered all questions patiently.`,
+      ];
+      closers = [
+        `Relieved and very satisfied!`,
+        `Scientific precision without any damage.`,
+        `Accurate and honest testing.`,
+      ];
+    } else {
+      openers = [
+        `Was slightly skeptical about unfair deductions when selling old gold.`,
+        `Was initially wondering whether we would get the true live bullion market rate.`,
+        `Needed urgent funds and hoped for a transparent gold valuation.`,
+      ];
+      middles = [
+        `Thankfully, they weighed everything transparently on a certified digital scale with zero hidden cuts.`,
+        `The payout was calculated strictly on live market rates and credited via IMPS in minutes.`,
+        `The staff handled the entire evaluation with complete honesty and care.`,
+      ];
+      closers = [
+        `Relieved and very satisfied!`,
+        `Exceeded expectations in the best way possible.`,
+        `Honest and transparent service.`,
+      ];
+    }
+  } else {
+    openers = [
+      `Was initially wondering about the turnaround on the ${item}.`,
+      `Was slightly skeptical whether they could deliver ${item} on time.`,
+      `Had high expectations for this ${item} requirement.`,
+    ];
+    middles = [
+      `Thankfully, the team at ${bName} proved my doubts completely wrong.`,
+      `When I inspected the final outcome, the quality was spotless.`,
+      `They actually delivered right on schedule with zero compromises.`,
+    ];
+    closers = [
+      `Relieved and very satisfied!`,
+      `Exceeded expectations in the best way possible.`,
+      `Great work by the team.`,
+    ];
+  }
+
   const notePart = note ? ` Handled ${note.toLowerCase()} exceptionally well.` : "";
   return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
 }
@@ -1168,6 +1574,7 @@ function generateFamilyContext(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
   const occasion = pickRandom(lex.occasions);
 
@@ -1175,8 +1582,16 @@ function generateFamilyContext(
   let middle = `Everyone was genuinely pleased with the polite coordination and solid outcome.`;
 
   if (ind === "GOLD_BUYERS") {
-    opener = `Approached ${bName} to release pledged gold and sell old family ornaments.`;
-    middle = `The staff was respectful, confidential, and completed the digital weighing right before our eyes.`;
+    if (intent.isPledged) {
+      opener = `Approached ${bName} with family to release pledged gold and close our bank loan.`;
+      middle = `The staff handled the bank formalities and balance settlement with complete confidentiality and care.`;
+    } else if (intent.isPurity) {
+      opener = `Visited ${bName} with family to get our gold ornaments tested for exact purity.`;
+      middle = `The computerized German XRF testing was done right in front of us without melting or damage.`;
+    } else {
+      opener = `Visited ${bName} with family to evaluate and sell old gold ornaments.`;
+      middle = `The staff was respectful, confidential, and completed the digital weighing right before our eyes.`;
+    }
   } else if (ind === "PRINTING_GRAPHICS") {
     opener = `Ordered ${item} for our business promotion ${occasion}.`;
     middle = `The material durability and color vibrancy impressed our entire team.`;
@@ -1271,6 +1686,7 @@ function generateTeluguConversational(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
 
   let opener = `మా requirement ని అర్థం చేసుకుని ${item} చాలా neat గా చేశారు.`;
@@ -1278,60 +1694,171 @@ function generateTeluguConversational(
   let closer = `Thank you ${bName}! మంచి సర్వీస్ ఇచ్చే షాప్.`;
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      opener = pickRandom([
-        `పాత బంగారం అమ్మడానికి ${bName} కి వెళ్ళాము, చాలా మంచి అనుభవం.`,
-        `బ్యాంకులో తాకట్టు పెట్టిన బంగారం విడిపించడానికి ${bName} ని సంప్రదించాము.`,
-        `గోల్డ్ వాల్యుయేషన్ మరియు సెల్లింగ్ ప్రాసెస్ ${bName} లో చాలా ఫాస్ట్‌గా జరిగింది.`,
-        `${bName} లో సర్వీస్ మరియు స్టాఫ్ రెస్పాన్స్ చాలా జెన్యూన్ గా ఉంది.`,
-      ]);
-      middle = pickRandom([
-        `కంప్యూటరైజ్డ్ జర్మన్ మెషిన్ లో ప్యూరిటీ చెక్ చేసి ట్రాన్స్‌పరెంట్ గా రేట్ ఇచ్చారు.`,
-        `లైవ్ మార్కెట్ రేటు ప్రకారం కరెక్ట్ గా క్యాలిక్యులేట్ చేసి స్పాట్ లో పేమెంట్ చేశారు.`,
-        `డిజిటల్ వెయింగ్ లో ఎక్కడా తేడా లేకుండా కరెక్ట్ గా తూకం వేశారు.`,
-      ]);
-      closer = pickRandom([
-        `బంగారం అమ్మడానికి కడపలో బెస్ట్ మరియు నమ్మకమైన గోల్డ్ బయర్స్!`,
-        `100% సేఫ్ మరియు ట్రాన్స్‌పరెంట్ సర్వీస్, థాంక్యూ ${bName}!`,
-        `కడపలో బెస్ట్ సర్వీస్ ఇచ్చే షాప్.`,
-      ]);
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        opener = pickRandom([
+          `బ్యాంకులో తాకట్టు పెట్టిన బంగారం విడిపించడానికి ${bName} ని సంప్రదించాము.`,
+          `గోల్డ్ లోన్ క్లోజ్ చేసి ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసుకోవడానికి ${bName} టీమ్ సహాయం తీసుకున్నాము.`,
+          `తాకట్టు బంగారం విడిపించి బ్యాలెన్స్ అమౌంట్ తీసుకోవడానికి ఇక్కడికి వెళ్ళాము.`,
+        ]);
+        middle = pickRandom([
+          `బ్యాంక్ లోన్ క్లియర్ చేయడంలో చాలా బాగా గైడ్ చేశారు, ఎక్కడా ఇబ్బంది లేకుండా ప్రాసెస్ పూర్తి చేశారు.`,
+          `లోన్ అమౌంట్ సెటిల్ చేసి, మిగిలిన బ్యాలెన్స్ ని లైవ్ బులియన్ రేటు ప్రకారం కరెక్ట్ గా ఇచ్చారు.`,
+          `ఎలాంటి హిడెన్ ఛార్జీలు లేకుండా ట్రాన్స్‌పరెంట్ గా లెక్క కట్టి స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `తాకట్టు బంగారం విడిపించడానికి కడపలో అత్యంత నమ్మకమైన సర్వీస్!`,
+          `చాలా రిలీఫ్ అనిపించింది, థాంక్యూ ${bName} టీమ్!`,
+          `మంచి జెన్యూన్ సర్వీస్, definitely recommend!`,
+        ]);
+      } else if (intent.isPurity) {
+        opener = pickRandom([
+          `మా గోల్డ్ ఆర్నమెంట్స్ ప్యూరిటీ చెక్ చేయడానికి ${bName} కి వెళ్ళాము.`,
+          `కంప్యూటరైజ్డ్ గోల్డ్ ప్యూరిటీ టెస్టింగ్ కోసం ${bName} ని విజిట్ చేశాము.`,
+          `బంగారం కరిగించకుండా కరెక్ట్ ప్యూరిటీ తెలుసుకోవడానికి ఇక్కడికి వెళ్ళాము.`,
+        ]);
+        middle = pickRandom([
+          `జర్మన్ ఎక్స్-ఆర్-ఎఫ్ మెషిన్ లో కంటి ముందే ప్యూరిటీ టెస్ట్ చేసి కరెక్ట్ క్యారట్ రీడింగ్ చూపించారు.`,
+          `ఆర్నమెంట్స్ కి ఎలాంటి డ్యామేజ్ లేకుండా 2 నిమిషాల్లో కచ్చితమైన రిపోర్ట్ ఇచ్చారు.`,
+          `స్టాఫ్ చాలా ఓపికగా డిజిటల్ రీడింగ్స్ ని వివరించారు, ఎక్కడా కంగారు పెట్టలేదు.`,
+        ]);
+        closer = pickRandom([
+          `గోల్డ్ ప్యూరిటీ టెస్టింగ్ కి కడపలో బెస్ట్ ప్లేస్!`,
+          `100% పారదర్శకమైన టెస్టింగ్, థాంక్యూ ${bName}!`,
+          `చక్కటి సర్వీస్ మరియు నిజాయితీ గల స్టాఫ్.`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `పాత బంగారం అమ్మడానికి ${bName} కి వెళ్ళాము, చాలా మంచి అనుభవం.`,
+          `గోల్డ్ వాల్యుయేషన్ మరియు సెల్లింగ్ కోసం ${bName} ని సంప్రదించాము.`,
+          `${bName} లో సర్వీస్ మరియు స్టాఫ్ రెస్పాన్స్ చాలా జెన్యూన్ గా ఉంది.`,
+        ]);
+        middle = pickRandom([
+          `కంటి ముందే డిజిటల్ స్కేల్ మీద బరువు తూచి లైవ్ మార్కెట్ రేటు ఇచ్చారు.`,
+          `లైవ్ మార్కెట్ రేటు ప్రకారం కరెక్ట్ గా క్యాలిక్యులేట్ చేసి స్పాట్ లో పేమెంట్ చేశారు.`,
+          `డిజిటల్ వెయింగ్ లో ఎక్కడా వేస్టేజ్ లేదా కటింగ్స్ లేకుండా స్పష్టంగా లెక్క చెప్పారు.`,
+        ]);
+        closer = pickRandom([
+          `బంగారం అమ్మడానికి కడపలో బెస్ట్ మరియు నమ్మకమైన గోల్డ్ బయర్స్!`,
+          `100% సేఫ్ మరియు ట్రాన్స్‌పరెంట్ సర్వీస్, థాంక్యూ ${bName}!`,
+          `కడపలో బెస్ట్ సర్వీస్ ఇచ్చే షాప్.`,
+        ]);
+      }
       break;
+    }
 
-    case "PRINTING_GRAPHICS":
-      opener = pickRandom([
-        `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
-        `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
-        `${bName} లో ఫ్లెక్స్ ప్రింటింగ్ మరియు సైనేజ్ సర్వీస్ చాలా బాగుంది.`,
-      ]);
-      middle = pickRandom([
-        `స్టాఫ్ చాలా ఓపికగా డిజైన్ ఆప్షన్స్ చూపించారు, ఎక్కడా కంగారు పెట్టలేదు.`,
-        `టైమ్‌కి రెడీ చేసి ఇచ్చారు, ప్రింట్ క్వాలిటీ లో ఎక్కడా రాజీ పడలేదు.`,
-        `కలర్ ప్రింటింగ్ మరియు బోర్డర్ అలైన్‌మెంట్ చాలా సాలిడ్‌గా వచ్చాయి.`,
-      ]);
-      closer = pickRandom([
-        `ఫ్లెక్స్ ప్రింటింగ్ మరియు సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ షాప్.`,
-        `థాంక్యూ ${bName}, క్వాలిటీ ప్రింటింగ్ కి బెస్ట్ ప్లేస్!`,
-        `మంచి షాప్, definitely recommend!`,
-      ]);
+    case "PRINTING_GRAPHICS": {
+      if (intent.isFlexBanner) {
+        opener = pickRandom([
+          `మా ఈవెంట్ కోసం flex banner ప్రింటింగ్ ${bName} లో చేయించాము.`,
+          `షాప్ ప్రమోషన్ కోసం ఫ్లెక్స్ బ్యానర్స్ ఆర్డర్ ఇచ్చాము.`,
+          `${bName} లో ఫ్లెక్స్ బ్యానర్ ప్రింటింగ్ సర్వీస్ చాలా బాగుంది.`,
+        ]);
+        middle = pickRandom([
+          `మంచి వాటర్‌ప్రూఫ్ మెటీరియల్ వాడారు, కలర్స్ చాలా వైబ్రంట్ గా వచ్చాయి.`,
+          `ఎండకి కూడా రంగు తగ్గకుండా సూపర్ క్వాలిటీ ఫ్లెక్స్ ఇచ్చారు.`,
+          `టైమ్‌కి రెడీ చేసి ఇచ్చారు, ప్రింట్ క్వాలిటీ లో ఎక్కడా రాజీ పడలేదు.`,
+        ]);
+        closer = pickRandom([
+          `ఫ్లెక్స్ బ్యానర్స్ కి కడపలో బెస్ట్ షాప్!`,
+          `థాంక్యూ ${bName}, క్వాలిటీ ప్రింటింగ్ కి బెస్ట్ ప్లేస్!`,
+        ]);
+      } else if (intent.isSignBoard) {
+        opener = pickRandom([
+          `మా షాప్ ఫ్రంట్ కోసం commercial sign board మరియు glow sign ${bName} లో చేయించాము.`,
+          `షాప్ సైన్ బోర్డ్ డిజైనింగ్ మరియు ఇన్స్టాలేషన్ ఇక్కడ ఆర్డర్ ఇచ్చాము.`,
+        ]);
+        middle = pickRandom([
+          `అక్రిలిక్ లెటరింగ్ మరియు లైటింగ్ చాలా గ్రాండ్‌గా అమర్చారు.`,
+          `బోర్డ్ ఫినిషింగ్ చాలా ప్రీమియం గా వచ్చింది, నైట్ లుక్ సూపర్.`,
+        ]);
+        closer = pickRandom([
+          `సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ ప్రింటింగ్ షాప్!`,
+          `వర్త్ ఎవ్రీ రూపీ, థాంక్యూ ${bName}!`,
+        ]);
+      } else if (intent.isVisitingCard) {
+        opener = pickRandom([
+          `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
+          `మా ఆఫీస్ కోసం విజిటింగ్ కార్డ్స్ ప్రింటింగ్ ${bName} లో చేయించాము.`,
+        ]);
+        middle = pickRandom([
+          `కార్డ్ పేపర్ క్వాలిటీ మరియు ఫాంట్ క్లారిటీ చాలా షార్ప్‌గా వచ్చాయి.`,
+          `డిజైన్ లేఅవుట్ చాలా ప్రొఫెషనల్ గా సెట్ చేసి ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `విజిటింగ్ కార్డ్స్ ప్రింటింగ్ కి బెస్ట్ ప్లేస్!`,
+          `థాంక్యూ ${bName}!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
+          `బిజినెస్ ప్రమోషన్ కోసం ప్రింటింగ్ వర్క్స్ ఇక్కడ ఆర్డర్ ఇచ్చాము.`,
+          `${bName} లో ప్రింటింగ్ సర్వీస్ చాలా బాగుంది.`,
+        ]);
+        middle = pickRandom([
+          `స్టాఫ్ చాలా ఓపికగా డిజైన్ ఆప్షన్స్ చూపించారు, ఎక్కడా కంగారు పెట్టలేదు.`,
+          `టైమ్‌కి రెడీ చేసి ఇచ్చారు, ప్రింట్ క్వాలిటీ లో ఎక్కడా రాజీ పడలేదు.`,
+          `కలర్ ప్రింటింగ్ మరియు బోర్డర్ అలైన్‌మెంట్ చాలా సాలిడ్‌గా వచ్చాయి.`,
+        ]);
+        closer = pickRandom([
+          `ప్రింటింగ్ మరియు సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ షాప్.`,
+          `థాంక్యూ ${bName}, క్వాలిటీ ప్రింటింగ్ కి బెస్ట్ ప్లేస్!`,
+          `మంచి షాప్, definitely recommend!`,
+        ]);
+      }
       break;
+    }
 
-    case "PHOTOGRAPHY_STUDIO":
-      opener = pickRandom([
-        `మా ఫ్యామిలీ ఫంక్షన్ కోసం ఫోటో ఫ్రేమ్ మరియు ప్రింట్స్ ${bName} లో చేయించాము.`,
-        `${bName} లో ఫోటోగ్రఫీ మరియు కస్టమైజ్డ్ గిఫ్ట్స్ సర్వీస్ చాలా బాగుంది.`,
-        `మంచి ఫోటో స్టూడియో కోసం చూసి ఇక్కడికి వెళ్ళాము.`,
-      ]);
-      middle = pickRandom([
-        `ఫోటో క్రాపింగ్ మరియు కలర్ కరెక్షన్ చాలా జాగ్రత్తగా చేశారు.`,
-        `ఆల్బమ్ మరియు ఫ్రేమ్ క్వాలిటీ అనుకున్నదానికంటే చాలా బాగా వచ్చింది.`,
-        `స్టాఫ్ చాలా ఫ్రెండ్లీగా రిసీవ్ చేసుకుని మంచి ఆప్షన్స్ సజెస్ట్ చేశారు.`,
-      ]);
-      closer = pickRandom([
-        `మా ఫ్యామిలీ అందరికీ నచ్చింది, థాంక్యూ ${bName}!`,
-        `ఖచ్చితంగా మళ్ళీ ఇక్కడే చేయించుకుంటాము.`,
-        `ఫోటో వర్క్స్ కి బెస్ట్ ప్లేస్!`,
-      ]);
+    case "PHOTOGRAPHY_STUDIO": {
+      if (intent.isWeddingShoots) {
+        opener = pickRandom([
+          `మా వెడ్డింగ్ ఫోటోగ్రఫీ మరియు సినిమాటిక్ ఫిల్మ్స్ కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
+          `ప్రీ-వెడ్డింగ్ షూట్ మరియు క్యాండిడ్ ఫోటోగ్రఫీ కోసం ${bName} ని సంప్రదించాము.`,
+          `మా ఫ్యామిలీ వెడ్డింగ్ ఈవెంట్ కవరేజ్ చాలా గ్రాండ్‌గా చేశారు.`,
+        ]);
+        middle = pickRandom([
+          `ఫోటోలలో ప్రతి ఎమోషన్‌ని మరియు నాచురల్ స్మైల్స్ ని చాలా అందంగా క్యాప్చర్ చేశారు.`,
+          `సినిమాటిక్ యాంగిల్స్ మరియు లైటింగ్ చాలా రిచ్ గా వచ్చాయి.`,
+          `స్టాఫ్ చాలా ఫ్రెండ్లీగా కోఆర్డినేట్ చేసుకుని మంచి అవుట్‌పుట్ ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `మా వెడ్డింగ్ మెమరీస్ ని స్పెషల్ చేశారు, థాంక్యూ ${bName}!`,
+          `వెడ్డింగ్ ఫోటోగ్రఫీ కి కడపలో బెస్ట్ టీమ్!`,
+        ]);
+      } else if (intent.isCustomGifts) {
+        opener = pickRandom([
+          `బర్త్‌డే సర్ప్రైజ్ కోసం కస్టమైజ్డ్ కప్ ప్రింటింగ్ మరియు పిల్లో ప్రింటింగ్ చేయించాము.`,
+          `కస్టమైజ్డ్ గిఫ్ట్స్ మరియు మ్యాజిక్ పిల్లోస్ ${bName} లో ఆర్డర్ ఇచ్చాము.`,
+          `ఫోటో ప్రింటెడ్ కప్ మరియు కీచైన్స్ కోసం ఇక్కడికి వెళ్ళాము.`,
+        ]);
+        middle = pickRandom([
+          `గిఫ్ట్స్ మీద ఫోటో క్లారిటీ ఏమాత్రం తగ్గకుండా చాలా అందంగా ప్రింట్ చేశారు.`,
+          `మ్యాజిక్ పిల్లో మరియు కప్ క్వాలిటీ చాలా బాగుంది, కలర్స్ బ్రైట్ గా ఉన్నాయి.`,
+          `సకాలంలో రెడీ చేసి సేఫ్ గా ప్యాక్ చేసి ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `పర్ఫెక్ట్ గిఫ్ట్ ఐడియా, ఇంట్లో అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు!`,
+          `కస్టమైజ్డ్ గిఫ్ట్స్ కి కడపలో బెస్ట్ ప్లేస్, థాంక్యూ ${bName}!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `మా ఫ్యామిలీ ఫంక్షన్ కోసం ఫోటో ఫ్రేమ్ మరియు ప్రింట్స్ ${bName} లో చేయించాము.`,
+          `${bName} లో ఫోటోగ్రఫీ మరియు ఫ్రేమింగ్ సర్వీస్ చాలా బాగుంది.`,
+          `మంచి ఫోటో స్టూడియో కోసం చూసి ఇక్కడికి వెళ్ళాము.`,
+        ]);
+        middle = pickRandom([
+          `ఫోటో క్రాపింగ్ మరియు కలర్ కరెక్షన్ చాలా జాగ్రత్తగా చేశారు.`,
+          `ఆల్బమ్ మరియు ఫ్రేమ్ క్వాలిటీ అనుకున్నదానికంటే చాలా బాగా వచ్చింది.`,
+          `స్టాఫ్ చాలా ఫ్రెండ్లీగా రిసీవ్ చేసుకుని మంచి ఆప్షన్స్ సజెస్ట్ చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `మా ఫ్యామిలీ అందరికీ నచ్చింది, థాంక్యూ ${bName}!`,
+          `ఖచ్చితంగా మళ్ళీ ఇక్కడే చేయించుకుంటాము.`,
+          `ఫోటో వర్క్స్ కి బెస్ట్ ప్లేస్!`,
+        ]);
+      }
       break;
+    }
 
     case "SOFTWARE_IT":
       opener = pickRandom([
@@ -1455,6 +1982,7 @@ function generateTeluguCraftsmanship(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
 
   let opener = `${item} వర్క్ చాలా neat గా చేశారు, క్వాలిటీ నంబర్ వన్.`;
@@ -1462,59 +1990,150 @@ function generateTeluguCraftsmanship(
   let closer = `వర్త్ ఎవ్రీ రూపీ! హైలీ శాటిస్‌ఫైడ్ విత్ ది సర్వీస్.`;
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      opener = pickRandom([
-        `${item} టెస్టింగ్ మరియు వెయింగ్ లో 100% ట్రాన్స్‌పరెన్సీ చూపించారు.`,
-        `${bName} లో గోల్డ్ వాల్యుయేషన్ మరియు లైవ్ మార్కెట్ రేటు చాలా జెన్యూన్ గా ఇచ్చారు.`,
-        `ప్యూరిటీ టెస్టింగ్ విధానం చాలా పర్ఫెక్ట్‌గా మరియు శాస్త్రీయంగా ఉంది.`,
-      ]);
-      middle = pickRandom([
-        `కంటి ముందే డిజిటల్ స్కేల్ మీద బరువు తూచారు, వేస్టేజ్ ఏమీ కట్ చేయలేదు.`,
-        `కంప్యూటర్ టెస్టింగ్ తో బంగారం ప్యూరిటీ కరెక్ట్ గా నిర్ధారించారు.`,
-        `లైవ్ గోల్డ్ రేట్ ఇచ్చి వెంటనే బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
-      ]);
-      closer = pickRandom([
-        `కడపలో బెస్ట్ మరియు జెన్యూన్ గోల్డ్ బయర్స్! వర్త్ ఎవ్రీ రూపీ.`,
-        `100% నిజాయితీ గల సర్వీస్, థాంక్యూ ${bName}!`,
-        `బంగారం అమ్మడానికి అత్యంత నమ్మకమైన షాప్.`,
-      ]);
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        opener = pickRandom([
+          `తాకట్టు బంగారం రిలీజ్ సర్వీస్ చాలా ప్రొఫెషనల్ గా మరియు సేఫ్ గా చేశారు.`,
+          `బ్యాంకు లోన్ క్లోజ్ చేయడంలో ${bName} టీమ్ సర్వీస్ సూపర్బ్.`,
+          `ప్లెడ్జ్డ్ గోల్డ్ క్లియరెన్స్ ప్రాసెస్ చాలా స్పీడ్‌గా మరియు క్లీన్‌గా పూర్తి చేశారు.`,
+        ]);
+        middle = pickRandom([
+          `బ్యాంకులో తాకట్టు బంగారం విడిపించి మిగిలిన బ్యాలెన్స్ అమౌంట్ వెంటనే అకౌంట్ లో వేశారు.`,
+          `ఎలాంటి ఇబ్బంది లేకుండా లోన్ అమౌంట్ క్లియర్ చేశారు, లెక్కలన్నీ చాలా క్లియర్.`,
+          `మంచి గౌరవప్రదమైన వాతావరణంలో సేఫ్ గా ట్రాన్సాక్షన్ కంప్లీట్ అయ్యింది.`,
+        ]);
+        closer = pickRandom([
+          `తాకట్టు బంగారం విడిపించడానికి కడపలో నంబర్ వన్ షాప్!`,
+          `వర్త్ ఎవ్రీ రూపీ, థాంక్యూ ${bName}!`,
+          `100% నమ్మకమైన గోల్డ్ బయర్స్.`,
+        ]);
+      } else if (intent.isPurity) {
+        opener = pickRandom([
+          `కంప్యూటరైజ్డ్ జర్మన్ మెషిన్ లో గోల్డ్ ప్యూరిటీ టెస్టింగ్ విధానం చాలా పర్ఫెక్ట్‌గా ఉంది.`,
+          `బంగారం కరిగించకుండా ప్యూరిటీ టెస్ట్ చేయడం చాలా నచ్చింది.`,
+          `ప్యూరిటీ టెస్టింగ్ లో 100% ట్రాన్స్‌పరెన్సీ చూపించారు.`,
+        ]);
+        middle = pickRandom([
+          `కంప్యూటర్ టెస్టింగ్ తో బంగారం ప్యూరిటీని కంటి ముందే కరెక్ట్ గా నిర్ధారించారు.`,
+          `డిజిటల్ రీడింగ్స్ చాలా అక్యూరేట్ గా వచ్చాయి, ఏమాత్రం వేస్టేజ్ లేదా డ్యామేజ్ లేదు.`,
+          `ఎక్స్-ఆర్-ఎఫ్ మెషిన్ ద్వారా కచ్చితమైన క్యారట్స్ రిపోర్ట్ ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `గోల్డ్ టెస్టింగ్ కి కడపలో అత్యంత నమ్మకమైన షాప్!`,
+          `100% నిజాయితీ గల సర్వీస్, థాంక్యూ ${bName}!`,
+          `చాలా ప్రొఫెషనల్ వర్క్, థాంక్యూ!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${item} టెస్టింగ్ మరియు వెయింగ్ లో 100% ట్రాన్స్‌పరెన్సీ చూపించారు.`,
+          `${bName} లో గోల్డ్ వాల్యుయేషన్ మరియు లైవ్ మార్కెట్ రేటు చాలా జెన్యూన్ గా ఇచ్చారు.`,
+          `పాత బంగారం అమ్మడానికి వెళ్ళినప్పుడు చాలా క్లీన్ గా ప్రాసెస్ చేశారు.`,
+        ]);
+        middle = pickRandom([
+          `కంటి ముందే డిజిటల్ స్కేల్ మీద బరువు తూచారు, వేస్టేజ్ ఏమీ కట్ చేయలేదు.`,
+          `లైవ్ గోల్డ్ రేట్ ఇచ్చి వెంటనే బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+          `ఎలాంటి హిడెన్ డిడక్షన్స్ లేకుండా బెస్ట్ మార్కెట్ ప్రైస్ ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో బెస్ట్ మరియు జెన్యూన్ గోల్డ్ బయర్స్! వర్త్ ఎవ్రీ రూపీ.`,
+          `100% నిజాయితీ గల సర్వీస్, థాంక్యూ ${bName}!`,
+          `బంగారం అమ్మడానికి అత్యంత నమ్మకమైన షాప్.`,
+        ]);
+      }
       break;
+    }
 
-    case "PRINTING_GRAPHICS":
-      opener = pickRandom([
-        `${item} క్వాలిటీ మరియు ప్రింట్ ఫినిషింగ్ super rich గా వచ్చింది.`,
-        `ఫ్లెక్స్ బోర్డ్స్ మరియు విజిటింగ్ కార్డ్స్ చాలా neat గా చేశారు.`,
-        `వర్క్ చాలా clean గా చేశారు, ప్రింటింగ్ క్వాలిటీ నంబర్ వన్.`,
-      ]);
-      middle = pickRandom([
-        `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, మెటీరియల్ మన్నిక చాలా సాలిడ్‌గా ఉంది.`,
-        `ఎండకి ఏమాత్రం రంగు తగ్గకుండా మంచి వాటర్ ప్రూఫ్ మెటీరియల్ వాడారు.`,
-        `డిజైనింగ్ మరియు కటింగ్ చాలా క్లీన్‌గా ఉన్నాయి.`,
-      ]);
-      closer = pickRandom([
-        `క్వాలిటీ ప్రింటింగ్ కోరుకునేవారికి ది బెస్ట్ ఛాయిస్!`,
-        `కడపలో బెస్ట్ ప్రింటింగ్ షాప్, థాంక్యూ ${bName}!`,
-        `వర్త్ ఎవ్రీ రూపీ, సూపర్ వర్క్!`,
-      ]);
+    case "PRINTING_GRAPHICS": {
+      if (intent.isFlexBanner) {
+        opener = pickRandom([
+          `ఫ్లెక్స్ బ్యానర్ ప్రింటింగ్ క్వాలిటీ super rich గా వచ్చింది.`,
+          `ఫ్లెక్స్ బోర్డ్స్ మరియు బ్యానర్స్ చాలా neat గా చేశారు.`,
+        ]);
+        middle = pickRandom([
+          `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, మెటీరియల్ మన్నిక చాలా సాలిడ్‌గా ఉంది.`,
+          `ఎండకి ఏమాత్రం రంగు తగ్గకుండా మంచి వాటర్ ప్రూఫ్ మెటీరియల్ వాడారు.`,
+        ]);
+        closer = pickRandom([
+          `క్వాలిటీ ప్రింటింగ్ కోరుకునేవారికి ది బెస్ట్ ఛాయిస్!`,
+          `కడపలో బెస్ట్ ప్రింటింగ్ షాప్, థాంక్యూ ${bName}!`,
+        ]);
+      } else if (intent.isSignBoard) {
+        opener = pickRandom([
+          `షాప్ సైన్ బోర్డ్ మరియు గ్లో సైన్ ఫినిషింగ్ చాలా రిచ్ గా వచ్చింది.`,
+          `అక్రిలిక్ లెటరింగ్ బోర్డ్స్ చాలా పర్ఫెక్ట్ గా అమర్చారు.`,
+        ]);
+        middle = pickRandom([
+          `నైట్ విజిబిలిటీ సూపర్ గా ఉంది, మంచి క్వాలిటీ ఎల్ఈడీ లైట్స్ వాడారు.`,
+          `ఫ్రేమ్ వర్క్ చాలా సాలిడ్‌గా మరియు మన్నికగా ఉంది.`,
+        ]);
+        closer = pickRandom([
+          `సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ ప్లేస్!`,
+          `వర్త్ ఎవ్రీ రూపీ, థాంక్యూ ${bName}!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${item} క్వాలిటీ మరియు ప్రింట్ ఫినిషింగ్ super rich గా వచ్చింది.`,
+          `ప్రింటింగ్ వర్క్ చాలా clean గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
+        ]);
+        middle = pickRandom([
+          `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, మెటీరియల్ మన్నిక చాలా సాలిడ్‌గా ఉంది.`,
+          `డిజైనింగ్ మరియు కటింగ్ చాలా క్లీన్‌గా ఉన్నాయి.`,
+        ]);
+        closer = pickRandom([
+          `క్వాలిటీ ప్రింటింగ్ కోరుకునేవారికి ది బెస్ట్ ఛాయిస్!`,
+          `కడపలో బెస్ట్ ప్రింటింగ్ షాప్, థాంక్యూ ${bName}!`,
+          `వర్త్ ఎవ్రీ రూపీ, సూపర్ వర్క్!`,
+        ]);
+      }
       break;
+    }
 
-    case "PHOTOGRAPHY_STUDIO":
-      opener = pickRandom([
-        `${item} ఫినిషింగ్ అయితే super rich గా వచ్చింది.`,
-        `ఫొటో ప్రింట్స్ మరియు ఫ్రేమ్ వర్క్ చాలా neat గా చేశారు.`,
-        `${bName} దగ్గర వర్క్‌మెన్‌షిప్ చాలా పర్ఫెక్ట్‌గా ఉంది.`,
-      ]);
-      middle = pickRandom([
-        `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, ఫ్రేమ్ లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
-        `ప్రీమియం లుక్ వచ్చింది, వాల్ డెకరేషన్‌కి పర్ఫెక్ట్‌గా సెట్ అయ్యింది.`,
-        `క్లారిటీ విషయంలో అస్సలు రాజీ పడలేదు, చాలా సాలిడ్ ఫినిష్.`,
-      ]);
-      closer = pickRandom([
-        `క్వాలిటీ విషయంలో సూపర్బ్, థాంక్యూ ${bName}!`,
-        `మంచి క్వాలిటీ వర్క్, ఇంట్లో అందరికీ నచ్చింది!`,
-        `వర్త్ ఎవ్రీ రూపీ!`,
-      ]);
+    case "PHOTOGRAPHY_STUDIO": {
+      if (intent.isWeddingShoots) {
+        opener = pickRandom([
+          `వెడ్డింగ్ ఫోటోగ్రఫీ మరియు సినిమాటిక్ ఫిల్మ్స్ క్వాలిటీ నంబర్ వన్.`,
+          `ప్రీ-వెడ్డింగ్ షూట్ ప్రెజెంటేషన్ super rich గా వచ్చింది.`,
+        ]);
+        middle = pickRandom([
+          `లైటింగ్ మరియు కలర్ గ్రేడింగ్ చాలా క్లీన్‌గా చేశారు.`,
+          `ఆల్బమ్ లుక్ చాలా ఎలిగెంట్‌గా మరియు ప్రీమియం గా వచ్చింది.`,
+        ]);
+        closer = pickRandom([
+          `వెడ్డింగ్ కవరేజ్ కి బెస్ట్ స్టూడియో!`,
+          `మా ఈవెంట్ ని మెమరబుల్ చేశారు, థాంక్యూ ${bName}!`,
+        ]);
+      } else if (intent.isCustomGifts) {
+        opener = pickRandom([
+          `కస్టమైజ్డ్ గిఫ్ట్స్ మరియు మ్యాజిక్ పిల్లోస్ ఫినిషింగ్ super గా వచ్చింది.`,
+          `కప్ ప్రింటింగ్ మరియు కీచైన్స్ చాలా neat గా చేశారు.`,
+        ]);
+        middle = pickRandom([
+          `ఫోటో కలర్స్ చాలా బ్రైట్ గా మరియు షార్ప్‌గా ప్రింట్ అయ్యాయి.`,
+          `మంచి మన్నికైన క్వాలిటీ తో రెడీ చేసి ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `పర్ఫెక్ట్ గిఫ్ట్ వర్క్, థాంక్యూ ${bName}!`,
+          `వర్త్ ఎవ్రీ రూపీ, సూపర్ వర్క్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${item} ఫినిషింగ్ అయితే super rich గా వచ్చింది.`,
+          `ఫొటో ప్రింట్స్ మరియు ఫ్రేమ్ వర్క్ చాలా neat గా చేశారు.`,
+          `${bName} దగ్గర వర్క్‌మెన్‌షిప్ చాలా పర్ఫెక్ట్‌గా ఉంది.`,
+        ]);
+        middle = pickRandom([
+          `కలర్స్ చాలా షార్ప్‌గా వచ్చాయి, ఫ్రేమ్ లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
+          `ప్రీమియం లుక్ వచ్చింది, వాల్ డెకరేషన్‌కి పర్ఫెక్ట్‌గా సెట్ అయ్యింది.`,
+          `క్లారిటీ విషయంలో అస్సలు రాజీ పడలేదు, చాలా సాలిడ్ ఫినిష్.`,
+        ]);
+        closer = pickRandom([
+          `క్వాలిటీ విషయంలో సూపర్బ్, థాంక్యూ ${bName}!`,
+          `మంచి క్వాలిటీ వర్క్, ఇంట్లో అందరికీ నచ్చింది!`,
+          `వర్త్ ఎవ్రీ రూపీ!`,
+        ]);
+      }
       break;
+    }
 
     case "SOFTWARE_IT":
       opener = pickRandom([
@@ -1620,33 +2239,76 @@ function generateTeluguPunchy(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
 
   let chosen = `మంచి క్వాలిటీ మరియు టైమ్‌కి సర్వీస్ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్. ${item} చాలా నీట్‌గా చేశారు.`;
 
   if (ind === "GOLD_BUYERS") {
-    chosen = pickRandom([
-      `కంప్యూటర్ టెస్టింగ్ మరియు లైవ్ రేట్ ఇచ్చారు. ప్రాసెస్ చాలా ఫాస్ట్.`,
-      `${item} చాలా జెన్యూన్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
-      `చక్కటి సర్వీస్. స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు. వర్త్ ఇట్!`,
-      `క్లీన్ వర్క్ మరియు నమ్మకమైన డీలింగ్స్. 10 నిమిషాల్లో కంప్లీట్ అయ్యింది.`,
-      `మంచి రెస్పాన్స్, జెన్యూన్ గోల్డ్ రేట్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
-    ]);
+    if (intent.isPledged) {
+      chosen = pickRandom([
+        `బ్యాంకులో తాకట్టు పెట్టిన బంగారం విడిపించి స్పాట్ లో బ్యాలెన్స్ పేమెంట్ చేశారు. సూపర్ సర్వీస్!`,
+        `ప్లెడ్జ్డ్ గోల్డ్ చాలా ఫాస్ట్ గా క్లియర్ చేశారు. 10 నిమిషాల్లో ప్రొసీజర్ కంప్లీట్ అయ్యింది.`,
+        `తాకట్టు బంగారం విడిపించడానికి కడపలో బెస్ట్ ప్లేస్. స్టాఫ్ చాలా హెల్ప్‌ఫుల్!`,
+        `సేఫ్ అండ్ జెన్యూన్ సర్వీస్. లోన్ క్లియర్ చేసి మిగిలిన అమౌంట్ వెంటనే అకౌంట్ లో వేశారు.`,
+      ]);
+    } else if (intent.isPurity) {
+      chosen = pickRandom([
+        `కంప్యూటర్ జర్మన్ మెషిన్ లో ప్యూరిటీ టెస్ట్ చేశారు. 100% అక్యూరేట్ అండ్ ఫాస్ట్.`,
+        `బంగారం కరిగించకుండా కరెక్ట్ ప్యూరిటీ చెక్ చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `డిజిటల్ ప్యూరిటీ టెస్టింగ్ చాలా నీట్‌గా చేశారు. నమ్మకమైన సర్వీస్!`,
+        `క్లీన్ వర్క్ మరియు పారదర్శకమైన ప్యూరిటీ టెస్టింగ్. వర్త్ ఇట్!`,
+      ]);
+    } else {
+      chosen = pickRandom([
+        `కంటి ముందే డిజిటల్ స్కేల్ టెస్టింగ్ మరియు లైవ్ రేట్ ఇచ్చారు. ప్రాసెస్ చాలా ఫాస్ట్.`,
+        `పాత బంగారం అమ్మడానికి బెస్ట్ ప్లేస్. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `చక్కటి సర్వీస్. స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు నమ్మకమైన డీలింగ్స్. 10 నిమిషాల్లో కంప్లీట్ అయ్యింది.`,
+        `మంచి రెస్పాన్స్, జెన్యూన్ గోల్డ్ రేట్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
+      ]);
+    }
   } else if (ind === "PRINTING_GRAPHICS") {
-    chosen = pickRandom([
-      `మంచి క్వాలిటీ ప్రింటింగ్ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
-      `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
-      `చక్కటి సర్వీస్. ప్రింట్ అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
-      `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. బ్యానర్ కలర్స్ సూపర్.`,
-      `మంచి రెస్పాన్స్, ప్రాంప్ట్ వర్క్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
-    ]);
+    if (intent.isFlexBanner) {
+      chosen = pickRandom([
+        `ఫ్లెక్స్ బ్యానర్ ప్రింటింగ్ చాలా నీట్‌గా చేశారు. కలర్స్ సూపర్ షార్ప్!`,
+        `వాటర్‌ప్రూఫ్ ఫ్లెక్స్ ప్రింటింగ్ టైమ్‌కి డెలివరీ ఇచ్చారు. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. బ్యానర్ కలర్స్ అదిరిపోయాయి.`,
+      ]);
+    } else if (intent.isSignBoard) {
+      chosen = pickRandom([
+        `షాప్ సైన్ బోర్డ్ వర్క్ చాలా గ్రాండ్‌గా చేశారు. నైట్ విజిబిలిటీ సూపర్.`,
+        `అక్రిలిక్ లెటరింగ్ బోర్డ్ ఫినిషింగ్ చాలా ప్రీమియం గా వచ్చింది. థాంక్యూ ${bName}!`,
+      ]);
+    } else {
+      chosen = pickRandom([
+        `మంచి క్వాలిటీ ప్రింటింగ్ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
+        `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `చక్కటి సర్వీస్. ప్రింట్ అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. బ్యానర్ కలర్స్ సూపర్.`,
+        `మంచి రెస్పాన్స్, ప్రాంప్ట్ వర్క్. డెఫినెట్‌గా మళ్ళీ వస్తాము.`,
+      ]);
+    }
   } else if (ind === "PHOTOGRAPHY_STUDIO") {
-    chosen = pickRandom([
-      `మంచి క్వాలిటీ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ రీజనబుల్.`,
-      `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
-      `చక్కటి సర్వీస్. అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
-      `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. ఫ్యామిలీ అందరికీ బాగా నచ్చింది.`,
-    ]);
+    if (intent.isWeddingShoots) {
+      chosen = pickRandom([
+        `వెడ్డింగ్ ఫోటోగ్రఫీ చాలా నేచురల్ గా క్యాప్చర్ చేశారు. సూపర్ టీమ్!`,
+        `సినిమాటిక్ వెడ్డింగ్ వీడియోస్ మరియు ఫొటోస్ చాలా గ్రాండ్‌గా వచ్చాయి.`,
+        `మా ఈవెంట్ ని చాలా మెమరబుల్ చేశారు, థాంక్యూ ${bName}!`,
+      ]);
+    } else if (intent.isCustomGifts) {
+      chosen = pickRandom([
+        `కస్టమైజ్డ్ కప్ ప్రింటింగ్ మరియు మ్యాజిక్ పిల్లోస్ చాలా బాగా చేశారు!`,
+        `గిఫ్ట్స్ మీద ఫోటో క్లారిటీ అదిరింది. సర్ప్రైజ్ గిఫ్ట్ సూపర్ గా నచ్చింది.`,
+      ]);
+    } else {
+      chosen = pickRandom([
+        `మంచి క్వాలిటీ మరియు టైమ్‌కి డెలివరీ ఇచ్చారు. ప్రైస్ రీజనబుల్.`,
+        `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
+        `చక్కటి సర్వీస్. అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
+        `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. ఫ్యామిలీ అందరికీ బాగా నచ్చింది.`,
+      ]);
+    }
   } else {
     chosen = pickRandom([
       `మంచి క్వాలిటీ మరియు సమయానికి సర్వీస్ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
@@ -1667,6 +2329,7 @@ function generateTeluguRoman(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
 
   let opener = `Chala baga chesaru, ${item} work aithe super neat ga vachindi.`;
@@ -1674,61 +2337,153 @@ function generateTeluguRoman(
   let closer = `Thanks to ${bName} team, will visit again for sure!`;
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      opener = pickRandom([
-        `Old gold sell cheyadaniki ${bName} visit ayyamu, pure transparent testing chesaru.`,
-        `Bank lo unna pledged gold release cheyinchamu, instant ga account lo money transfer ayyindi.`,
-        `Kadapa lo best gold buyers, accurate weighing and live market bullion rate icharu.`,
-        `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
-      ]);
-      middle = pickRandom([
-        `German machine lo purity test chesi clear ga explain chesaru.`,
-        `Spot payment direct ga bank transfer chesaru without any delay.`,
-        `Live market bullion rate icharu, no unnecessary deductions.`,
-      ]);
-      closer = pickRandom([
-        `Kadapa lo best place to sell old gold and release pledged gold!`,
-        `Thanks to ${bName} team. Worth it, satisfied customer!`,
-        `Super service and genuine valuation!`,
-      ]);
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        opener = pickRandom([
+          `Bank lo unna pledged gold release cheyinchadaniki ${bName} approach ayyamu.`,
+          `Gold loan close chesi pledged gold safe ga release chesi icharu.`,
+          `Pledged gold assistance kosam vellamu, process chala quick ga complete chesaru.`,
+        ]);
+        middle = pickRandom([
+          `Bank loan amount direct ga settle chesi, balance money instant ga transfer chesaru.`,
+          `No hidden charges or delays, live market bullion rate prakaram fair settlement icharu.`,
+          `Staff formalities anni transparent ga close chesaru, zero tension.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best place to release pledged gold! Very trustworthy.`,
+          `Thanks to ${bName} team. Worth it, relieved and satisfied!`,
+          `Super service for pledged gold release, definitely recommend!`,
+        ]);
+      } else if (intent.isPurity) {
+        opener = pickRandom([
+          `Gold purity test cheyinchadaniki ${bName} visit ayyamu.`,
+          `Computerized German XRF machine lo gold purity test chesaru.`,
+          `Accurate purity report kosam ${bName} approach ayyamu.`,
+        ]);
+        middle = pickRandom([
+          `German machine lo transparent ga testing chesi exact karat report icharu.`,
+          `Without melting or damage, 2 minutes lo clear purity reading chupincharu.`,
+          `Digital screen meeda live calculation clear ga explain chesaru.`,
+        ]);
+        closer = pickRandom([
+          `Best place for gold purity testing in Kadapa!`,
+          `Thanks to ${bName} team. Honest testing, satisfied!`,
+          `Accurate testing and polite staff, very happy!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `Old gold sell cheyadaniki ${bName} visit ayyamu, pure transparent testing chesaru.`,
+          `Kadapa lo best gold buyers, accurate weighing and live market bullion rate icharu.`,
+          `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
+        ]);
+        middle = pickRandom([
+          `Digital scale meeda weighing transparent ga chesi live market rate icharu.`,
+          `Spot payment direct ga bank transfer chesaru without any delay.`,
+          `Live market bullion rate icharu, no unnecessary deductions.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best place to sell old gold!`,
+          `Thanks to ${bName} team. Worth it, satisfied customer!`,
+          `Super service and genuine valuation!`,
+        ]);
+      }
       break;
+    }
 
-    case "PRINTING_GRAPHICS":
-      opener = pickRandom([
-        `Shop opening ki flex banner and sign board cheyinchamu, colors and clarity superb ga vachayi.`,
-        `Visiting cards and brochures design chala professional ga chesi icharu.`,
-        `Chala baga chesaru, ${item} printing aithe super neat ga vachindi.`,
-        `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
-      ]);
-      middle = pickRandom([
-        `Flex banner material quality thick ga undi, rain or sun ki fade avvadhu.`,
-        `Design layout and font alignment chala perfect ga set chesaru.`,
-        `Print colors chala vibrant ga unnai, safe packaging tho handover chesaru.`,
-      ]);
-      closer = pickRandom([
-        `Kadapa lo best place for printing and signage!`,
-        `Thanks to ${bName} team. Worth it, satisfied customer!`,
-        `Super service!`,
-      ]);
+    case "PRINTING_GRAPHICS": {
+      if (intent.isFlexBanner) {
+        opener = pickRandom([
+          `Shop event ki flex banners printing cheyinchamu, colors superb ga vachayi.`,
+          `Flex banner material quality thick ga undi, rain or sun ki fade avvadhu.`,
+        ]);
+        middle = pickRandom([
+          `Print colors chala vibrant ga unnai, safe packaging tho handover chesaru.`,
+          `Time ki deliver chesaru without any delays.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best place for flex banner printing!`,
+          `Thanks to ${bName} team. Worth it, satisfied!`,
+        ]);
+      } else if (intent.isSignBoard) {
+        opener = pickRandom([
+          `Shop front ki commercial sign board and glow sign board cheyinchamu.`,
+          `Acrylic lettering sign board chala grand ga design chesi fix chesaru.`,
+        ]);
+        middle = pickRandom([
+          `Lighting and font visibility night time lo super sharp ga kanipistundi.`,
+          `Solid material and neat installation work.`,
+        ]);
+        closer = pickRandom([
+          `Best sign board makers in Kadapa!`,
+          `Worth it, satisfied customer!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `Shop opening ki flex banner and sign board cheyinchamu, colors and clarity superb ga vachayi.`,
+          `Visiting cards and brochures design chala professional ga chesi icharu.`,
+          `Chala baga chesaru, ${item} printing aithe super neat ga vachindi.`,
+          `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
+        ]);
+        middle = pickRandom([
+          `Flex banner material quality thick ga undi, rain or sun ki fade avvadhu.`,
+          `Design layout and font alignment chala perfect ga set chesaru.`,
+          `Print colors chala vibrant ga unnai, safe packaging tho handover chesaru.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best place for printing and signage!`,
+          `Thanks to ${bName} team. Worth it, satisfied customer!`,
+          `Super service!`,
+        ]);
+      }
       break;
+    }
 
-    case "PHOTOGRAPHY_STUDIO":
-      opener = pickRandom([
-        `Chala baga chesaru, ${item} finishing aithe super neat ga vachindi.`,
-        `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
-        `${item} quality super ga vachindi, expected danikante better undi.`,
-      ]);
-      middle = pickRandom([
-        `Staff chala patient ga requirements vinnaaru.`,
-        `Family members andariki chala nachindi output.`,
-        `Photo clarity taggakunda time ki ready chesi icharu.`,
-      ]);
-      closer = pickRandom([
-        `Thanks to ${bName} team, will visit again for sure!`,
-        `Worth it, satisfied customer!`,
-        `Super service!`,
-      ]);
+    case "PHOTOGRAPHY_STUDIO": {
+      if (intent.isWeddingShoots) {
+        opener = pickRandom([
+          `Wedding photography and cinematic video shoot kosam ${bName} book chesamu.`,
+          `Pre-wedding shoot and candid photography chala grand ga teesaru.`,
+        ]);
+        middle = pickRandom([
+          `Every emotion and candid smile ni super beautiful ga capture chesaru.`,
+          `Cinematic lighting and color grading look aithe super rich ga vachindi.`,
+        ]);
+        closer = pickRandom([
+          `Best wedding photography team in Kadapa, thanks to ${bName}!`,
+          `Made our wedding truly memorable!`,
+        ]);
+      } else if (intent.isCustomGifts) {
+        opener = pickRandom([
+          `Birthday gift kosam customized cup printing and magic pillow cheyinchamu.`,
+          `Photo printed customized gifts quality super ga vachindi.`,
+        ]);
+        middle = pickRandom([
+          `Gift meeda photo clarity taggakunda chala neat ga print chesi icharu.`,
+          `Finishing and packing chala safe ga chesaru.`,
+        ]);
+        closer = pickRandom([
+          `Perfect surprise gift, everyone at home loved it!`,
+          `Thanks to ${bName} team!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `Chala baga chesaru, ${item} finishing aithe super neat ga vachindi.`,
+          `${bName} lo work chala clean ga chesaru, staff kuda friendly ga unaru.`,
+          `${item} quality super ga vachindi, expected danikante better undi.`,
+        ]);
+        middle = pickRandom([
+          `Staff chala patient ga requirements vinnaaru.`,
+          `Family members andariki chala nachindi output.`,
+          `Photo clarity taggakunda time ki ready chesi icharu.`,
+        ]);
+        closer = pickRandom([
+          `Thanks to ${bName} team, will visit again for sure!`,
+          `Worth it, satisfied customer!`,
+          `Super service!`,
+        ]);
+      }
       break;
+    }
 
     case "RESTAURANT_FOOD":
       opener = pickRandom([
@@ -1848,6 +2603,7 @@ function generateTeluguOccasion(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
   const item = tags[0] || pickRandom(lex.items);
 
   let opener = `మా రిక్వైర్మెంట్ కోసం ${bName} ని సంప్రదించాము.`;
@@ -1855,56 +2611,142 @@ function generateTeluguOccasion(
   let closer = `థాంక్యూ ${bName}!`;
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      opener = pickRandom([
-        `అర్జెంట్ ఫైనాన్షియల్ అవసరం కోసం పాత బంగారం అమ్మడానికి ${bName} కి వెళ్ళాము.`,
-        `బ్యాంక్ గోల్డ్ లోన్ క్లోజ్ చేసి ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసుకోవడానికి ${bName} టీమ్ సహాయం తీసుకున్నాము.`,
-        `పాత గోల్డ్ ఆర్నమెంట్స్ సేల్ చేయడానికి ${bName} కి వెళ్ళాము, ప్రాసెస్ చాలా స్పీడ్‌గా జరిగింది.`,
-      ]);
-      middle = pickRandom([
-        `10 నిమిషాల్లో ప్యూరిటీ చెక్ పూర్తి చేసి లైవ్ బులియన్ రేటు ప్రకారం అమౌంట్ సెటిల్ చేశారు.`,
-        `కంప్యూటరైజ్డ్ జర్మన్ మెషిన్ లో ప్యూరిటీ చెక్ చేసి ఎక్కడా వేస్టేజ్ లేకుండా రేట్ ఇచ్చారు.`,
-        `డిజిటల్ స్కేల్ మీద మా కంటి ముందే తూకం వేసి స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
-      ]);
-      closer = pickRandom([
-        `కడపలో తాకట్టు బంగారం విడిపించడానికి మరియు అమ్మడానికి ది బెస్ట్ సర్వీస్!`,
-        `బంగారం అమ్మడానికి కడపలో 100% నమ్మకమైన షాప్, థాంక్యూ ${bName}!`,
-      ]);
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        opener = pickRandom([
+          `బ్యాంక్ గోల్డ్ లోన్ క్లోజ్ చేసి ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసుకోవడానికి ${bName} టీమ్ సహాయం తీసుకున్నాము.`,
+          `తాకట్టు బంగారం విడిపించుకోవడానికి సరైన సమయానికి ${bName} ని సంప్రదించాము.`,
+          `అర్జెంట్ గా ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసి బ్యాలెన్స్ అమౌంట్ తీసుకోవడానికి ఇక్కడికి వెళ్ళాము.`,
+        ]);
+        middle = pickRandom([
+          `లోన్ అమౌంట్ క్లియర్ చేసి మిగిలిన బ్యాలెన్స్ ని లైవ్ బులియన్ రేటు ప్రకారం స్పాట్ లో సెటిల్ చేశారు.`,
+          `ఎలాంటి ఆలస్యం లేకుండా బ్యాంక్ డాక్యుమెంటేషన్ పూర్తి చేసి అకౌంట్ లో డబ్బులు వేశారు.`,
+          `స్టాఫ్ చాలా మర్యాదగా మాట్లాడి పారదర్శకంగా మొత్తం ప్రక్రియ పూర్తి చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో తాకట్టు బంగారం విడిపించడానికి ది బెస్ట్ సర్వీస్!`,
+          `చాలా రిలీఫ్ ఇచ్చారు, థాంక్యూ ${bName}!`,
+        ]);
+      } else if (intent.isPurity) {
+        opener = pickRandom([
+          `మా ఆర్నమెంట్స్ ప్యూరిటీ చెక్ చేసుకోవడానికి ${bName} ని సంప్రదించాము.`,
+          `బంగారం క్యారట్స్ కరెక్ట్ గా నిర్ధారించుకోవడానికి ఇక్కడికి వెళ్ళాము.`,
+        ]);
+        middle = pickRandom([
+          `10 నిమిషాల్లో జర్మన్ కంప్యూటర్ మెషిన్ లో ప్యూరిటీ చెక్ పూర్తి చేసి రిపోర్ట్ ఇచ్చారు.`,
+          `ఎక్కడా డ్యామేజ్ లేకుండా డిజిటల్ స్కేల్ మీద పారదర్శకంగా చూపించారు.`,
+        ]);
+        closer = pickRandom([
+          `ప్యూరిటీ టెస్టింగ్ కి కడపలో 100% నమ్మకమైన షాప్, థాంక్యూ ${bName}!`,
+          `మంచి నిజాయితీ గల సర్వీస్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `అర్జెంట్ ఫైనాన్షియల్ అవసరం కోసం పాత బంగారం అమ్మడానికి ${bName} కి వెళ్ళాము.`,
+          `పాత గోల్డ్ ఆర్నమెంట్స్ సేల్ చేయడానికి ${bName} కి వెళ్ళాము, ప్రాసెస్ చాలా స్పీడ్‌గా జరిగింది.`,
+        ]);
+        middle = pickRandom([
+          `10 నిమిషాల్లో టెస్టింగ్ పూర్తి చేసి లైవ్ బులియన్ రేటు ప్రకారం అమౌంట్ సెటిల్ చేశారు.`,
+          `డిజిటల్ స్కేల్ మీద మా కంటి ముందే తూకం వేసి స్పాట్ లో బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `బంగారం అమ్మడానికి కడపలో 100% నమ్మకమైన షాప్, థాంక్యూ ${bName}!`,
+          `మంచి సర్వీస్ ఇచ్చే టీమ్!`,
+        ]);
+      }
       break;
+    }
 
-    case "PRINTING_GRAPHICS":
-      opener = pickRandom([
-        `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
-        `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
-        `ఈవెంట్ ప్రమోషన్ కోసం flex banners ఆర్డర్ ఇచ్చాము.`,
-      ]);
-      middle = pickRandom([
-        `ఫ్లెక్స్ ప్రింట్ చాలా షార్ప్‌గా వచ్చింది, ఎండలో కూడా కలర్స్ ఏమాత్రం డల్ అవ్వలేదు.`,
-        `గ్రాఫిక్ డిజైనింగ్ చాలా క్రియేటివ్‌గా చేశారు, లేఅవుట్ చాలా నచ్చింది.`,
-        `కలర్ క్వాలిటీ మరియు మెటీరియల్ మన్నిక చాలా బాగుంది.`,
-      ]);
-      closer = pickRandom([
-        `ఫ్లెక్స్ ప్రింటింగ్ మరియు సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ షాప్.`,
-        `థాంక్యూ ${bName}, క్వాలిటీ వర్క్ కి బెస్ట్ ప్లేస్!`,
-      ]);
+    case "PRINTING_GRAPHICS": {
+      if (intent.isFlexBanner) {
+        opener = pickRandom([
+          `మా షాప్ ఓపెనింగ్ కోసం flex banner ${bName} లో చేయించాము.`,
+          `ఈవెంట్ ప్రమోషన్ కోసం flex banners ఆర్డర్ ఇచ్చాము.`,
+        ]);
+        middle = pickRandom([
+          `ఫ్లెక్స్ ప్రింట్ చాలా షార్ప్‌గా వచ్చింది, ఎండలో కూడా కలర్స్ ఏమాత్రం డల్ అవ్వలేదు.`,
+          `మంచి మన్నికైన వాటర్‌ప్రూఫ్ మెటీరియల్ వాడారు.`,
+        ]);
+        closer = pickRandom([
+          `ఫ్లెక్స్ ప్రింటింగ్ కి కడపలో బెస్ట్ షాప్!`,
+          `థాంక్యూ ${bName}, క్వాలిటీ వర్క్ కి బెస్ట్ ప్లేస్!`,
+        ]);
+      } else if (intent.isSignBoard) {
+        opener = pickRandom([
+          `మా షాప్ ఫ్రంట్ కోసం commercial sign board మరియు glow sign ${bName} లో చేయించాము.`,
+          `షాప్ సైన్ బోర్డ్ ఆర్డర్ ఇచ్చాము.`,
+        ]);
+        middle = pickRandom([
+          `అక్రిలిక్ లెటరింగ్ చాలా చక్కగా అమర్చారు, నైట్ లుక్ అదిరింది.`,
+          `బోర్డ్ ఫినిషింగ్ చాలా రిచ్ గా వచ్చింది.`,
+        ]);
+        closer = pickRandom([
+          `సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ షాప్!`,
+          `థాంక్యూ ${bName}!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `మా షాప్ ఓపెనింగ్ కోసం flex banner మరియు sign board ${bName} లో చేయించాము.`,
+          `బిజినెస్ ప్రమోషన్ కోసం విజిటింగ్ కార్డ్స్ మరియు బ్రోచర్స్ ఆర్డర్ ఇచ్చాము.`,
+          `ఈవెంట్ ప్రమోషన్ కోసం flex banners ఆర్డర్ ఇచ్చాము.`,
+        ]);
+        middle = pickRandom([
+          `ఫ్లెక్స్ ప్రింట్ చాలా షార్ప్‌గా వచ్చింది, ఎండలో కూడా కలర్స్ ఏమాత్రం డల్ అవ్వలేదు.`,
+          `గ్రాఫిక్ డిజైనింగ్ చాలా క్రియేటివ్‌గా చేశారు, లేఅవుట్ చాలా నచ్చింది.`,
+          `కలర్ క్వాలిటీ మరియు మెటీరియల్ మన్నిక చాలా బాగుంది.`,
+        ]);
+        closer = pickRandom([
+          `ఫ్లెక్స్ ప్రింటింగ్ మరియు సైన్ బోర్డ్స్ కి కడపలో బెస్ట్ షాప్.`,
+          `థాంక్యూ ${bName}, క్వాలిటీ వర్క్ కి బెస్ట్ ప్లేస్!`,
+        ]);
+      }
       break;
+    }
 
-    case "PHOTOGRAPHY_STUDIO":
-      opener = pickRandom([
-        `మా ఫ్యామిలీ ఈవెంట్ మరియు ఫోటో వర్క్ కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
-        `బర్త్‌డే సర్ప్రైజ్ గిఫ్ట్ కోసం ${item} చేయించాము.`,
-        `ఫ్యామిలీ ఫోటో ఫ్రేమ్ ${bName} లో చేయించాము.`,
-      ]);
-      middle = pickRandom([
-        `ఫోటోలలో నాచురల్ స్మైల్స్ మరియు ప్రతి క్షణాన్ని చాలా అందంగా క్యాప్చర్ చేశారు.`,
-        `ఫినిషింగ్ చూసి ఇంట్లో అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
-        `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
-      ]);
-      closer = pickRandom([
-        `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
-        `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
-      ]);
+    case "PHOTOGRAPHY_STUDIO": {
+      if (intent.isWeddingShoots) {
+        opener = pickRandom([
+          `మా వెడ్డింగ్ ఈవెంట్ మరియు ఫోటోగ్రఫీ కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
+          `మా ఫ్యామిలీ వెడ్డింగ్ సినిమాటిక్ షూట్ ఇక్కడ చేయించుకున్నాము.`,
+        ]);
+        middle = pickRandom([
+          `ఫోటోలలో నాచురల్ స్మైల్స్ మరియు ప్రతి క్షణాన్ని చాలా అందంగా క్యాప్చర్ చేశారు.`,
+          `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
+        ]);
+        closer = pickRandom([
+          `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
+          `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
+        ]);
+      } else if (intent.isCustomGifts) {
+        opener = pickRandom([
+          `బర్త్‌డే సర్ప్రైజ్ గిఫ్ట్ కోసం కస్టమైజ్డ్ కప్ మరియు పిల్లో ప్రింటింగ్ చేయించాము.`,
+          `గిఫ్ట్స్ కోసం ఫోటో ప్రింటింగ్ ఆర్డర్ ఇచ్చాము.`,
+        ]);
+        middle = pickRandom([
+          `గిఫ్ట్ ఫినిషింగ్ చూసి ఇంట్లో అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
+          `కలర్స్ చాలా బ్రైట్ గా వచ్చాయి.`,
+        ]);
+        closer = pickRandom([
+          `పర్ఫెక్ట్ గిఫ్ట్ వర్క్, థాంక్యూ ${bName}!`,
+          `చాలా సంతోషంగా ఉంది!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `మా ఫ్యామిలీ ఈవెంట్ మరియు ఫోటో వర్క్ కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
+          `ఫ్యామిలీ ఫోటో ఫ్రేమ్ ${bName} లో చేయించాము.`,
+        ]);
+        middle = pickRandom([
+          `ఫోటోలలో నాచురల్ స్మైల్స్ మరియు ప్రతి క్షణాన్ని చాలా అందంగా క్యాప్చర్ చేశారు.`,
+          `ఫినిషింగ్ చూసి ఇంట్లో అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
+          `కలర్స్ చాలా నేచురల్‌గా వచ్చాయి, లుక్ చాలా ఎలిగెంట్‌గా ఉంది.`,
+        ]);
+        closer = pickRandom([
+          `థాంక్యూ ${bName}, మా ఈవెంట్‌ని స్పెషల్ చేశారు!`,
+          `ఖచ్చితంగా రాబోయే ఫంక్షన్లకి కూడా ఇక్కడికే వస్తాము.`,
+        ]);
+      }
       break;
+    }
 
     case "RESTAURANT_FOOD":
       opener = pickRandom([
@@ -2182,27 +3024,58 @@ function generateProceduralFallback(
   roundSeed: number,
   isTelugu: boolean
 ): string {
+  const intent = detectTagIntent([tag], ind);
   if (isTelugu) {
     let starters: string[];
     let middles: string[];
 
     switch (ind) {
-      case "GOLD_BUYERS":
-        starters = [
-          `బంగారం ప్యూరిటీని కంప్యూటరైజ్డ్ మెషిన్‌లో పారదర్శకంగా చెక్ చేశారు.`,
-          `కంటి ముందే డిజిటల్ స్కేల్‌లో తూకం వేసి కరెక్ట్ రేటు ఇచ్చారు.`,
-          `ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసి వెంటనే బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
-          `${bName} లో సర్వీస్ చాలా genuine గా ఉంది.`,
-          `కడపలో బెస్ట్ గోల్డ్ బయర్స్ మరియు తాకట్టు బంగారం రిలీజ్ సర్వీస్.`,
-          `10 నిమిషాల్లో ప్రొసీజర్ మొత్తం కంప్లీట్ చేశారు.`,
-        ];
-        middles = [
-          `లైవ్ మార్కెట్ బులియన్ రేటు ప్రకారం అమౌంట్ సెటిల్ చేశారు.`,
-          `అనవసరమైన కటింగ్స్ లేదా డిడక్షన్స్ ఏమీ లేవు.`,
-          `వెంటనే బ్యాంక్ ఖాతాకి అమౌంట్ క్రెడిట్ అయిపోయింది.`,
-          `కంప్యూటర్ టెస్టింగ్ లో 100% పారదర్శకత చూపించారు.`,
-        ];
+      case "GOLD_BUYERS": {
+        if (intent.isPledged) {
+          starters = [
+            `బ్యాంకులో తాకట్టు పెట్టిన బంగారం విడిపించడానికి సహాయం చేశారు.`,
+            `ప్లెడ్జ్డ్ గోల్డ్ రిలీజ్ చేసి వెంటనే బ్యాలెన్స్ బ్యాంక్ ట్రాన్స్‌ఫర్ చేశారు.`,
+            `గోల్డ్ లోన్ సెటిల్మెంట్ చాలా ఫాస్ట్‌గా పూర్తి చేశారు.`,
+            `${bName} లో తాకట్టు బంగారం రిలీజ్ సర్వీస్ చాలా genuine గా ఉంది.`,
+            `కడపలో తాకట్టు బంగారం విడిపించడానికి నమ్మకమైన సర్వీస్.`,
+          ];
+          middles = [
+            `లోన్ క్లియర్ చేసి మిగిలిన అమౌంట్ లైవ్ బులియన్ రేటు ప్రకారం ఇచ్చారు.`,
+            `అనవసరమైన కటింగ్స్ లేదా డిడక్షన్స్ ఏమీ లేకుండా క్లియర్ చేశారు.`,
+            `వెంటనే బ్యాంక్ ఖాతాకి బ్యాలెన్స్ అమౌంట్ క్రెడిట్ అయిపోయింది.`,
+            `స్టాఫ్ చాలా సపోర్టివ్ గా ఉండి ప్రాసెస్ పూర్తి చేశారు.`,
+          ];
+        } else if (intent.isPurity) {
+          starters = [
+            `బంగారం ప్యూరిటీని కంప్యూటరైజ్డ్ మెషిన్‌లో పారదర్శకంగా చెక్ చేశారు.`,
+            `జర్మన్ ఎక్స్-ఆర్-ఎఫ్ మెషిన్ లో కంటి ముందే ప్యూరిటీ టెస్ట్ చేశారు.`,
+            `ఆర్నమెంట్స్ కి ఎలాంటి డ్యామేజ్ లేకుండా ప్యూరిటీ నిర్ధారించారు.`,
+            `${bName} లో ప్యూరిటీ టెస్టింగ్ చాలా accurate గా ఉంది.`,
+            `కడపలో కంప్యూటరైజ్డ్ గోల్డ్ ప్యూరిటీ టెస్టింగ్ కి బెస్ట్ ప్లేస్.`,
+          ];
+          middles = [
+            `కంప్యూటర్ టెస్టింగ్ లో 100% పారదర్శకత చూపించారు.`,
+            `ఎలాంటి కరిగించడం లేదా డ్యామేజ్ లేకుండా రీడింగ్ ఇచ్చారు.`,
+            `డిజిటల్ రిపోర్ట్ చాలా క్లియర్ గా అర్థమయ్యేలా చెప్పారు.`,
+            `రెండు నిమిషాల్లో ఖచ్చితమైన క్యారట్ శాతాన్ని చూపించారు.`,
+          ];
+        } else {
+          starters = [
+            `కంటి ముందే డిజిటల్ స్కేల్‌లో తూకం వేసి కరెక్ట్ రేటు ఇచ్చారు.`,
+            `పాత బంగారం అమ్మడానికి వెళ్తే చాలా బాగా రెస్పాండ్ అయ్యారు.`,
+            `${bName} లో గోల్డ్ వాల్యుయేషన్ చాలా genuine గా ఉంది.`,
+            `కడపలో బెస్ట్ గోల్డ్ బయర్స్ మరియు జెన్యూన్ లైవ్ రేట్.`,
+            `10 నిమిషాల్లో ప్రొసీజర్ మొత్తం కంప్లీట్ చేశారు.`,
+          ];
+          middles = [
+            `లైవ్ మార్కెట్ బులియన్ రేటు ప్రకారం అమౌంట్ సెటిల్ చేశారు.`,
+            `అనవసరమైన కటింగ్స్ లేదా వేస్టేజ్ ఏమీ లేకుండా లెక్క చెప్పారు.`,
+            `వెంటనే బ్యాంక్ ఖాతాకి అమౌంట్ క్రెడిట్ అయిపోయింది.`,
+            `డిజిటల్ వెయింగ్ లో 100% పారదర్శకత చూపించారు.`,
+          ];
+        }
         break;
+      }
 
       case "PRINTING_GRAPHICS":
         starters = [
@@ -2283,21 +3156,52 @@ function generateProceduralFallback(
   let middles: string[];
 
   switch (ind) {
-    case "GOLD_BUYERS":
-      starters = [
-        `100% transparent testing for ${tag}.`,
-        `Got immediate bank transfer for ${tag}.`,
-        `Accurate weighing and live bullion rate for ${tag}.`,
-        `Smooth and confidential process for ${tag}.`,
-        `Fair valuation and polite coordination at ${bName}.`,
-      ];
-      middles = [
-        `Purity was checked right in front of me on their computerized German machine.`,
-        `The valuation was 100% transparent with zero unfair deductions.`,
-        `Payment was credited to my bank account in less than 2 minutes.`,
-        `The staff was patient, polite, and handled everything with complete confidentiality.`,
-      ];
+    case "GOLD_BUYERS": {
+      if (intent.isPledged) {
+        starters = [
+          `Smooth assistance to release pledged gold from the bank.`,
+          `Got my bank gold loan cleared and balance payout settled promptly.`,
+          `Very transparent and helpful with releasing pledged gold at ${bName}.`,
+          `Hassle-free process to close my gold loan and receive immediate funds.`,
+          `Safe and dependable pledged gold service at ${bName}.`,
+        ];
+        middles = [
+          `They assisted throughout the bank formalities with total transparency.`,
+          `The loan dues were cleared directly and balance was transferred within minutes.`,
+          `Settled the transaction using live bullion rates with zero hidden deductions.`,
+          `Staff was respectful, supportive, and handled everything confidentially.`,
+        ];
+      } else if (intent.isPurity) {
+        starters = [
+          `100% transparent testing for gold purity.`,
+          `Computerized German XRF testing with complete precision.`,
+          `Accurate karat measurement without melting or damaging ornaments.`,
+          `Scientific and transparent purity check at ${bName}.`,
+          `Prompt testing and clear digital reports.`,
+        ];
+        middles = [
+          `Purity was checked right in front of me on their computerized German machine.`,
+          `They showed the exact karat percentage without any melting loss.`,
+          `The staff was patient, polite, and explained the digital readings clearly.`,
+          `Complete peace of mind knowing the true purity of my ornaments.`,
+        ];
+      } else {
+        starters = [
+          `Instant bank transfer and fair live rate for ${tag}.`,
+          `Accurate digital weighing and honest valuation at ${bName}.`,
+          `Smooth and confidential process for ${tag}.`,
+          `Highest market rate and polite coordination at ${bName}.`,
+          `Quick 10-minute transaction for ${tag}.`,
+        ];
+        middles = [
+          `Weighed right in front of me on a certified digital scale with zero wastage.`,
+          `The valuation was 100% transparent with zero unfair deductions.`,
+          `Payment was credited to my bank account via IMPS in less than 2 minutes.`,
+          `The staff was patient, polite, and handled everything with complete confidentiality.`,
+        ];
+      }
       break;
+    }
 
     case "PRINTING_GRAPHICS":
       starters = [
@@ -2388,7 +3292,6 @@ export function synthesizeUniqueReviews(params: SynthesizerParams): SynthesizedR
 
   // 1. Detect deterministic industry & domain fence
   const industry = detectIndustry(businessName, category, tagline || "");
-  const lexicon = getDomainLexicon(industry.type);
 
   // Active tags: prioritize customer selected tags, then business tagChips, then domain items
   let activeTags = selectedTags.length > 0 ? selectedTags : [];
@@ -2396,8 +3299,11 @@ export function synthesizeUniqueReviews(params: SynthesizerParams): SynthesizedR
     activeTags = tagChips.split(",").map((t) => t.trim()).filter(Boolean);
   }
   if (activeTags.length === 0) {
-    activeTags = lexicon.items.slice(0, 3);
+    activeTags = industry.tags.slice(0, 3);
   }
+
+  const profileContext = `${tagChips} ${keywords} ${category} ${tagline}`;
+  const lexicon = getDomainLexicon(industry.type, activeTags, profileContext);
 
   // 2. Business profile for domain validation
   const profile: BusinessProfile = {

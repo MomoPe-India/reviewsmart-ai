@@ -46,22 +46,32 @@ export const DOMAIN_FENCES: Record<IndustryType, DomainFenceConfig> = {
       "bought jewellery", "bought jewelry", "purchased jewellery", "purchased jewelry",
       "bridal collection", "jewellery collection", "jewelry collection", "custom jewellery",
       "custom jewelry", "jewellery design", "jewelry design", "latest collection",
+      // Strictly forbid unrelated consumer services per explicit rule
+      "eyewear", "glasses", "spectacles", "lenses", "opticals", "optician", "hotel", "room",
+      "resort", "real estate", "plots", "land", "clothing", "apparel", "saree", "dress",
+      "education", "coaching", "school", "college", "tuition",
     ],
     forbiddenPhrases: [
-      /\b(photo\s*frames?|wall\s*frames?|acrylic\s*frames?|album\s*designs?)\b/i,
+      /\b(photo\s*frames?|wall\s*frames?|acrylic\s*frames?|album\s*designs?|frames?)\b/i,
+      /\b(lenses?|eyewear|spectacles?|glasses|opticals?)\b/i,
       /\b(candid\s*photography|pre-weddings?|wedding\s*films?|camera\s*angles?)\b/i,
       /\b(flex\s*banners?|sign\s*boards?|visiting\s*cards?|offset\s*printing)\b/i,
       /\b(cup\s*printings?|magic\s*pillows?|keychain\s*printings?)\b/i,
       /\b(haircuts?|beard\s*groomings?|facials?|makeups?|hairstylists?)\b/i,
       /\b(doctors?|clinics?|treatments?|teeth|dentals?|hospitals?|medicines?)\b/i,
       /\b(biryani|delicious\s*food|tasty\s*meals?|kitchens?|restaurants?)\b/i,
+      /\b(hotels?|resorts?|rooms?|real\s*estate|plots?|property|apartments?)\b/i,
+      /\b(clothing|textiles?|sarees?|dresses?|apparel|coaching|school|college)\b/i,
       /\b(software\s*dev|app\s*dev|clean\s*code|ui\/ux|developers?)\b/i,
+      /\b(car\s*service|bike\s*service|mechanic\s*shop|engine\s*oil|wheel\s*alignment)\b/i,
       // Forbid jewellery sales / manufacturing concepts
       /\b(goldsmith|making\s*charges?|wastage\s*(charges?|percentage)|v\.?a\.?\s*charges?)\b/i,
       /\b(bought\s*(a\s*)?(jeweller(y|ies)|necklace|chain|bangles?|ring|earrings?|ornaments?))\b/i,
       /\b(purchased\s*(a\s*)?(jeweller(y|ies)|necklace|chain|bangles?|ring|earrings?|ornaments?))\b/i,
       /\b(bridal\s*(jeweller(y|ies)|collection)|jeweller(y|ies)\s*showroom|latest\s*jeweller(y|ies)\s*designs?)\b/i,
       /\b(custom\s*jeweller(y|ies)\s*(making|designing|manufacturing))\b/i,
+      // Telugu forbidden phrases for gold businesses
+      /(ఫ్రేమ్|ఫ్రేములు|లెన్స్|కళ్ళద్దాలు|హాస్పిటల్|డాక్టర్|రెస్టారెంట్|బిర్యానీ|హోటల్|స్కూల్|కాలేజ్|బట్టలు|శారీ|ప్లాట్|ఫ్లాట్|రియల్\s*ఎస్టేట్|మెకానిక్|గ్యారేజ్|కారు\s*రిపేర్)/i,
     ],
     positiveIdentifiers: [
       /\b(sell(ing)?\s*gold|cash\s*for\s*gold|old\s*gold(\s*evaluation|\s*buying)?|gold\s*purity\s*test(ing)?|gold\s*valuation|pledged\s*gold(\s*assistance)?|transparent\s*gold\s*pricing|quick\s*instant\s*payment|doorstep\s*(gold\s*)?evaluation|release\s*pledged\s*gold|bank\s*transfer|spot\s*payment|german\s*xrf|digital\s*weighing|valuation|bullion|karats?|carats?)\b/i,
@@ -523,6 +533,93 @@ export function validateBusinessRelevance(
         return {
           valid: false,
           reason: `Review mentions foreign location "${foreign}" instead of business city "${detectedLocation}"`,
+        };
+      }
+    }
+  }
+
+  // 5. Unconfigured Service Invention Guard (DO NOT INVENT SERVICES)
+  const allProfileContext = `${profile.tagChips || ""} ${profile.keywords || ""} ${profile.category || ""} ${profile.tagline || ""}`.toLowerCase();
+
+  // If review mentions doorstep service, verify the merchant actually offers doorstep
+  const mentionsDoorstep = /\b(doorstep|door\s*step)\b/i.test(lower) || /(డోర్‌స్టెప్|ఇంటి\s*వద్ద)/i.test(text);
+  if (mentionsDoorstep && !allProfileContext.includes("doorstep") && !allProfileContext.includes("door step")) {
+    return {
+      valid: false,
+      reason: `Review invents unconfigured service "Doorstep Service" not in merchant profile`,
+    };
+  }
+
+  // If review mentions pledged gold release, verify the merchant actually offers pledged gold services
+  const mentionsPledged = /\b(pledged?|pawn\s*broker|gold\s*loan)\b/i.test(lower) || /(తాకట్టు|ప్లెడ్జ్డ్|లోన్)/i.test(text);
+  if (mentionsPledged && industry.industryType === "GOLD_BUYERS") {
+    const allowsPledged = allProfileContext.includes("pledge") || allProfileContext.includes("loan") || allProfileContext.includes("తాకట్టు");
+    if (!allowsPledged) {
+      return {
+        valid: false,
+        reason: `Review invents unconfigured service "Pledged Gold Release" not in merchant profile`,
+      };
+    }
+  }
+
+  // 6. Selected Service / Highlight Focus Guard (SELECTED SERVICE MUST CONTROL THE REVIEW)
+  if (profile.selectedTags && profile.selectedTags.length > 0) {
+    const selectedText = profile.selectedTags.join(" ").toLowerCase();
+
+    // GOLD_BUYERS guards:
+    if (industry.industryType === "GOLD_BUYERS") {
+      const selectedPledged = selectedText.includes("pledge") || selectedText.includes("loan") || selectedText.includes("తాకట్టు");
+      const selectedPurity = selectedText.includes("purity") || selectedText.includes("xrf") || selectedText.includes("ప్యూరిటీ");
+
+      // If user selected purity, but not pledged, review MUST NOT mention pledged/loan
+      if (selectedPurity && !selectedPledged && mentionsPledged) {
+        return {
+          valid: false,
+          reason: `Review introduces unselected service "Pledged Gold" when user selected "Gold Purity Testing"`,
+        };
+      }
+
+      // If user selected pledged gold, review MUST mention pledged/loan release
+      if (selectedPledged && !mentionsPledged) {
+        return {
+          valid: false,
+          reason: `Review fails to focus on user-selected highlight "Release Pledged Gold"`,
+        };
+      }
+    }
+
+    // PHOTOGRAPHY_STUDIO guards:
+    if (industry.industryType === "PHOTOGRAPHY_STUDIO") {
+      const selectedWedding = /wedding|candid|cinematic|pre-wedding|వెడ్డింగ్|షూట్/i.test(selectedText);
+      const selectedGifts = /gift|cup|pillow|magic|keychain|గిఫ్ట్|పిల్లో|కీచైన్|మగ్/i.test(selectedText);
+
+      const mentionsGifts = /\b(cup\s*print(ing)?|pillow\s*print(ing)?|magic\s*pillow|keychains?|customized\s*gifts?)\b/i.test(lower) || /(గిఫ్ట్|పిల్లో|కప్|కీచైన్)/i.test(text);
+      const mentionsWedding = /\b(pre-weddings?|candid\s*weddings?|wedding\s*films?|cinematics?)\b/i.test(lower) || /(వెడ్డింగ్|షూట్|సినిమాటిక్)/i.test(text);
+
+      if (selectedWedding && !selectedGifts && mentionsGifts) {
+        return {
+          valid: false,
+          reason: `Review introduces unselected gift merchandise when user selected Wedding Photography`,
+        };
+      }
+      if (selectedGifts && !selectedWedding && mentionsWedding) {
+        return {
+          valid: false,
+          reason: `Review introduces unselected Wedding Photography when user selected Custom Gifts`,
+        };
+      }
+    }
+
+    // PRINTING_GRAPHICS guards:
+    if (industry.industryType === "PRINTING_GRAPHICS") {
+      const selectedMug = /mug|t-?shirt|మగ్/i.test(selectedText);
+      const selectedSignage = /flex|banner|sign\s*board|glow|acrylic|బోర్డు/i.test(selectedText);
+
+      const mentionsMug = /\b(mugs?|t-?shirts?)\b/i.test(lower) || /(మగ్|టీషర్ట్)/i.test(text);
+      if (selectedSignage && !selectedMug && mentionsMug) {
+        return {
+          valid: false,
+          reason: `Review introduces unselected merchandise when user selected Flex/Sign Boards`,
         };
       }
     }

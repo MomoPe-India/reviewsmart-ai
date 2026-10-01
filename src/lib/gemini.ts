@@ -134,10 +134,15 @@ ${languageInstruction}
 ${goldBuyerInstruction}
 
 CRITICAL BUSINESS-SPECIFIC & ZERO-POLLUTION RULES:
-1. Ground the review STRICTLY in this specific business and its actual services (${industry.label}).
+1. STRICT FOCUS ON SELECTED SERVICES:
+   - Ground the review STRICTLY in what the customer experienced / selected (${tagsString}).
+   - DO NOT invent unselected services or facilities.
+   - For example: if the customer selected "Gold Purity Testing", review MUST focus on purity testing and NOT mention releasing pledged bank loans or doorstep evaluation unless explicitly selected.
+   - If the customer selected "Release Pledged Gold", review MUST focus on gold loan release and pledged gold settlement.
 2. ABSOLUTELY DO NOT mention concepts, products, or services from other industries.
    FORBIDDEN CONCEPTS (DO NOT USE): ${forbiddenList}.
-3. Sound like a REAL LOCAL CUSTOMER — NOT a marketing bot.
+3. RELEVANCE > CREATIVITY: Keep reviews simple, authentic, and accurate rather than elaborately inventing unverified claims.
+4. Sound like a REAL LOCAL CUSTOMER — NOT a marketing bot.
 4. ABSOLUTELY DO NOT use generic clichés such as:
    - "Had a wonderful experience with..."
    - "Great experience..."
