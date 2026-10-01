@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient: Deep Luxury Plum / Wine -->
+    <radialGradient id="bgGlow" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#3b0724" />
+      <stop offset="60%" stop-color="#1e0413" />
+      <stop offset="100%" stop-color="#0d0208" />
+    </radialGradient>
+
+    <!-- Metallic Rose Gold Gradient -->
+    <linearGradient id="roseGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdf2f8" />
+      <stop offset="25%" stop-color="#f472b6" />
+      <stop offset="50%" stop-color="#ec4899" />
+      <stop offset="75%" stop-color="#db2777" />
+      <stop offset="100%" stop-color="#9d174d" />
+    </linearGradient>
+
+    <!-- Champagne Gold Gradient -->
+    <linearGradient id="champagneGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="35%" stop-color="#f59e0b" />
+      <stop offset="70%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+
+    <!-- Shimmer Glow Filter -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Plate -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGlow)" />
+
+  <!-- Outer Rose Gold Border -->
+  <rect x="18" y="18" width="476" height="476" rx="90" fill="none" stroke="url(#roseGold)" stroke-width="3.5" opacity="0.85" />
+  <rect x="28" y="28" width="456" height="456" rx="80" fill="none" stroke="url(#champagneGold)" stroke-width="1.2" stroke-dasharray="6 5" opacity="0.5" />
+
+  <!-- Central Crest: Stylized Beauty & Academy Crown / Lotus Wings -->
+  <g transform="translate(256, 175) scale(0.95)" filter="url(#softGlow)">
+    <!-- Central Lotus Petal -->
+    <path d="M 0,-70 C 22,-35 28,10 0,35 C -28,10 -22,-35 0,-70 Z" fill="url(#roseGold)" opacity="0.95" />
+    
+    <!-- Left Inner Petal -->
+    <path d="M -8,-6 C -38,-20 -58,15 -18,48 C -6,38 -4,20 -8,-6 Z" fill="url(#champagneGold)" opacity="0.9" />
+    <!-- Right Inner Petal -->
+    <path d="M 8,-6 C 38,-20 58,15 18,48 C 6,38 4,20 8,-6 Z" fill="url(#champagneGold)" opacity="0.9" />
+
+    <!-- Left Elegant Wing / Wave -->
+    <path d="M -15,22 C -65,-5 -85,35 -30,68 C -15,55 -10,38 -15,22 Z" fill="url(#roseGold)" opacity="0.8" />
+    <!-- Right Elegant Wing / Wave -->
+    <path d="M 15,22 C 65,-5 85,35 30,68 C 15,55 10,38 15,22 Z" fill="url(#roseGold)" opacity="0.8" />
+
+    <!-- Crest Base Stem & Tiara Spark -->
+    <circle cx="0" cy="-80" r="6" fill="#fdf2f8" />
+    <circle cx="-35" cy="-55" r="4" fill="#fef08a" />
+    <circle cx="35" cy="-55" r="4" fill="#fef08a" />
+    
+    <!-- Stylist Scissor Silhouette Intertwined -->
+    <path d="M -22,78 L 0,55 L 22,78" fill="none" stroke="url(#champagneGold)" stroke-width="3" stroke-linecap="round" />
+    <circle cx="-25" cy="85" r="7" fill="none" stroke="url(#champagneGold)" stroke-width="2.5" />
+    <circle cx="25" cy="85" r="7" fill="none" stroke="url(#champagneGold)" stroke-width="2.5" />
+  </g>
+
+  <!-- Typography -->
+  <!-- Brand Name: SUSHMA'S -->
+  <text x="256" y="325"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Playfair Display', serif"
+        font-weight="800"
+        font-size="36"
+        letter-spacing="5"
+        fill="url(#roseGold)">
+    SUSHMA'S
+  </text>
+
+  <!-- Subtitle: FASHION &amp; BEAUTY -->
+  <text x="256" y="362"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-weight="600"
+        font-size="19"
+        letter-spacing="4"
+        fill="#fdf2f8"
+        opacity="0.95">
+    FASHION &amp; BEAUTY
+  </text>
+
+  <!-- Divider Line with Diamond -->
+  <line x1="120" y1="385" x2="235" y2="385" stroke="url(#champagneGold)" stroke-width="1.5" opacity="0.7" />
+  <polygon points="256,380 261,385 256,390 251,385" fill="url(#roseGold)" />
+  <line x1="277" y1="385" x2="392" y2="385" stroke="url(#champagneGold)" stroke-width="1.5" opacity="0.7" />
+
+  <!-- Academy &amp; Ladies Salon Tag -->
+  <text x="256" y="416"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-weight="500"
+        font-size="14"
+        letter-spacing="3"
+        fill="#f9a8d4">
+    SALON &amp; ACADEMY
+  </text>
+
+  <!-- Location Tag: KADAPA -->
+  <text x="256" y="445"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-weight="600"
+        font-size="13"
+        letter-spacing="4"
+        fill="#fde68a"
+        opacity="0.85">
+    VISWANDHAPURAM • KADAPA
+  </text>
+
+  <!-- Sparkles -->
+  <g fill="#fdf2f8" opacity="0.7">
+    <path d="M 100,120 Q 100,130 90,130 Q 100,130 100,140 Q 100,130 110,130 Q 100,130 100,120 Z" />
+    <path d="M 410,125 Q 410,133 402,133 Q 410,133 410,141 Q 410,133 418,133 Q 410,133 410,125 Z" />
+    <circle cx="85" cy="220" r="2" />
+    <circle cx="430" cy="230" r="2" />
+  </g>
+</svg>

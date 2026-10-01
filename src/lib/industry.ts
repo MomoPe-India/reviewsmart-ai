@@ -565,6 +565,21 @@ export function detectIndustry(
   }
 
   if (
+    hasWord(normCat, "salon") ||
+    hasWord(normCat, "spa") ||
+    hasWord(normCat, "beauty") ||
+    hasWord(normCat, "hair") ||
+    hasWord(normCat, "parlour") ||
+    hasWord(normCat, "parlor") ||
+    hasWord(normCat, "makeover") ||
+    hasWord(normCat, "bridal") ||
+    normCat.includes("beauty academy") ||
+    normCat.includes("beauty service")
+  ) {
+    return INDUSTRY_CONFIGS.SALON_BEAUTY;
+  }
+
+  if (
     hasWord(normCat, "fashion") ||
     hasWord(normCat, "clothing") ||
     hasWord(normCat, "garment") ||
@@ -588,18 +603,6 @@ export function detectIndustry(
     hasWord(normCat, "mart")
   ) {
     return INDUSTRY_CONFIGS.RETAIL_SHOP;
-  }
-
-  if (
-    hasWord(normCat, "salon") ||
-    hasWord(normCat, "spa") ||
-    hasWord(normCat, "beauty") ||
-    hasWord(normCat, "hair") ||
-    hasWord(normCat, "parlour") ||
-    hasWord(normCat, "parlor") ||
-    hasWord(normCat, "makeover")
-  ) {
-    return INDUSTRY_CONFIGS.SALON_BEAUTY;
   }
 
   if (
@@ -721,6 +724,21 @@ export function detectIndustry(
   }
 
   if (
+    hasWord(normName, "salon") ||
+    hasWord(normName, "spa") ||
+    hasWord(normName, "beauty") ||
+    hasWord(normName, "hair") ||
+    hasWord(normName, "parlour") ||
+    hasWord(normName, "parlor") ||
+    hasWord(normName, "makeover") ||
+    hasWord(normName, "bridal") ||
+    normName.includes("beauty academy") ||
+    normName.includes("fashion beauty")
+  ) {
+    return INDUSTRY_CONFIGS.SALON_BEAUTY;
+  }
+
+  if (
     hasWord(normName, "fashions") ||
     hasWord(normName, "fashion") ||
     hasWord(normName, "silks") ||
@@ -737,15 +755,6 @@ export function detectIndustry(
         normTag.includes("wear")))
   ) {
     return INDUSTRY_CONFIGS.RETAIL_SHOP;
-  }
-
-  if (
-    hasWord(normName, "salon") ||
-    hasWord(normName, "spa") ||
-    hasWord(normName, "beauty") ||
-    hasWord(normName, "hair")
-  ) {
-    return INDUSTRY_CONFIGS.SALON_BEAUTY;
   }
 
   if (

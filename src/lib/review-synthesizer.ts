@@ -555,6 +555,13 @@ export interface TagIntent {
   isWeddingShoots: boolean;
   isCustomGifts: boolean;
   isPhotoFraming: boolean;
+  // Salon & Beauty
+  isBridal: boolean;
+  isHair: boolean;
+  isSkinFacial: boolean;
+  isBodySpa: boolean;
+  isAcademy: boolean;
+  isLadiesOnly: boolean;
   rawTag: string;
 }
 
@@ -578,6 +585,13 @@ export function detectTagIntent(tags: string[], ind: IndustryType): TagIntent {
     isWeddingShoots: /wedding|candid|cinematic|shoot|వెడ్డింగ్|షూట్/i.test(combined),
     isCustomGifts: /gift|cup|pillow|magic|keychain|గిఫ్ట్|పిల్లో|కీచైన్|మగ్/i.test(combined),
     isPhotoFraming: /frame|framing|big\s*size|ఫ్రేమ్|ఫోటో/i.test(combined),
+    // Salon & Beauty
+    isBridal: /bridal|wedding|makeover|బ్రైడల్|పెళ్లి|మేకప్/i.test(combined),
+    isHair: /hair|cut|spa|styling|smoothening|keratin|హెయిర్|కట్|స్పా|స్టైలింగ్/i.test(combined),
+    isSkinFacial: /facial|skin|cleanup|glow|ఫేషియల్|స్కిన్/i.test(combined),
+    isBodySpa: /body\s*spa|massage|relaxation|బాడీ|స్పా|మసాజ్/i.test(combined),
+    isAcademy: /academy|course|training|beautician|designing|అకాడమీ|ట్రైనింగ్|కోర్స్/i.test(combined),
+    isLadiesOnly: /ladies|women|female|స్త్రీ|మహిళ/i.test(combined),
     rawTag: tags[0] || "",
   };
 }
@@ -588,6 +602,38 @@ export function getDomainLexicon(
   profileContext: string = ""
 ): DomainLexicon {
   const base = DOMAIN_LEXICONS[industryType] || DOMAIN_LEXICONS.GENERAL;
+
+  if (industryType === "SALON_BEAUTY") {
+    const tagsText = activeTags.join(" ").toLowerCase();
+    const fullContext = (tagsText + " " + profileContext).toLowerCase();
+    const isLadies = fullContext.includes("ladies") || fullContext.includes("women") || fullContext.includes("sushma") || fullContext.includes("sussma");
+    const isAcademy = fullContext.includes("academy") || fullContext.includes("training") || fullContext.includes("course");
+
+    let items = [...base.items];
+    let qualities = [...base.qualities];
+
+    if (isLadies) {
+      items = items.filter((it) => !it.toLowerCase().includes("beard"));
+    }
+    if (isAcademy) {
+      items.push(
+        "beautician course & practical training",
+        "advanced hair cutting & styling classes",
+        "fashion designing diploma training"
+      );
+      qualities.push(
+        "hands-on practical training, experienced faculty, and step-by-step guidance",
+        "in-depth beautician curriculum with personal attention to every student"
+      );
+    }
+
+    return {
+      ...base,
+      items,
+      qualities,
+    };
+  }
+
   if (industryType !== "GOLD_BUYERS") {
     return base;
   }
@@ -685,6 +731,73 @@ function generateShortDirect(
         `Thank you team!`,
         `Will visit again.`,
         `100% genuine dealing.`,
+      ];
+    }
+  } else if (ind === "SALON_BEAUTY") {
+    if (intent.isBridal) {
+      openers = [
+        `Superb bridal makeup and grooming at ${bName}.`,
+        `Loved the bridal makeover for my special day!`,
+        `Flawless HD bridal styling with a natural glow.`,
+        `Punctual, polite, and wonderful bridal makeover at ${bName}.`,
+      ];
+      closers = [
+        `Looked stunning in photos and got compliments throughout the event!`,
+        `The makeup lasted all day without needing touchups.`,
+        `Made my wedding day feel truly special, thank you ${bName}!`,
+        `Highly recommend their bridal team!`,
+      ];
+    } else if (intent.isAcademy) {
+      openers = [
+        `Excellent beautician and styling training at ${bName} Academy.`,
+        `Joined ${bName} for their beauty salon training course.`,
+        `Very thorough and hands-on coaching at ${bName} Academy.`,
+        `Best academy in Kadapa for professional beautician courses.`,
+      ];
+      closers = [
+        `Instructors teach with great patience and practical focus.`,
+        `Gained huge confidence in advanced hair cuts and bridal styling.`,
+        `Truly value for money and a great place to learn.`,
+        `Great career guidance for women!`,
+      ];
+    } else if (intent.isBodySpa || intent.isSkinFacial) {
+      openers = [
+        `Relaxing facial and spa session at ${bName}.`,
+        `Loved the skin care and body spa treatment at ${bName}.`,
+        `Soothing ladies-only atmosphere and gentle skin care.`,
+        `Very refreshing facial and herbal skincare service.`,
+      ];
+      closers = [
+        `Skin feels noticeably hydrated, soft, and refreshed.`,
+        `Complete privacy and peace of mind for ladies in Viswandhapuram.`,
+        `Walked out feeling rejuvenated and relaxed.`,
+        `Soothing experience all around.`,
+      ];
+    } else if (intent.isHair) {
+      openers = [
+        `Great advanced hair cut and hair spa at ${bName}.`,
+        `Loved how my hair turned out at ${bName}!`,
+        `Professional hair styling and nourishing hair spa session.`,
+        `Neat styling that matched my exact preference.`,
+      ];
+      closers = [
+        `Hair feels so light, healthy, and bouncy.`,
+        `The stylist understood exactly the length and cut I wanted.`,
+        `Zero frizz and great hair texture after the spa!`,
+        `Very happy with the hair makeover.`,
+      ];
+    } else {
+      openers = [
+        `Comfortable and hygienic ladies-only beauty salon at ${bName}.`,
+        `Always a pleasant grooming visit at ${bName}.`,
+        `One of the most trusted beauty parlors in Viswandhapuram, Kadapa.`,
+        `Clean setup and gentle beauty care at ${bName}.`,
+      ];
+      closers = [
+        `Courteous staff, safe environment for women, and great prices.`,
+        `Definitely my regular spot for beauty care in Kadapa!`,
+        `Polite ladies staff and excellent service.`,
+        `Totally satisfied!`,
       ];
     }
   } else {
@@ -936,16 +1049,51 @@ function generateProblemSolution(
       break;
 
     case "SALON_BEAUTY":
-      solution = pickRandom([
-        `The stylist listened patiently to the exact cut and styling preferences before starting.`,
-        `They used sanitized tools, clean towels, and gave genuine grooming suggestions without rushing.`,
-        `The haircut and grooming were carried out with great skill and attention to detail.`,
-      ]);
-      result = pickRandom([
-        `The final look turned out sharp, clean, and exactly what I wanted.`,
-        `Walked out feeling refreshed and confident with the haircut.`,
-        `Top notch styling, highly satisfied with the experience.`,
-      ]);
+      if (intent.isBridal) {
+        solution = pickRandom([
+          `The bridal stylist understood my preferences, skin undertone, and wedding outfit detailing thoroughly before starting.`,
+          `They handled the bridal makeover with immense care, ensuring an elegant HD finish and neat saree draping.`,
+          `The staff was punctual, polite, and coordinated the bridal grooming with zero rush or stress.`,
+        ]);
+        result = pickRandom([
+          `The bridal look turned out stunning in daylight and under stage photography.`,
+          `Received countless compliments from relatives and guests throughout the ceremony.`,
+          `Made my special day memorable with a radiant, long-lasting bridal glow.`,
+        ]);
+      } else if (intent.isAcademy) {
+        solution = pickRandom([
+          `The faculty explained each beautician technique with hands-on live model demonstrations and patient guidance.`,
+          `The training curriculum covered advanced haircuts, styling, and bridal makeup step by step.`,
+          `Every student received personal attention to master practical salon skills thoroughly.`,
+        ]);
+        result = pickRandom([
+          `Gained great confidence to handle salon client services independently.`,
+          `Best academy experience in Kadapa for anyone wanting a professional beauty career.`,
+          `Truly valuable practical knowledge and supportive mentorship throughout.`,
+        ]);
+      } else if (intent.isSkinFacial || intent.isBodySpa) {
+        solution = pickRandom([
+          `The therapist provided a deeply relaxing spa and facial session in a peaceful ladies-only environment.`,
+          `They used gentle, hygienic skincare products and explained the skin benefits clearly.`,
+          `The soothing massage and cleanup were done with complete patience and hygiene.`,
+        ]);
+        result = pickRandom([
+          `Skin feels incredibly soft, hydrated, and naturally radiant.`,
+          `Walked out feeling completely refreshed, calm, and relieved of stress.`,
+          `Superb relaxation and skin rejuvenation for women in Kadapa.`,
+        ]);
+      } else {
+        solution = pickRandom([
+          `The stylist listened patiently to the exact styling and haircut preferences before starting.`,
+          `They maintained strict hygiene with sanitized tools and gave genuine beauty suggestions.`,
+          `The hair styling and grooming were carried out with great skill and attention to detail.`,
+        ]);
+        result = pickRandom([
+          `The final look turned out stylish, clean, and exactly what I wanted.`,
+          `Walked out feeling refreshed, well-groomed, and confident.`,
+          `Top-notch ladies salon experience in Viswandhapuram, highly satisfied.`,
+        ]);
+      }
       break;
 
     case "HEALTHCARE_CLINIC":
@@ -2165,20 +2313,66 @@ function generateTeluguCraftsmanship(
       ]);
       break;
 
-    case "SALON_BEAUTY":
-      opener = pickRandom([
-        `${item} ఫినిషింగ్ చాలా ప్రొఫెషనల్ గా వచ్చింది.`,
-        `${bName} లో హెయిర్ స్టైలింగ్ మరియు గ్రూమింగ్ క్వాలిటీ అద్భుతం.`,
-      ]);
-      middle = pickRandom([
-        `క్లీన్ టూల్స్ వాడారు మరియు హైజీన్ బాగా మెయింటైన్ చేశారు.`,
-        `స్టైలిస్ట్ చాలా శ్రద్ధగా కట్ చేశారు, హెయిర్‌లైన్ చాలా షార్ప్‌గా వచ్చింది.`,
-      ]);
-      closer = pickRandom([
-        `స్టైలింగ్ లో బెస్ట్, ఫుల్లీ శాటిస్‌ఫైడ్!`,
-        `కడపలో బెస్ట్ సెలూన్ ఎక్స్‌పీరియన్స్!`,
-      ]);
+    case "SALON_BEAUTY": {
+      if (intent.isBridal) {
+        opener = pickRandom([
+          `${bName} లో బ్రైడల్ మేకప్ చాలా ఎలిగెంట్ గా మరియు పర్ఫెక్ట్ గా చేశారు.`,
+          `పెళ్లి కోసం బ్రైడల్ మేకోవర్ చేయించుకున్నాను, చాలా మంచి అనుభవం.`,
+          `${bName} బ్రైడల్ సర్వీస్ నిజంగా అద్భుతం.`,
+        ]);
+        middle = pickRandom([
+          `ఫేస్ కి తగినట్లు పర్ఫెక్ట్ హెయిర్ డూ మరియు బ్యూటిఫుల్ మేకప్ లుక్ ఇచ్చారు.`,
+          `హెవీగా లేకుండా నేచురల్ గ్లో వచ్చేలా చేశారు, సారీ డ్రాపింగ్ చాలా నీట్ గా ఉంది.`,
+          `సమయానికి రెడీ చేసి చాలా ప్రొఫెషనల్ గా సర్వీస్ అందించారు.`,
+        ]);
+        closer = pickRandom([
+          `ఫోటోస్ లో చాలా బ్యూటిఫుల్ గా వచ్చింది, అందరూ ప్రశంసించారు!`,
+          `కడపలో బెస్ట్ బ్రైడల్ మేకప్ సెలూన్, థాంక్యూ!`,
+        ]);
+      } else if (intent.isAcademy) {
+        opener = pickRandom([
+          `${bName} అకాడమీ లో బ్యూటీషియన్ కోర్స్ ట్రైనింగ్ చాలా ఎక్సలెంట్ గా ఉంది.`,
+          `బ్యూటీ మరియు ఫ్యాషన్ డిజైనింగ్ నేర్చుకోవడానికి ${bName} బెస్ట్ ఇన్స్టిట్యూట్.`,
+          `${bName} అకాడమీ లో చేరినందుకు చాలా హ్యాపీగా ఉంది.`,
+        ]);
+        middle = pickRandom([
+          `ప్రతి టెక్నిక్ ని ప్రాక్టికల్ గా లైవ్ మోడల్స్ తో వివరంగా నేర్పించారు.`,
+          `హెయిర్ కట్స్, బ్రైడల్ వర్క్ మరియు స్కిన్ కేర్ చాలా ఓపిగ్గా నేర్పించారు.`,
+          `ఫ్యాకల్టీ చాలా సపోర్టివ్ గా ఉండి అన్ని డౌట్స్ క్లియర్ చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో లేడీస్ కి బెస్ట్ బ్యూటీ అకాడమీ!`,
+          `వృత్తి నైపుణ్యాలు నేర్చుకోవడానికి నమ్మకమైన అకాడమీ!`,
+        ]);
+      } else if (intent.isSkinFacial || intent.isBodySpa) {
+        opener = pickRandom([
+          `${bName} లో ఫేషియల్ మరియు స్పా సర్వీస్ చాలా రిలాక్సింగ్ గా ఉంది.`,
+          `బాడీ స్పా మరియు స్కిన్ కేర్ కోసం వెళ్ళాను, చాలా మంచి ఎక్స్‌పీరియన్స్.`,
+        ]);
+        middle = pickRandom([
+          `క్లీన్ ప్రొడక్ట్స్ వాడారు మరియు చాలా ఓపిగ్గా మసాజ్ చేశారు.`,
+          `మంచి ప్రైవసీ మరియు లేడీస్ కి కంఫర్టబుల్ వాతావరణం ఉంది.`,
+        ]);
+        closer = pickRandom([
+          `స్కిన్ చాలా గ్లోయింగ్ గా మారింది, ఫుల్లీ రిలాక్స్డ్!`,
+          `విశ్వనాథపురం లో లేడీస్ కి బెస్ట్ స్పా!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${item} చాలా నీట్ గా మరియు ప్రొఫెషనల్ గా చేశారు.`,
+          `${bName} లో లేడీస్ బ్యూటీ సర్వీసెస్ క్వాలిటీ అద్భుతం.`,
+        ]);
+        middle = pickRandom([
+          `క్లీన్ టూల్స్ వాడారు మరియు హైజీన్ బాగా మెయింటైన్ చేశారు.`,
+          `లేడీస్ కి పూర్తి కంఫర్ట్ మరియు ప్రైవసీ అందించారు.`,
+        ]);
+        closer = pickRandom([
+          `సర్వీస్ లో బెస్ట్, ఫుల్లీ శాటిస్‌ఫైడ్!`,
+          `కడపలో బెస్ట్ లేడీస్ సెలూన్ ఎక్స్‌పీరియన్స్!`,
+        ]);
+      }
       break;
+    }
 
     case "HEALTHCARE_CLINIC":
       opener = pickRandom([
@@ -2503,23 +2697,74 @@ function generateTeluguRoman(
       ]);
       break;
 
-    case "SALON_BEAUTY":
-      opener = pickRandom([
-        `${bName} lo haircut and grooming cheyinchukunnanu.`,
-        `Monthly styling kosam ${bName} salon ki vellanu, great ambiance.`,
-        `${item} kosam visit ayyanu, very neat and professional setup.`,
-      ]);
-      middle = pickRandom([
-        `Stylist chala patient ga unaru, clean and hygienic tools use chesaru.`,
-        `Scissor work and styling finish chala sharp ga vachindi.`,
-        `Unrushed and relaxing experience, polite staff.`,
-      ]);
-      closer = pickRandom([
-        `Super neat haircut, highly satisfied!`,
-        `Best salon in the area, will visit again!`,
-        `10/10 grooming experience!`,
-      ]);
+    case "SALON_BEAUTY": {
+      if (intent.isBridal) {
+        opener = pickRandom([
+          `${bName} lo bridal makeup and makeover cheyinchukunnanu.`,
+          `Wedding function kosam bridal look ikkada set cheyinchanu, super experience.`,
+          `${item} kosam ${bName} salon visit ayyanu, elegant styling.`,
+        ]);
+        middle = pickRandom([
+          `Bridal artist chala patient ga unaru, makeup heavy kakunda natural glow vachindi.`,
+          `Hairdo and saree draping time ki perfect ga complete chesaru.`,
+          `Photos lo bridal look chala gorgeous ga vachindi, everyone praised.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best bridal makeup salon, highly recommended!`,
+          `Super happy with my bridal look, thanks to ${bName}!`,
+          `10/10 bridal makeover experience!`,
+        ]);
+      } else if (intent.isAcademy) {
+        opener = pickRandom([
+          `${bName} academy lo beautician course training join ayyanu.`,
+          `Fashion designing and beauty academy kosam ${bName} select chesukunnanu.`,
+          `${item} kosam visit ayyanu, great academy for ladies.`,
+        ]);
+        middle = pickRandom([
+          `Practical classes live models tho chala clear ga nerpincharu.`,
+          `Faculty chala supportive ga unaru, individual attention icharu.`,
+          `Career build cheskodaniki professional skills provide chesaru.`,
+        ]);
+        closer = pickRandom([
+          `Best beautician training academy in Kadapa!`,
+          `Ladies ki career start cheyadaniki best choice, highly satisfied!`,
+          `10/10 academy coaching experience!`,
+        ]);
+      } else if (intent.isSkinFacial || intent.isBodySpa) {
+        opener = pickRandom([
+          `${bName} lo facial and body spa session teesukunnanu.`,
+          `Skin care and relaxation kosam ${bName} salon ki vellanu.`,
+          `${item} kosam visit ayyanu, peaceful ladies ambiance.`,
+        ]);
+        middle = pickRandom([
+          `Gentle skin-friendly products vadaru, massage chala relaxing ga undi.`,
+          `Ladies-only space lo complete comfort and privacy maintain chesaru.`,
+          `Skin chala fresh, hydrated and glowing ga anipinchindi.`,
+        ]);
+        closer = pickRandom([
+          `Fully relaxed, best ladies spa in Viswandhapuram!`,
+          `Super refreshing experience, will visit again!`,
+          `10/10 skincare and spa service!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${bName} lo haircut and styling cheyinchukunnanu.`,
+          `Ladies grooming kosam ${bName} salon ki vellanu, great ambiance.`,
+          `${item} kosam visit ayyanu, very neat and professional setup.`,
+        ]);
+        middle = pickRandom([
+          `Stylist chala patient ga unaru, clean and hygienic tools use chesaru.`,
+          `Scissor work and styling finish chala sharp and neat ga vachindi.`,
+          `Ladies staff polite ga coordinate chesaru, zero rush.`,
+        ]);
+        closer = pickRandom([
+          `Super neat styling, highly satisfied!`,
+          `Best ladies salon in the area, will visit again!`,
+          `10/10 ladies grooming experience!`,
+        ]);
+      }
       break;
+    }
 
     case "HEALTHCARE_CLINIC":
       opener = pickRandom([
@@ -2763,20 +3008,62 @@ function generateTeluguOccasion(
       ]);
       break;
 
-    case "SALON_BEAUTY":
-      opener = pickRandom([
-        `ఫ్యామిలీ ఫంక్షన్ కి ముందు హెయిర్ స్టైలింగ్ కోసం ${bName} కి వెళ్ళాను.`,
-        `మ్యారేజ్ ఈవెంట్ కోసం స్పెషల్ గ్రూమింగ్ ఇక్కడ చేయించుకున్నాను.`,
-      ]);
-      middle = pickRandom([
-        `ఫంక్షన్ కి తగ్గట్టు చాలా పర్ఫెక్ట్ గా మేకోవర్ చేశారు.`,
-        `స్టైలిస్ట్ చాలా ప్రొఫెషనల్ గా లుక్ సెట్ చేశారు.`,
-      ]);
-      closer = pickRandom([
-        `అందరూ కాంప్లిమెంట్స్ ఇచ్చారు, థాంక్యూ!`,
-        `ఫుల్లీ శాటిస్‌ఫైడ్!`,
-      ]);
+    case "SALON_BEAUTY": {
+      if (intent.isBridal) {
+        opener = pickRandom([
+          `పెళ్లి మరియు రిసెప్షన్ కోసం బ్రైడల్ మేకోవర్ ${bName} లో చేయించుకున్నాను.`,
+          `స్పెషల్ మ్యారేజ్ ఫంక్షన్ కి బ్రైడల్ మేకప్ కోసం ఇక్కడికి వచ్చాను.`,
+        ]);
+        middle = pickRandom([
+          `ఫంక్షన్ కి తగ్గట్టు రాయల్ మరియు ఎలిగెంట్ లుక్ ఇచ్చారు, సారీ డ్రాపింగ్ చాలా బాగుంది.`,
+          `ఫేస్ కి తగినట్లు పర్ఫెక్ట్ హెయిర్ డూ మరియు బ్యూటిఫుల్ మేకప్ లుక్ సెట్ చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `ఫంక్షన్ లో అందరూ చాలా మెచ్చుకున్నారు, థాంక్యూ!`,
+          `కడపలో బెస్ట్ బ్రైడల్ సర్వీస్, ఫుల్లీ శాటిస్‌ఫైడ్!`,
+        ]);
+      } else if (intent.isAcademy) {
+        opener = pickRandom([
+          `కెరీర్ డెవలప్మెంట్ కోసం ${bName} లో బ్యూటీషియన్ మరియు ఫ్యాషన్ డిజైనింగ్ కోర్స్ లో చేరాను.`,
+          `ప్రొఫెషనల్ బ్యూటీ ట్రైనింగ్ నేర్చుకోవడానికి ఈ అకాడమీని ఎంచుకున్నాను.`,
+        ]);
+        middle = pickRandom([
+          `క్లాసెస్ చాలా చక్కగా ప్రాక్టికల్ గా లైవ్ మోడల్స్ తో వివరించారు.`,
+          `ఫ్యాకల్టీ చాలా ఓపిగ్గా ప్రతి సందేహాన్ని నివృత్తి చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `లేడీస్ కి వృత్తి నైపుణ్యాలు నేర్పించే బెస్ట్ అకాడమీ!`,
+          `థాంక్యూ ${bName} అకాడమీ టీమ్!`,
+        ]);
+      } else if (intent.isSkinFacial || intent.isBodySpa) {
+        opener = pickRandom([
+          `ఫ్యామిలీ ఫంక్షన్ కి ముందు ఫేషియల్ మరియు బాడీ స్పా కోసం ${bName} కి వెళ్ళాను.`,
+          `స్ట్రెస్ రిలీఫ్ మరియు స్కిన్ గ్లో కోసం ఇక్కడికి వచ్చాను.`,
+        ]);
+        middle = pickRandom([
+          `చాలా ప్రశాంతమైన వాతావరణంలో రిలాక్సింగ్ మసాజ్ మరియు ఫేషియల్ చేశారు.`,
+          `స్కిన్ కి సరిపడే జెంటిల్ ప్రొడక్ట్స్ వాడారు, మంచి ఫలితం కనిపించింది.`,
+        ]);
+        closer = pickRandom([
+          `స్కిన్ చాలా ఫ్రెష్ గా మరియు గ్లోయింగ్ గా మారింది!`,
+          `విశ్వనాథపురం లో లేడీస్ కి బెస్ట్ స్పా ఎక్స్‌పీరియన్స్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `ఫ్యామిలీ ఫంక్షన్ కి ముందు లేడీస్ హెయిర్ స్టైలింగ్ కోసం ${bName} కి వెళ్ళాను.`,
+          `స్పెషల్ ఈవెంట్ కోసం బ్యూటీ సర్వీసెస్ ఇక్కడ చేయించుకున్నాను.`,
+        ]);
+        middle = pickRandom([
+          `ఫంక్షన్ కి తగ్గట్టు చాలా పర్ఫెక్ట్ గా మరియు నీట్ గా మేకోవర్ చేశారు.`,
+          `లేడీస్ స్టాఫ్ చాలా ప్రొఫెషనల్ గా మరియు మర్యాదగా సర్వీస్ ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `అందరూ కాంప్లిమెంట్స్ ఇచ్చారు, థాంక్యూ!`,
+          `కడపలో లేడీస్ కి బెస్ట్ సెలూన్!`,
+        ]);
+      }
       break;
+    }
 
     case "HEALTHCARE_CLINIC":
       opener = pickRandom([
@@ -2854,6 +3141,33 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "Neat Finishing & Time కి Delivery",
           "మంచి సర్వీస్ & సాలిడ్ క్వాలిటీ",
         ]);
+      case "SALON_BEAUTY":
+        if (/బ్రైడల్|మేకప్|మేకోవర్|పెళ్లి/i.test(text)) {
+          return pickRandom([
+            "పర్ఫెక్ట్ బ్రైడల్ మేకోవర్ & బ్యూటిఫుల్ లుక్",
+            "కడపలో బెస్ట్ బ్రైడల్ సర్వీస్",
+            "ఎలిగెంట్ మేకప్ & ప్రొఫెషనల్ కేర్",
+          ]);
+        }
+        if (/అకాడమీ|కోర్స్|ట్రైనింగ్|డిజైనింగ్/i.test(text)) {
+          return pickRandom([
+            "బెస్ట్ బ్యూటీ అకాడమీ & ప్రాక్టికల్ ట్రైనింగ్",
+            "లేడీస్ కి బెస్ట్ కెరీర్ ట్రైనింగ్ ఇన్స్టిట్యూట్",
+            "ఎక్సలెంట్ బ్యూటీషియన్ కోర్స్ ఇన్ కడప",
+          ]);
+        }
+        if (/స్పా|ఫేషియల్|స్కిన్|మసాజ్/i.test(text)) {
+          return pickRandom([
+            "రిలాక్సింగ్ బాడీ స్పా & గ్లోయింగ్ ఫేషియల్",
+            "లేడీస్ కి బెస్ట్ స్పా ఎక్స్‌పీరియన్స్",
+            "క్లీన్ అండ్ హైజీనిక్ స్కిన్ కేర్",
+          ]);
+        }
+        return pickRandom([
+          "బెస్ట్ లేడీస్ సెలూన్ & ప్రొఫెషనల్ సర్వీస్",
+          "హైజీనిక్ అంబియన్స్ & ఎక్సలెంట్ స్టైలింగ్",
+          "ఫుల్లీ శాటిస్‌ఫైడ్ & నమ్మకమైన సెలూన్",
+        ]);
       default:
         return pickRandom([
           "చాలా మంచి అనుభవం & Super Quality",
@@ -2884,6 +3198,33 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "Super Neat Work & Timely Delivery",
           "Chala Baga Chesaru, Good Service",
           "Solid Quality & Friendly Staff",
+        ]);
+      case "SALON_BEAUTY":
+        if (/bridal|wedding|makeover/i.test(text)) {
+          return pickRandom([
+            "Flawless Bridal Makeup & Elegance",
+            "Best Bridal Makeover in Kadapa",
+            "Stunning Wedding Look & Great Care",
+          ]);
+        }
+        if (/academy|course|training/i.test(text)) {
+          return pickRandom([
+            "Best Beautician Academy in Kadapa",
+            "Practical Salon Training & Mentorship",
+            "Top Beauty & Fashion Academy",
+          ]);
+        }
+        if (/spa|facial|skin/i.test(text)) {
+          return pickRandom([
+            "Deeply Relaxing Spa & Radiant Facial",
+            "Top Ladies Spa in Kadapa",
+            "Hygienic Skincare & Peaceful Ambiance",
+          ]);
+        }
+        return pickRandom([
+          "Top Ladies Salon in Kadapa",
+          "Neat Styling & Hygienic Care",
+          "Professional Ladies Beauty Care",
         ]);
       default:
         return pickRandom([
@@ -2950,13 +3291,38 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
         "Delightful Dining Experience",
       ]);
 
-    case "SALON_BEAUTY":
+    case "SALON_BEAUTY": {
+      if (/bridal|wedding|makeover/i.test(text)) {
+        return pickRandom([
+          "Stunning Bridal Makeover & Styling",
+          "Flawless Bridal Makeup & Elegance",
+          "Perfect Wedding Look & Courteous Care",
+          "Exquisite Bridal Grooming & Hairdo",
+        ]);
+      }
+      if (/academy|course|training|design/i.test(text)) {
+        return pickRandom([
+          "Excellent Beautician Academy & Training",
+          "Professional Beauty & Fashion Academy",
+          "Comprehensive Practical Salon Training",
+          "Top-Tier Coaching & Skill Mentorship",
+        ]);
+      }
+      if (/spa|facial|skin|relax/i.test(text)) {
+        return pickRandom([
+          "Deeply Relaxing Spa & Radiant Facial",
+          "Refreshing Skincare & Soothing Ambiance",
+          "Pure Relaxation & Rejuvenating Therapy",
+          "Gentle Skincare & Hygienic Care",
+        ]);
+      }
       return pickRandom([
         "Masterful Styling & Relaxing Vibe",
-        "Great Haircut & Skilled Stylists",
-        "Neat Grooming & Polite Staff",
+        "Stylish Haircut & Skilled Stylists",
+        "Neat Ladies Grooming & Polite Staff",
         "Hygienic Setup & Professional Care",
       ]);
+    }
 
     case "HEALTHCARE_CLINIC":
       return pickRandom([
@@ -3112,7 +3478,58 @@ function generateProceduralFallback(
           `ఫ్యామిలీ అందరూ చాలా హ్యాపీగా ఫీల్ అయ్యారు.`,
           `ఫోటో కలర్స్ చాలా నేచురల్‌గా అనిపించాయి.`,
         ];
+      case "SALON_BEAUTY": {
+        if (intent.isBridal) {
+          starters = [
+            `పెళ్లి కోసం బ్రైడల్ మేకప్ చాలా ఎలిగెంట్ గా చేశారు.`,
+            `${bName} లో బ్రైడల్ మేకోవర్ మరియు హెయిర్ స్టైలింగ్ సూపర్ గా వచ్చింది.`,
+            `స్పెషల్ ఈవెంట్ కోసం బ్రైడల్ సర్వీస్ బుక్ చేసుకున్నాము.`,
+            `కడపలో బెస్ట్ బ్రైడల్ మేకప్ స్టూడియో.`,
+          ];
+          middles = [
+            `సమయానికి పూర్తి చేసి చాలా ప్రొఫెషనల్ గా లుక్ సెట్ చేశారు.`,
+            `సారీ డ్రాపింగ్ మరియు జుట్టు అలంకరణ చాలా పద్ధతిగా చేశారు.`,
+            `హెవీగా లేకుండా నేచురల్ గ్లో వచ్చేలా చేశారు.`,
+            `ఫోటోస్ లో చాలా బ్యూటిఫుల్ గా కనిపించింది.`,
+          ];
+        } else if (intent.isAcademy) {
+          starters = [
+            `${bName} అకాడమీ లో బ్యూటీషియన్ కోర్స్ ట్రైనింగ్ తీసుకున్నాను.`,
+            `ఫ్యాషన్ డిజైనింగ్ మరియు బ్యూటీ కోర్సులకి చాలా మంచి ఇన్స్టిట్యూట్.`,
+            `లేడీస్ కి ప్రొఫెషనల్ కెరీర్ నేర్పించడానికి బెస్ట్ అకాడమీ.`,
+          ];
+          middles = [
+            `ప్రతి టెక్నిక్ ని ప్రాక్టికల్ గా చాలా ఓపిగ్గా నేర్పించారు.`,
+            `ఫ్యాకల్టీ చాలా సపోర్టివ్ గా ఉండి అన్ని మెళకువలు నేర్పించారు.`,
+            `లైవ్ మోడల్స్ తో హ్యాండ్స్-ఆన్ ప్రాక్టీస్ చేయించారు.`,
+            `విలువైన వృత్తి విద్య నేర్పించారు.`,
+          ];
+        } else if (intent.isSkinFacial || intent.isBodySpa) {
+          starters = [
+            `బాడీ స్పా మరియు ఫేషియల్ సర్వీస్ చాలా రిలాక్సింగ్ గా అనిపించింది.`,
+            `${bName} లో స్కిన్ కేర్ మరియు స్పా చాలా పరిశుభ్రంగా చేశారు.`,
+            `స్ట్రెస్ రిలీఫ్ కోసం స్పా సెషన్ తీసుకున్నాను, చాలా మంచి అనుభవం.`,
+          ];
+          middles = [
+            `హైజీనిక్ ప్రొడక్ట్స్ వాడారు మరియు చాలా ఓపిగ్గా మసాజ్ చేశారు.`,
+            `లేడీస్ కి పూర్తి ప్రైవసీ మరియు ప్రశాంతమైన వాతావరణం ఉంది.`,
+            `స్కిన్ చాలా ఫ్రెష్ గా మరియు గ్లోయింగ్ గా మారింది.`,
+          ];
+        } else {
+          starters = [
+            `${tag} సర్వీస్ చాలా నీట్ గా మరియు ప్రొఫెషనల్ గా చేశారు.`,
+            `${bName} లో లేడీస్ బ్యూటీ సర్వీసెస్ చాలా బాగున్నాయి.`,
+            `హెయిర్ కట్ మరియు స్టైలింగ్ చాలా పర్ఫెక్ట్ గా వచ్చింది.`,
+            `కడపలో లేడీస్ కి నమ్మకమైన సెలూన్.`,
+          ];
+          middles = [
+            `క్లీన్ టూల్స్ వాడారు మరియు హైజీన్ బాగా మెయింటైన్ చేశారు.`,
+            `లేడీస్ కి అనుకూలమైన వాతావరణం మరియు మర్యాదపూర్వక స్టాఫ్.`,
+            `మాకు కావాల్సిన స్టైల్ ని చాలా ఓపిగ్గా చేసి ఇచ్చారు.`,
+          ];
+        }
         break;
+      }
 
       default:
         starters = [
@@ -3233,7 +3650,62 @@ function generateProceduralFallback(
         `Photo clarity came out sharp without any dullness in colors.`,
         `Pricing was transparent with zero unexpected extra charges.`,
       ];
+    case "SALON_BEAUTY": {
+      if (intent.isBridal) {
+        starters = [
+          `Exceptional bridal makeup and styling experience.`,
+          `Booked bridal makeover services at ${bName} for our wedding.`,
+          `Flawless bridal transformation and saree draping at ${bName}.`,
+          `Punctual, elegant, and picture-perfect bridal service.`,
+        ];
+        middles = [
+          `The bridal team listened patiently and delivered an elegant, radiant look.`,
+          `Hair styling, makeup, and saree draping were completely on point.`,
+          `Used premium skin-friendly cosmetics with a flawless natural glow.`,
+          `Everything was completed right on schedule without any rush.`,
+        ];
+      } else if (intent.isAcademy) {
+        starters = [
+          `Enrolled in the professional beautician course at ${bName} Academy.`,
+          `Top-rated beauty and fashion designing academy for women in Kadapa.`,
+          `Comprehensive hands-on training and skill development.`,
+          `Learned professional salon and styling techniques at ${bName}.`,
+        ];
+        middles = [
+          `The instructors are patient, experienced, and provide live practical training.`,
+          `Covered everything from advanced hair styling to bridal makeovers systematically.`,
+          `Supportive guidance and career mentorship throughout the course.`,
+          `Great learning environment and practical exposure on real clients.`,
+        ];
+      } else if (intent.isSkinFacial || intent.isBodySpa) {
+        starters = [
+          `Deeply soothing body spa and facial experience.`,
+          `Visited ${bName} for refreshing skincare and spa therapy.`,
+          `Peaceful, hygienic, and relaxing ladies-only spa ambiance.`,
+          `Gentle skincare treatment with visible post-treatment radiance.`,
+        ];
+        middles = [
+          `The therapist maintained top hygiene and gentle technique throughout.`,
+          `Soothing ambiance with complete privacy for women.`,
+          `Skin feels rejuvenated, hydrated, and deeply revitalized.`,
+          `Extremely relaxing session that melted away all daily fatigue.`,
+        ];
+      } else {
+        starters = [
+          `Cleanly executed ${tag} service in a ladies-only ambiance.`,
+          `Got my ${tag} requirement done with great care at ${bName}.`,
+          `Delighted with the styling and courteous service at ${bName}.`,
+          `Polite ladies staff and sanitized equipment.`,
+        ];
+        middles = [
+          `The stylist was patient, attentive, and understood the exact styling requested.`,
+          `Maintained strict hygiene standards with clean, sanitized tools.`,
+          `Welcoming atmosphere exclusively for women in Viswandhapuram, Kadapa.`,
+          `Affordable pricing with genuine, courteous care.`,
+        ];
+      }
       break;
+    }
 
     default:
       starters = [

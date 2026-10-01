@@ -191,21 +191,26 @@ export const DOMAIN_FENCES: Record<IndustryType, DomainFenceConfig> = {
     allowedKeywords: [
       "haircut", "styling", "hair", "beard", "grooming", "facial", "cleanup",
       "spa", "massage", "makeup", "bridal", "stylist", "hygienic", "salon",
-      "ambiance", "products", "look", "trim",
+      "ambiance", "products", "look", "trim", "academy", "training", "course",
+      "courses", "beautician", "makeover", "body spa", "skin care", "skincare",
+      "ladies", "women", "facials", "haircuts", "fashion", "designing", "draping",
+      "saree draping", "hair spa", "relaxing", "glow",
     ],
     forbiddenKeywords: [
       "gold", "bullion", "pledged", "photo frame", "flex banner", "software",
       "coding", "dental", "doctor clinic", "biryani", "food menu", "car repair",
+      "frames", "visiting cards", "patient", "teeth", "sign board",
     ],
     forbiddenPhrases: [
       /\b(gold|pledged|bullion)\b/i,
       /\b(photo\s*frames?|flex\s*banners?|sign\s*boards?)\b/i,
       /\b(software|clean\s*code|app\s*dev)\b/i,
       /\b(biryani|tasty\s*food|curry)\b/i,
+      /(ఫ్రేమ్|ఫ్రేములు|లెన్స్|కళ్ళద్దాలు|హాస్పిటల్|డాక్టర్|రెస్టారెంట్|బిర్యానీ|ప్లాట్|ఫ్లాట్|రియల్\s*ఎస్టేట్|మెకానిక్|గ్యారేజ్|కారు\s*రిపేర్)/i,
     ],
     positiveIdentifiers: [
-      /\b(hair|haircuts?|stylings?|stylists?|groomings?|facials?|spas?|salons?|makeups?|beards?|beaut(y|ies)|parlours?|makeover)\b/i,
-      /(హెయిర్‌కట్|స్టైలింగ్|సెలూన్|ఫేషియల్|మేకప్|స్పా)/i,
+      /\b(hair|haircuts?|stylings?|stylists?|groomings?|facials?|spas?|salons?|makeups?|beards?|beaut(y|ies)|parlours?|makeover|bridals?|academy|training|courses?|beauticians?|skincare|body\s*spa|ladies|skin)\b/i,
+      /(హెయిర్‌కట్|స్టైలింగ్|సెలూన్|ఫేషియల్|మేకప్|స్పా|అకాడమీ|ట్రైనింగ్|బ్యూటీ|బ్రైడల్|పార్లర్)/i,
     ],
   },
 
@@ -562,9 +567,42 @@ export function validateBusinessRelevance(
     }
   }
 
+  // If merchant is ladies-only, verify review does NOT mention men's grooming or beards
+  const isLadiesOnly = allProfileContext.includes("ladies") || allProfileContext.includes("women");
+  const mentionsMensGrooming = /\b(beard|beards|moustache|mustache|men's|mens|gents)\b/i.test(lower) || /(గడ్డం|మీసం|జెంట్స్)/i.test(text);
+  if (isLadiesOnly && mentionsMensGrooming) {
+    return {
+      valid: false,
+      reason: `Review invents men's grooming for a ladies-only beauty salon`,
+    };
+  }
+
   // 6. Selected Service / Highlight Focus Guard (SELECTED SERVICE MUST CONTROL THE REVIEW)
   if (profile.selectedTags && profile.selectedTags.length > 0) {
     const selectedText = profile.selectedTags.join(" ").toLowerCase();
+
+    // SALON_BEAUTY guards:
+    if (industry.industryType === "SALON_BEAUTY") {
+      const selectedBridal = /bridal|wedding|makeover|బ్రైడల్|పెళ్లి/i.test(selectedText);
+      const selectedAcademy = /academy|course|training|beautician|designing|అకాడమీ|ట్రైనింగ్/i.test(selectedText);
+      const selectedSpa = /spa|body\s*spa|massage|బాడీ|స్పా/i.test(selectedText);
+
+      const mentionsAcademy = /\b(courses?|academy|beautician\s*training|fashion\s*designing|students?|diploma|classes)\b/i.test(lower) || /(అకాడమీ|ట్రైనింగ్|కోర్స్)/i.test(text);
+      const mentionsBridal = /\b(bridals?|bridal\s*makeover|bridal\s*makeup)\b/i.test(lower) || /(బ్రైడల్|పెళ్లి\s*మేకప్)/i.test(text);
+
+      if (selectedBridal && !selectedAcademy && mentionsAcademy) {
+        return {
+          valid: false,
+          reason: `Review introduces course/academy training when user selected Bridal Makeup`,
+        };
+      }
+      if (selectedAcademy && !selectedBridal && mentionsBridal) {
+        return {
+          valid: false,
+          reason: `Review introduces bridal makeup when user selected Beautician Course & Training`,
+        };
+      }
+    }
 
     // GOLD_BUYERS guards:
     if (industry.industryType === "GOLD_BUYERS") {
