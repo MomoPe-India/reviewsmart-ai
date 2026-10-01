@@ -15,6 +15,8 @@ export async function POST(req: NextRequest) {
       keywords: directKeywords,
       tone: directTone,
       languageMode = "AUTO",
+      location: directLocation,
+      tagChips: directTagChips,
     } = body;
 
     let businessName = directName || "Our Store";
@@ -23,6 +25,8 @@ export async function POST(req: NextRequest) {
     let tone = directTone || "friendly";
     let foundBusinessId: string | null = null;
     let category = body.category || "";
+    let location = directLocation || "";
+    let tagChips = directTagChips || "";
 
     if (businessId || slug) {
       const business = await prisma.business.findFirst({
@@ -40,6 +44,8 @@ export async function POST(req: NextRequest) {
         keywords = business.keywords || keywords;
         tone = business.reviewPromptTone || tone;
         category = business.category || category;
+        location = business.googleAddress || business.visitingCardAddress || location;
+        tagChips = business.tagChips || tagChips;
         foundBusinessId = business.id;
       }
     }
@@ -48,8 +54,10 @@ export async function POST(req: NextRequest) {
       businessId: foundBusinessId || businessId || undefined,
       businessName,
       tagline,
-      selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
+      location,
       keywords,
+      tagChips,
+      selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
       tone,
       customNote,
       category,

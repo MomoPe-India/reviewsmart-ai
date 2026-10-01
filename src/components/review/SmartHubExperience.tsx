@@ -11,15 +11,12 @@ import {
   Instagram,
   Globe,
   UtensilsCrossed,
-  CreditCard,
   MapPin,
   ShieldCheck,
   ChevronDown,
   ChevronUp,
-  Copy,
   Check,
   QrCode,
-  X,
   Share2,
 } from "lucide-react";
 import ReviewExperience from "./ReviewExperience";
@@ -58,8 +55,6 @@ export default function SmartHubExperience({
   staff?: string | null;
 }) {
   const [showReviewBooster, setShowReviewBooster] = useState(false);
-  const [showUpiModal, setShowUpiModal] = useState(false);
-  const [upiCopied, setUpiCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   // Clean WhatsApp number
@@ -87,19 +82,6 @@ export default function SmartHubExperience({
   if (siteUrl && !siteUrl.startsWith("http")) {
     siteUrl = `https://${siteUrl}`;
   }
-
-  // UPI target
-  const upiVpa = business.customUpiId || (business.phone ? `${business.phone.replace(/[^0-9]/g, "")}@upi` : null);
-  const upiIntentUrl = upiVpa
-    ? `upi://pay?pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(business.name)}&cu=INR`
-    : null;
-
-  const handleCopyUpi = () => {
-    if (!upiVpa) return;
-    copyToClipboard(upiVpa);
-    setUpiCopied(true);
-    setTimeout(() => setUpiCopied(false), 2000);
-  };
 
   const handleShareHub = async () => {
     if (typeof window === "undefined") return;
@@ -310,31 +292,6 @@ export default function SmartHubExperience({
           </a>
         )}
 
-        {/* 3. Direct UPI Payment (PhonePe, GPay, Paytm) */}
-        {upiVpa && (
-          <button
-            type="button"
-            onClick={() => setShowUpiModal(true)}
-            className="w-full p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-indigo-500/30 hover:border-indigo-500/60 shadow-lg flex items-center justify-between gap-3 transition group transform active:scale-98"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/30 group-hover:scale-105 transition">
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <span className="text-sm font-bold text-white group-hover:text-indigo-300 transition block">
-                  Pay via UPI / GPay / PhonePe
-                </span>
-                <span className="text-[11px] text-slate-400 block">
-                  0% transaction fee • Instant counter payment
-                </span>
-              </div>
-            </div>
-            <div className="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold">
-              Pay ₹
-            </div>
-          </button>
-        )}
 
         {/* 4. Instagram Profile */}
         {instaUrl && (
@@ -410,65 +367,6 @@ export default function SmartHubExperience({
         )}
       </div>
 
-      {/* ─── UPI PAYMENT MODAL ──────────────────────────────────────────────── */}
-      {showUpiModal && upiVpa && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-sm bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 shadow-2xl relative text-center">
-            <button
-              onClick={() => setShowUpiModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-3 border border-indigo-500/30">
-              <CreditCard className="w-6 h-6" />
-            </div>
-
-            <h3 className="text-lg font-black text-white">Pay {business.name}</h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Scan or tap below to pay using any UPI app (GPay, PhonePe, Paytm)
-            </p>
-
-            {/* UPI ID Pill */}
-            <div className="mt-4 p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
-              <div className="text-left min-w-0">
-                <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider">
-                  UPI VPA ID
-                </span>
-                <span className="text-xs font-mono font-bold text-indigo-300 truncate block">
-                  {upiVpa}
-                </span>
-              </div>
-              <button
-                onClick={handleCopyUpi}
-                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold flex items-center gap-1 shrink-0 transition"
-              >
-                {upiCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{upiCopied ? "Copied" : "Copy"}</span>
-              </button>
-            </div>
-
-            {/* Direct Pay with UPI App */}
-            {upiIntentUrl && (
-              <a
-                href={upiIntentUrl}
-                className="w-full mt-4 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition transform active:scale-98"
-              >
-                <CreditCard className="w-4 h-4" />
-                <span>Open in Any UPI App</span>
-              </a>
-            )}
-
-            <button
-              onClick={() => setShowUpiModal(false)}
-              className="mt-3 text-xs text-slate-500 hover:text-slate-300 font-semibold transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ─── FOOTER WITH ZERO ADS GUARANTEE ─────────────────────────────────── */}
       <footer className="w-full mt-8 pt-4 border-t border-white/5 text-center flex flex-col items-center gap-1.5">

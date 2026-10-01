@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { detectIndustry } from "./industry";
+import { detectIndustry, IndustryType } from "./industry";
 import {
   fetchRecentReviewHistory,
   recordGeneratedReviews,
@@ -10,13 +10,21 @@ import {
   synthesizeUniqueReviews,
   LanguageMode,
 } from "./review-synthesizer";
+import {
+  validateBusinessRelevance,
+  extractBusinessLocation,
+  DOMAIN_FENCES,
+  BusinessProfile,
+} from "./domain-fences";
 
 interface GenerateReviewParams {
   businessId?: string;
   businessName: string;
   tagline?: string | null;
+  location?: string;
   selectedTags?: string[];
   keywords?: string;
+  tagChips?: string;
   tone?: string;
   customNote?: string;
   category?: string;
@@ -38,8 +46,10 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
     businessId,
     businessName,
     tagline,
+    location,
     selectedTags = [],
     keywords,
+    tagChips,
     tone = "friendly",
     customNote,
     category,
@@ -51,31 +61,84 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
   const pastOpenings = history.map((h) => h.openingPhrase).filter(Boolean).slice(0, 10);
 
   const industry = detectIndustry(businessName, category || "", tagline || "");
-  const activeTags = selectedTags.length > 0 ? selectedTags : industry.tags.slice(0, 3);
+  const fence = DOMAIN_FENCES[industry.type];
+
+  // Consolidate active tags
+  let activeTags = selectedTags.length > 0 ? selectedTags : [];
+  if (activeTags.length === 0 && tagChips) {
+    activeTags = tagChips.split(",").map((t) => t.trim()).filter(Boolean);
+  }
+  if (activeTags.length === 0) {
+    activeTags = industry.tags.slice(0, 3);
+  }
   const tagsString = activeTags.join(", ");
 
+  const profile: BusinessProfile = {
+    name: businessName,
+    category: category || industry.label,
+    tagline,
+    location,
+    keywords,
+    tagChips,
+    selectedTags: activeTags,
+    customNote,
+  };
+
+  const detectedCity = extractBusinessLocation(profile);
   const apiKey = process.env.GEMINI_API_KEY;
 
   // 2. Try Gemini AI if API Key is configured
   if (apiKey && apiKey.trim().length > 5) {
     const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.5-flash"];
 
-    for (const model of modelsToTry) {
-      try {
-        const client = new GoogleGenAI({ apiKey });
+    const forbiddenList = fence.forbiddenKeywords.slice(0, 15).join(", ");
 
-        const prompt = `You are a real customer writing an authentic, human-sounding 5-star Google review on your phone.
+    // Determine language guidance
+    let languageInstruction = "";
+    if (languageMode === "TELUGU_SCRIPT") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural TELUGU SCRIPT (తెలుగు), as written by local customers on mobile.`;
+    } else if (languageMode === "TELUGU_ROMAN" || languageMode === "TELUGU_ENGLISH") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic TANGLISH (conversational Telugu typed in English script, e.g., 'Chala baga chesaru, super quality and fast service. Staff kuda friendly ga unaru.').`;
+    } else if (languageMode === "ENGLISH") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in natural, conversational English.`;
+    } else {
+      // AUTO
+      if (detectedCity) {
+        languageInstruction = `LANGUAGE REQUIREMENT:
+- Review 1: Natural conversational English.
+- Review 2: Authentic Telugu Script (తెలుగు).
+- Review 3: Authentic Tanglish (Telugu in English alphabet, e.g., 'Work chala clean ga chesaru, time ki delivery icharu.').`;
+      } else {
+        languageInstruction = `LANGUAGE REQUIREMENT: Write all 3 reviews in authentic, human-sounding English.`;
+      }
+    }
+
+    const goldBuyerInstruction = industry.type === "GOLD_BUYERS" ? `
+CRITICAL POSITIONING (GOLD BUYING & PLEDGED GOLD SERVICE):
+This business is a gold-buying and pledged-gold assistance service (similar to Attica Gold Company). It is NOT a goldsmith or jewellery manufacturer, and does NOT sell jewellery to retail customers.
+- Customers visit to SELL existing gold for cash, get old gold evaluated, get computerized German XRF purity testing, transparent gold valuation, assistance releasing pledged gold from banks, and immediate payment via bank transfer.
+- DO NOT mention buying jewellery, necklace/chain designs, bridal collections, making charges, or wastage.
+` : "";
+
+    const prompt = `You are a real customer writing an authentic, human-sounding 5-star Google review on your phone.
 Business Name: "${businessName}"
 Industry: ${industry.label}
+${detectedCity ? `Location / City: ${detectedCity}` : ""}
 ${tagline ? `Tagline: "${tagline}"` : ""}
 Things the customer liked: ${tagsString}
 ${keywords ? `Natural business services/context: ${keywords}` : ""}
 ${customNote ? `Specific customer comment/note: "${customNote}"` : ""}
 Desired tone: ${tone}
 
-CRITICAL ZERO-DUPLICATION & ANTI-REPETITION RULES:
-1. Sound like a REAL PERSON who actually visited this business — NOT an AI marketing bot.
-2. ABSOLUTELY DO NOT use generic clichés such as:
+${languageInstruction}
+${goldBuyerInstruction}
+
+CRITICAL BUSINESS-SPECIFIC & ZERO-POLLUTION RULES:
+1. Ground the review STRICTLY in this specific business and its actual services (${industry.label}).
+2. ABSOLUTELY DO NOT mention concepts, products, or services from other industries.
+   FORBIDDEN CONCEPTS (DO NOT USE): ${forbiddenList}.
+3. Sound like a REAL LOCAL CUSTOMER — NOT a marketing bot.
+4. ABSOLUTELY DO NOT use generic clichés such as:
    - "Had a wonderful experience with..."
    - "Great experience..."
    - "Excellent service..."
@@ -85,26 +148,29 @@ CRITICAL ZERO-DUPLICATION & ANTI-REPETITION RULES:
    - "Good quality and service..."
    - "made our memories truly special"
    - "exemplary", "testament to", "transcends expectations", "a game changer".
-3. DO NOT repeat any of these previously used openings:
+5. DO NOT repeat any of these previously used openings:
 ${pastOpenings.length > 0 ? pastOpenings.map((op) => `   - "${op}..."`).join("\n") : "   (None yet)"}
-4. Tailor vocabulary strictly to ${industry.label}.
-5. Provide 3 completely distinct reviews with different lengths, different structures, and different openings:
+6. Provide 3 completely distinct reviews with different lengths, different structures, and different openings:
    - Review 1: Very short (1-2 punchy, human-typed sentences).
    - Review 2: Medium product/service quality observation.
    - Review 3: Detailed conversational review with specific observations.
 
 Output strictly a JSON array without markdown formatting:
 [
-  { "id": 1, "headline": "Quick & Direct", "text": "...", "tone": "Quick & Direct" },
-  { "id": 2, "headline": "Quality Observation", "text": "...", "tone": "Quality Observation" },
-  { "id": 3, "headline": "Detailed Experience", "text": "...", "tone": "Detailed Experience" }
+  { "id": 1, "headline": "...", "text": "...", "tone": "..." },
+  { "id": 2, "headline": "...", "text": "...", "tone": "..." },
+  { "id": 3, "headline": "...", "text": "...", "tone": "..." }
 ]`;
+
+    for (const model of modelsToTry) {
+      try {
+        const client = new GoogleGenAI({ apiKey });
 
         const response = await client.models.generateContent({
           model,
           contents: prompt,
           config: {
-            temperature: 0.95, // High entropy for maximum variety
+            temperature: 0.95,
             responseMimeType: "application/json",
           },
         });
@@ -114,28 +180,34 @@ Output strictly a JSON array without markdown formatting:
         const parsed = JSON.parse(cleaned);
 
         if (Array.isArray(parsed) && parsed.length >= 3 && parsed[0]?.text) {
-          // Validate all 3 reviews against uniqueness rules
           const validatedReviews: ReviewOption[] = [];
           const acceptedTexts: string[] = [];
 
           for (let i = 0; i < parsed.length; i++) {
             const item = parsed[i];
-            const check = validateReviewUniqueness(item.text, history, acceptedTexts);
-            if (check.valid) {
-              acceptedTexts.push(item.text);
-              validatedReviews.push({
-                id: validatedReviews.length + 1,
-                headline: item.headline || "Authentic Review",
-                text: item.text,
-                tone: item.tone || "Customer Experience",
-                structureTag: `GEMINI_SLOT_${i + 1}`,
-                writingStyle: "gemini_generative",
-                languageMix: "ENGLISH",
-              });
-            }
+            const candidateText = (item.text || "").trim();
+
+            // 1. Uniqueness check
+            const uniq = validateReviewUniqueness(candidateText, history, acceptedTexts, businessName);
+            if (!uniq.valid) continue;
+
+            // 2. Business Relevance & Domain Fence check
+            const rel = validateBusinessRelevance(candidateText, profile, industry.type);
+            if (!rel.valid) continue;
+
+            acceptedTexts.push(candidateText);
+            validatedReviews.push({
+              id: validatedReviews.length + 1,
+              headline: item.headline || "Authentic Review",
+              text: candidateText,
+              tone: item.tone || "Customer Experience",
+              structureTag: `GEMINI_SLOT_${i + 1}`,
+              writingStyle: "gemini_generative",
+              languageMix: languageMode,
+            });
           }
 
-          // If at least 3 passed uniqueness check, record and return!
+          // If at least 3 passed both uniqueness AND domain relevance checks, record and return!
           if (validatedReviews.length >= 3) {
             recordGeneratedReviews(
               validatedReviews.map((r) => ({
@@ -154,17 +226,20 @@ Output strictly a JSON array without markdown formatting:
           }
         }
       } catch (err: any) {
-        // Proceed to high-entropy zero-repetition synthesizer
+        // Proceed to next model or synthesizer fallback
       }
     }
   }
 
-  // 3. High-entropy Linguistic Combinatorial Synthesizer
-  // Guarantees zero duplicates, varied structures (A-G), 18 writing styles, and Telugu-English mixing
+  // 3. High-entropy, Domain-Fenced Combinatorial Synthesizer
+  // Guarantees zero cross-contamination, zero duplicates, authentic Telugu/Tanglish, and 100% domain relevance
   const synthesized = synthesizeUniqueReviews({
     businessName,
     category: category || industry.label,
     tagline,
+    location,
+    keywords,
+    tagChips,
     selectedTags: activeTags,
     customNote,
     tone,

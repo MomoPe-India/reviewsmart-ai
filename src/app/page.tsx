@@ -118,15 +118,24 @@ const DEMO_MERCHANTS = [
   {
     id: "gold",
     name: "VR GOLD - KADAPA",
-    category: "Gold Buyers & Pledged Gold Release",
+    category: "Gold Buying & Pledged Gold Services",
     location: "Kadapa, Andhra Pradesh",
     icon: Coins,
     color: "#d97706",
     logo: "/images/vr-gold-logo.png",
     slug: "vrgold",
-    chips: ["Sell Gold for Cash", "Release Pledged Gold", "Instant Bank Transfer", "German Purity Testing", "Best Market Rate"],
+    chips: [
+      "Sell Gold for Cash",
+      "Old Gold Evaluation",
+      "Gold Purity Testing",
+      "Gold Valuation",
+      "Pledged Gold Assistance",
+      "Transparent Gold Pricing",
+      "Quick Instant Payment",
+      "Doorstep Gold Evaluation",
+    ],
     aiDraft:
-      "Sold old gold jewellery at VR GOLD Kadapa! Purity was tested transparently on their German computerized machine, got live market bullion rate, and instant bank transfer in 2 minutes. Honest and reliable service!",
+      "Evaluated and sold old gold for cash at VR GOLD Kadapa! Purity was tested on their German computerized machine with live market bullion pricing, zero deductions, and instant bank transfer in 2 minutes. Transparent and trustworthy service!",
     author: "Prasad R.",
   },
 ];

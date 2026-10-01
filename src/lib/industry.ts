@@ -407,20 +407,20 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
 
   GOLD_BUYERS: {
     type: "GOLD_BUYERS",
-    label: "Gold Buyers & Pledged Gold Release",
-    tagline: "Instant Cash for Gold, Transparent Purity Testing & Pledged Gold Release",
+    label: "Gold Buying & Pledged Gold Services",
+    tagline: "Sell Gold for Cash · Old Gold Evaluation & Purity Testing · Pledged Gold Assistance · Instant Payment",
     tags: [
       "Sell Gold for Cash",
-      "Release Pledged Gold",
-      "Instant Bank Transfer",
-      "Transparent Valuation",
-      "German Purity Testing",
-      "Best Market Rate",
-      "Old Gold Jewellery",
-      "Safe & Confidential",
+      "Old Gold Evaluation",
+      "Gold Purity Testing",
+      "Gold Valuation",
+      "Pledged Gold Assistance",
+      "Transparent Gold Pricing",
+      "Quick Instant Payment",
+      "Doorstep Gold Evaluation",
     ],
-    placeholder: "Mention selling old gold, releasing pledged gold or valuation (optional)...",
-    keywords: "sell gold for cash, release pledged gold, gold buyer kadapa, instant bank transfer, german purity testing, best market gold rate",
+    placeholder: "Mention selling old gold, evaluation, purity testing, or pledged gold assistance (optional)...",
+    keywords: "sell gold for cash, old gold evaluation, gold purity testing, gold valuation, pledged gold assistance, transparent gold pricing, quick instant payment, doorstep gold evaluation, release pledged gold, instant bank transfer",
     reviewDrafts: {
       direct: {
         headline: "Instant Payment & Best Market Rate!",
@@ -428,12 +428,12 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
           `Superb experience with ${name}! The ${tags || "instant bank transfer and transparent valuation"} made the entire transaction smooth and trustworthy.${note ? ` Especially appreciated the help with ${note}.` : ""} Received highest market rate with zero hidden deductions.`,
       },
       detailed: {
-        headline: "100% Transparent & Trustworthy Gold Buyers",
+        headline: "100% Transparent & Trustworthy Gold Buying Service",
         text: (name, tags, note) =>
           `Visited ${name} to sell old gold and was thoroughly impressed by their honesty. Purity was verified right in front of me on computerized German equipment, weighing was completely accurate, and payment was transferred to my bank account in 2 minutes.${note ? ` Handled ${note} with absolute transparency.` : ""} One of the most reliable gold buying services in town!`,
       },
       enthusiastic: {
-        headline: "Best Gold Buyers in Kadapa!",
+        headline: "Best Gold Buying & Pledged Gold Assistance!",
         text: (name, tags, note) =>
           `Truly a 5-star experience with ${name}! If you want to release pledged gold or sell old gold jewellery at the highest market rate without any stress, this is the place to visit.${note ? ` Very impressed with ${note}.` : ""} Highly recommended to everyone!`,
       },

@@ -22,10 +22,10 @@ const WHATSAPP         = "918978973576";
 const LOGO_URL         = "/images/vr-gold-logo.png";
 const GOOGLE_SHARE_URL = "https://share.google/0O9MGGGeBpWUVTnZH";
 const ADDRESS          = "Kadapa, Andhra Pradesh 516001";
-const TAG_CHIPS        = "Sell Gold for Cash,Release Pledged Gold,Instant Bank Transfer,Transparent Valuation,German Purity Testing,Best Market Rate,Old Gold Jewellery,Safe & Confidential,Quick 10-Min Process,Polite & Honest Staff";
-const KEYWORDS         = "vr gold kadapa sell gold release pledged gold instant cash bank transfer german purity testing best gold rate kadapa old gold jewellery valuation";
-const CATEGORY         = "Gold Buyers & Pledged Gold Release Services";
-const TAGLINE          = "Sell Old Gold & Release Pledged Gold at Best Market Price in Kadapa · Instant Payment";
+const TAG_CHIPS        = "Sell Gold for Cash,Old Gold Evaluation,Gold Purity Testing,Gold Valuation,Pledged Gold Assistance,Transparent Gold Pricing,Quick Instant Payment,Doorstep Gold Evaluation,Release Pledged Gold,Safe & Confidential";
+const KEYWORDS         = "sell gold for cash, old gold evaluation, gold purity testing, gold valuation, pledged gold assistance, transparent gold pricing, quick instant payment, doorstep gold evaluation, release pledged gold, instant bank transfer, gold buyers kadapa, attica gold model";
+const CATEGORY         = "Gold Buying & Pledged Gold Services";
+const TAGLINE          = "Sell Gold for Cash · Old Gold Evaluation & Purity Testing · Pledged Gold Assistance · Instant Payment";
 
 async function main() {
   console.log("\n🚀 Onboarding & Activating Merchant: VR GOLD - KADAPA under MKT-01\n");
