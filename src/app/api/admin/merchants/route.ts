@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { resolveGoogleMapsUrl } from "@/lib/googleMapsResolver";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,24 @@ export async function POST(req: NextRequest) {
     const hashedPin = await hashPin(randomPin);
     const hashedPassword = await hashPassword(randomPin);
 
+    // Auto-resolve Google Review URL and Place ID if provided
+    let finalPlaceId = null;
+    let finalReviewUrl = googleReviewUrl
+      ? String(googleReviewUrl).trim()
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((businessName || name).trim())}`;
+
+    if (googleReviewUrl) {
+      try {
+        const resolved = await resolveGoogleMapsUrl(String(googleReviewUrl).trim());
+        if (resolved.placeId) {
+          finalPlaceId = resolved.placeId;
+          finalReviewUrl = resolved.googleReviewUrl;
+        }
+      } catch (err) {
+        console.error("Auto-resolving review URL in admin merchant create failed:", err);
+      }
+    }
+
     // Create user and initial business
     const merchant = await prisma.user.create({
       data: {
@@ -142,7 +161,8 @@ export async function POST(req: NextRequest) {
             phone: cleanPhone,
             whatsapp: cleanPhone,
             logoUrl: logoUrl ? String(logoUrl).trim() : null,
-            googleReviewUrl: googleReviewUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((businessName || name).trim())}`,
+            googlePlaceId: finalPlaceId,
+            googleReviewUrl: finalReviewUrl,
           },
         },
       },
@@ -251,6 +271,21 @@ export async function PUT(req: NextRequest) {
       businessId ||
       (await prisma.business.findFirst({ where: { userId: merchantId }, select: { id: true } }))?.id;
 
+    let resolvedPlaceId = googlePlaceId !== undefined ? (googlePlaceId ? String(googlePlaceId).trim() : null) : undefined;
+    let resolvedReviewUrl = googleReviewUrl !== undefined ? (googleReviewUrl ? String(googleReviewUrl).trim() : "") : undefined;
+
+    if (resolvedReviewUrl && (!resolvedPlaceId || !resolvedReviewUrl.includes("writereview?placeid="))) {
+      try {
+        const resolved = await resolveGoogleMapsUrl(resolvedReviewUrl);
+        if (resolved.placeId) {
+          resolvedPlaceId = resolved.placeId;
+          resolvedReviewUrl = resolved.googleReviewUrl;
+        }
+      } catch (err) {
+        console.error("Auto-resolving review URL in admin merchant update failed:", err);
+      }
+    }
+
     if (targetBusinessId) {
       await prisma.business.update({
         where: { id: targetBusinessId },
@@ -259,8 +294,8 @@ export async function PUT(req: NextRequest) {
           ...(slug !== undefined && { slug: slugify(slug) }),
           ...(category !== undefined && { category }),
           ...(tagline !== undefined && { tagline }),
-          ...(googlePlaceId !== undefined && { googlePlaceId }),
-          ...(googleReviewUrl !== undefined && { googleReviewUrl }),
+          ...(resolvedPlaceId !== undefined && { googlePlaceId: resolvedPlaceId }),
+          ...(resolvedReviewUrl !== undefined && { googleReviewUrl: resolvedReviewUrl }),
           ...(googleAddress !== undefined && { googleAddress }),
           ...(cleanPhone !== undefined && { phone: cleanPhone }),
           ...(whatsapp !== undefined ? { whatsapp } : cleanPhone !== undefined ? { whatsapp: cleanPhone } : {}),

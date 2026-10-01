@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { resolveGoogleMapsUrl } from "@/lib/googleMapsResolver";
 
 async function canUserAccessBusiness(
   user: { id: string; role: string },
@@ -70,6 +71,21 @@ export async function PUT(
       }
     }
 
+    let resolvedPlaceId = body.googlePlaceId !== undefined ? body.googlePlaceId : business.googlePlaceId;
+    let resolvedReviewUrl = body.googleReviewUrl !== undefined ? body.googleReviewUrl : business.googleReviewUrl;
+
+    if (body.googleReviewUrl && (!resolvedPlaceId || !resolvedReviewUrl?.includes("writereview?placeid="))) {
+      try {
+        const resolved = await resolveGoogleMapsUrl(body.googleReviewUrl);
+        if (resolved.placeId) {
+          resolvedPlaceId = resolved.placeId;
+          resolvedReviewUrl = resolved.googleReviewUrl;
+        }
+      } catch (err) {
+        console.error("Auto-resolving review URL in business update failed:", err);
+      }
+    }
+
     const updated = await prisma.business.update({
       where: { id },
       data: {
@@ -78,8 +94,8 @@ export async function PUT(
         tagline: body.tagline !== undefined ? body.tagline : business.tagline,
         logoUrl: body.logoUrl !== undefined ? body.logoUrl : business.logoUrl,
         primaryColor: body.primaryColor || business.primaryColor,
-        googlePlaceId: body.googlePlaceId !== undefined ? body.googlePlaceId : business.googlePlaceId,
-        googleReviewUrl: body.googleReviewUrl !== undefined ? body.googleReviewUrl : business.googleReviewUrl,
+        googlePlaceId: resolvedPlaceId,
+        googleReviewUrl: resolvedReviewUrl,
         category: body.category !== undefined ? body.category : business.category,
         googleAddress: body.googleAddress !== undefined ? body.googleAddress : business.googleAddress,
         phone: body.phone !== undefined ? body.phone : business.phone,

@@ -129,75 +129,73 @@ export default function ReviewExperience({
     setIsIOS(appleDevice);
   }, []);
 
-  // Resolved Direct GMB Review URL
+  // Resolved Direct GMB Review URL - ALWAYS opens the Google Review Popup Screen directly!
   const getResolvedGoogleUrl = () => {
     let rawUrl = (business.googleReviewUrl || "").trim();
-    const placeId =
-      business.slug === "momo-it-technologies"
-        ? "ChIJd5iV_xdzszsR_OIKD3ympJo"
-        : (business.googlePlaceId || "").trim();
+    let placeId = (business.googlePlaceId || "").trim();
 
-    // 0. If rawUrl contains an unresolvable query_place_id, strip query_place_id to prevent Google Maps 404/blank pin drops
-    if (rawUrl.includes("query_place_id=")) {
-      rawUrl = rawUrl.replace(/([?&])query_place_id=[^&]+(&|$)/, "$1").replace(/[?&]$/, "");
+    // Known merchants Place ID fallbacks if not yet present
+    if (business.slug === "momo-it-technologies") {
+      placeId = "ChIJd5iV_xdzszsR_OIKD3ympJo";
+    } else if (business.slug === "sushmas-fashion-beauty" && !placeId) {
+      placeId = "ChIJbzsJc9NzszsRtBUfS0gXCHk";
+    } else if (business.slug === "vrgold" && !placeId) {
+      placeId = "ChIJHUVe5u5zszsR-sspZhPvhms";
+    } else if (business.slug === "citygrafix" && !placeId) {
+      placeId = "ChIJx7MuneJzszsRhKHkYyndOs4";
+    } else if (business.slug === "anand-fashion-studio-bf84" && !placeId) {
+      placeId = "ChIJs4-kUhJzszsRAk8ObSZuam4";
+    } else if (business.slug === "sri-guru-fashions-393a" && !placeId) {
+      placeId = "ChIJ-_3HayRzszsRhE95URiMOqc";
     }
 
-    // 1. If merchant has an explicit Google Maps Search, Maps Place, or Share URL, respect it directly
-    if (
-      rawUrl &&
-      (rawUrl.includes("google.com/maps") ||
-        rawUrl.includes("maps.google.com") ||
-        rawUrl.includes("maps.app.goo.gl") ||
-        rawUrl.includes("share.google"))
-    ) {
-      return rawUrl;
-    }
-
-    // 2. If rawUrl explicitly points to writereview, use it
-    if (rawUrl && rawUrl.includes("search.google.com/local/writereview")) {
-      return rawUrl;
-    }
-
-    // 3. Known coordinate / non-writereview place IDs fallback to clean Google Maps search
+    // 0. Known coordinate / non-writereview place IDs fallback to clean Google Maps search
     if (placeId === "ChIJfx1E9GgPujkRcPNEzcyHcJI" || business.slug.includes("vijaya")) {
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Vijaya's Yummy Food Kadugodi Bengaluru")}`;
     }
 
-    // 4. Standard verified Google Business Profile Place ID
+    // 1. If we have a verified Place ID, ALWAYS return the official direct 5-star write-review popup link
     if (placeId && placeId !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
     }
 
-    if (rawUrl) {
-      const match = rawUrl.match(/[?&]place(?:_)?id=([^&#]+)/i);
-      if (match && match[1] && match[1] !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
-        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
-      }
+    // 2. If rawUrl explicitly points to writereview, use it directly
+    if (rawUrl && rawUrl.includes("search.google.com/local/writereview")) {
       return rawUrl;
     }
 
+    // 3. Extract place ID from raw URL if present (placeid=, place_id=, query_place_id=, or ChIJ...)
+    if (rawUrl) {
+      const match =
+        rawUrl.match(/[?&](?:place(?:_)?id|query_place_id)=([^&#]+)/i) ||
+        rawUrl.match(/(ChIJ[A-Za-z0-9_-]{20,})/);
+      if (match && match[1] && match[1] !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
+        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
+      }
+
+      // Check for CID parameter
+      const cidMatch = rawUrl.match(/[?&]cid=([0-9]+)/i);
+      if (cidMatch && cidMatch[1]) {
+        return `https://search.google.com/local/writereview?cid=${encodeURIComponent(cidMatch[1])}`;
+      }
+    }
+
+    // 4. If rawUrl exists, clean any broken query_place_id before fallback
+    if (rawUrl) {
+      let cleaned = rawUrl;
+      if (cleaned.includes("query_place_id=")) {
+        cleaned = cleaned.replace(/([?&])query_place_id=[^&]+(&|$)/, "$1").replace(/[?&]$/, "");
+      }
+      return cleaned;
+    }
+
+    // 5. Ultimate fallback: Google Maps search for business name
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
   };
 
   const getMapsAppUrl = () => {
-    if (business.slug === "momo-it-technologies") {
-      return "https://share.google/TZztrbNbTy89hTgkp";
-    }
-    let rawUrl = (business.googleReviewUrl || "").trim();
-    if (rawUrl) {
-      if (rawUrl.includes("query_place_id=")) {
-        rawUrl = rawUrl.replace(/([?&])query_place_id=[^&]+(&|$)/, "$1").replace(/[?&]$/, "");
-      }
-      return rawUrl;
-    }
-    const placeId = (business.googlePlaceId || "").trim();
-    if (placeId && placeId !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
-    }
-    const query = business.slug.includes("vijaya")
-      ? "Vijaya's Yummy Food Kadugodi Bengaluru"
-      : business.name;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    // Keep aligned with direct review popup URL so user is never redirected to profile overview
+    return getResolvedGoogleUrl();
   };
 
   const googleUrl = getResolvedGoogleUrl();
@@ -1136,14 +1134,14 @@ export default function ReviewExperience({
               <ExternalLink className="w-4 h-4 text-slate-500" />
             </a>
 
-            {/* Google Maps App Option */}
-            {mapsAppUrl && (
+            {/* Direct Google Review Screen Backup Option */}
+            {googleUrl && (
               <button
                 type="button"
-                onClick={() => handleCopyAndRedirect(mapsAppUrl)}
+                onClick={() => handleCopyAndRedirect(googleUrl)}
                 className="w-full mt-2.5 text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center justify-center gap-1"
               >
-                <span>Or open in Google Maps App &rarr;</span>
+                <span>Direct Review popup didn&apos;t open? Tap here &rarr;</span>
               </button>
             )}
 

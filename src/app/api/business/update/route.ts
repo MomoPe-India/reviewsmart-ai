@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { resolveGoogleMapsUrl } from '@/lib/googleMapsResolver';
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -68,6 +69,21 @@ export async function PATCH(req: NextRequest) {
       if (!business) return NextResponse.json({ error: 'No business found.' }, { status: 404 });
     }
 
+    let resolvedPlaceId = undefined;
+    let resolvedReviewUrl = googleReviewUrl !== undefined ? googleReviewUrl : undefined;
+
+    if (googleReviewUrl && !googleReviewUrl.includes("writereview?placeid=")) {
+      try {
+        const resolved = await resolveGoogleMapsUrl(googleReviewUrl);
+        if (resolved.placeId) {
+          resolvedPlaceId = resolved.placeId;
+          resolvedReviewUrl = resolved.googleReviewUrl;
+        }
+      } catch (err) {
+        console.error("Auto-resolving review URL in business/update failed:", err);
+      }
+    }
+
     const updated = await prisma.business.update({
       where: { id: business.id },
       data: {
@@ -82,7 +98,8 @@ export async function PATCH(req: NextRequest) {
         ...(website !== undefined && { website }),
         ...(phone !== undefined && { phone }),
         ...(googleAddress !== undefined && { googleAddress }),
-        ...(googleReviewUrl !== undefined && { googleReviewUrl }),
+        ...(resolvedReviewUrl !== undefined && { googleReviewUrl: resolvedReviewUrl }),
+        ...(resolvedPlaceId !== undefined && { googlePlaceId: resolvedPlaceId }),
         ...(logoUrl !== undefined && { logoUrl }),
         ...(qrMode !== undefined && { qrMode }),
         ...(menuUrl !== undefined && { menuUrl }),

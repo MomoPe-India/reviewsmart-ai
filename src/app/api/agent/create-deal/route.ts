@@ -3,6 +3,7 @@ import { getSessionUser, hashPin, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { detectIndustry } from "@/lib/industry";
 import { getPackageById, getPackageByPrice } from "@/lib/packages";
+import { resolveGoogleMapsUrl } from "@/lib/googleMapsResolver";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -124,6 +125,22 @@ export async function POST(req: NextRequest) {
     const finalTags = body.tagChips || industry.tags.join(",");
     const finalKeywords = body.keywords || industry.keywords;
 
+    // Auto-resolve Google Review URL and Place ID if necessary
+    let finalPlaceId = googlePlaceId ? String(googlePlaceId).trim() : null;
+    let finalReviewUrl = googleReviewUrl ? String(googleReviewUrl).trim() : "";
+
+    if ((!finalPlaceId || !finalReviewUrl.includes("writereview?placeid=")) && finalReviewUrl) {
+      try {
+        const resolved = await resolveGoogleMapsUrl(finalReviewUrl);
+        if (resolved.placeId) {
+          finalPlaceId = resolved.placeId;
+          finalReviewUrl = resolved.googleReviewUrl;
+        }
+      } catch (err) {
+        console.error("Auto-resolving review URL failed:", err);
+      }
+    }
+
     // Create business — isPaid = false until admin approves
     const business = await prisma.business.create({
       data: {
@@ -134,8 +151,8 @@ export async function POST(req: NextRequest) {
         category: finalCategory,
         customerType: "OFFLINE",
         logoUrl: logoUrl || null,
-        googlePlaceId: googlePlaceId || null,
-        googleReviewUrl,
+        googlePlaceId: finalPlaceId,
+        googleReviewUrl: finalReviewUrl,
         googleAddress: googleAddress || null,
         phone: cleanPhone,
         whatsapp: whatsapp || null,
