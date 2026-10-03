@@ -41,3 +41,11 @@ next-env.d.ts
 
 # scratch scripts
 /scratch/
+
+# desktop electron
+/desktop/dist/
+/desktop/out/
+/desktop/node_modules/
+/desktop/prisma/generated-client/
+
+

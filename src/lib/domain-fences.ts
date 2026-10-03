@@ -355,6 +355,42 @@ export const DOMAIN_FENCES: Record<IndustryType, DomainFenceConfig> = {
     ],
   },
 
+  TOURS_TRAVELS: {
+    industryType: "TOURS_TRAVELS",
+    allowedKeywords: [
+      "cab", "cabs", "taxi", "tours", "travels", "journey", "trip", "trips",
+      "self-drive", "self drive", "car rental", "rentals", "driver", "chauffeur",
+      "vehicle", "vehicles", "innova", "crysta", "etios", "dzire", "ac", "sedan",
+      "suv", "outstation", "airport", "drop", "pickup", "tirupati", "darshan",
+      "pilgrimage", "gandikota", "belum caves", "ahobilam", "srisailam", "proddatur",
+      "kadapa", "bangalore", "hyderabad", "chennai", "km", "package", "packages",
+      "fare", "pricing", "fastag", "highway", "toll", "pavan", "jyothi", "on time",
+      "punctual", "punctuality", "clean vehicle", "safe driving", "seat", "luggage",
+      "family", "comfortable", "smooth", "transparent", "rate", "rates",
+    ],
+    forbiddenKeywords: [
+      "gold", "bullion", "pledged", "xrf", "photo frame", "flex banner", "sign board",
+      "visiting card", "mug", "pillow", "haircut", "facial", "salon", "spa", "doctor",
+      "dental", "clinic", "hospital", "teeth", "biryani", "food menu", "restaurant",
+      "software", "code", "app dev", "pre-wedding", "candid shoot", "saree draping",
+      "gym", "workout", "goldsmith", "making charges", "material", "fabric", "durable material",
+    ],
+    forbiddenPhrases: [
+      /\b(gold|bullion|pledged|xrf|karat|carat)\b/i,
+      /\b(photo\s*frames?|flex\s*banners?|sign\s*boards?|visiting\s*cards?)\b/i,
+      /\b(haircuts?|facials?|makeups?|salons?|spas?)\b/i,
+      /\b(doctors?|dentals?|clinics?|hospitals?|medicines?)\b/i,
+      /\b(biryani|dining|restaurants?|food\s*taste)\b/i,
+      /\b(software\s*dev|app\s*dev|clean\s*code)\b/i,
+      /\b(pre-weddings?|candid\s*photography|wedding\s*films?)\b/i,
+      /\b(got\s*the\s*[a-z\s]+\s*done\s*here)\b/i,
+    ],
+    positiveIdentifiers: [
+      /\b(cabs?|taxis?|tours?|travels?|self-?drives?|car\s*rentals?|drivers?|chauffeurs?|innova|crysta|etios|darshan|tirupati|airport\s*drops?|outstation|gandikota|pilgrimage|road\s*trip|pickups?|safe\s*driving|punctual)\b/i,
+      /(క్యాబ్|ట్యాక్సీ|టూర్స్|ట్రావెల్స్|డ్రైవర్|సెల్ఫ్\s*డ్రైవ్|కారు\s*రెంటల్|తిరుపతి|దర్శనం|ఎయిర్‌పోర్ట్|గండికోట|జర్నీ)/i,
+    ],
+  },
+
   GENERAL: {
     industryType: "GENERAL",
     allowedKeywords: [

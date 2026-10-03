@@ -120,6 +120,13 @@ This business is a gold-buying and pledged-gold assistance service (similar to A
 - DO NOT mention buying jewellery, necklace/chain designs, bridal collections, making charges, or wastage.
 ` : "";
 
+    const toursTravelsInstruction = industry.type === "TOURS_TRAVELS" ? `
+CRITICAL POSITIONING (TOURS, TRAVELS & SELF-DRIVE CAR RENTALS):
+This business provides cab services, outstation trips, airport transfers, pilgrimage packages (Tirupati, Gandikota), and self-drive car rentals in Andhra Pradesh (Kadapa/Rayalaseema).
+- Customers review their travel experiences: punctuality, AC cooling, safe driving on highways and ghat roads, clean sanitized vehicles (Innova Crysta, Etios, Swift), transparent pricing with no hidden charges, fast handover and quick security deposit refund for self-drive cars.
+- DO NOT mention gold, jewellery, salon, haircuts, food, restaurants, doctor/clinic, photography studio, or general hardware/material.
+` : "";
+
     const prompt = `You are a real customer writing an authentic, human-sounding 5-star Google review on your phone.
 Business Name: "${businessName}"
 Industry: ${industry.label}
@@ -132,6 +139,7 @@ Desired tone: ${tone}
 
 ${languageInstruction}
 ${goldBuyerInstruction}
+${toursTravelsInstruction}
 
 CRITICAL BUSINESS-SPECIFIC & ZERO-POLLUTION RULES:
 1. STRICT FOCUS ON SELECTED SERVICES:

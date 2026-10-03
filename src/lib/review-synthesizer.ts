@@ -511,6 +511,59 @@ export const DOMAIN_LEXICONS: Record<IndustryType, DomainLexicon> = {
     ],
   },
 
+  TOURS_TRAVELS: {
+    items: [
+      "Tirupati temple darshan round trip cab",
+      "self-drive car rental with FASTag",
+      "fixed-fare Bangalore airport drop",
+      "Gandikota Grand Canyon and Belum Caves day tour",
+      "local Kadapa city cab package",
+      "outstation cab for urgent Hyderabad trip",
+      "clean AC Innova Crysta for family pilgrimage to Ahobilam",
+      "weekend road trip cab with safe highway chauffeur",
+      "outstation cab booking for Chennai corporate travel",
+      "Kadapa local sightseeing and outstation drop",
+    ],
+    qualities: [
+      "spotless sanitized AC vehicle with prompt 10-minute early arrival",
+      "experienced highway chauffeur who drove smoothly on ghat roads",
+      "100% upfront transparent pricing with zero hidden charges or extra fuel demands",
+      "well-maintained Toyota Etios and Innova Crysta fleet with working AC and music",
+      "instant WhatsApp quote and 24/7 responsive booking desk with Pavan and Jyothi",
+      "FASTag-enabled self-drive cars with quick handover and zero deposit hassle",
+      "safe highway driving, disciplined driver, and comfortable seating for elderly family members",
+      "fixed airport transfer fare without surge pricing or late-night extra charges",
+    ],
+    adjectives: [
+      "punctual and disciplined",
+      "clean and well-maintained",
+      "transparent and fair priced",
+      "safe and courteous",
+      "smooth and reliable",
+      "professional and dependable",
+      "comfortable and peaceful",
+    ],
+    actions: [
+      "booked their cab for",
+      "availed self-drive car rental for",
+      "reserved their outstation ride for",
+      "traveled with family for",
+      "arranged temple darshan transport for",
+      "hired their Innova Crysta for",
+      "booked an airport drop for",
+    ],
+    occasions: [
+      "for our family Tirupati pilgrimage trip",
+      "for an early morning Bangalore airport flight drop",
+      "for our weekend trip to Gandikota and Belum Caves",
+      "for our outstation office trip to Hyderabad",
+      "for our family pilgrimage darshan at Ahobilam",
+      "for an urgent one-way drop",
+      "recently",
+      "last weekend",
+    ],
+  },
+
   GENERAL: {
     items: [
       "service requirement",
@@ -562,6 +615,15 @@ export interface TagIntent {
   isBodySpa: boolean;
   isAcademy: boolean;
   isLadiesOnly: boolean;
+  // Tours & Travels
+  isTirupati: boolean;
+  isSelfDrive: boolean;
+  isAirport: boolean;
+  isGandikota: boolean;
+  isCleanCab: boolean;
+  isPunctualDriver: boolean;
+  isOutstation: boolean;
+  isFairPricing: boolean;
   rawTag: string;
 }
 
@@ -592,6 +654,15 @@ export function detectTagIntent(tags: string[], ind: IndustryType): TagIntent {
     isBodySpa: /body\s*spa|massage|relaxation|బాడీ|స్పా|మసాజ్/i.test(combined),
     isAcademy: /academy|course|training|beautician|designing|అకాడమీ|ట్రైనింగ్|కోర్స్/i.test(combined),
     isLadiesOnly: /ladies|women|female|స్త్రీ|మహిళ/i.test(combined),
+    // Tours & Travels
+    isTirupati: /tirupati|darshan|pilgrimage|ahobilam|srisailam|temple|తిరుపతి|దర్శనం/i.test(combined),
+    isSelfDrive: /self\s*drive|car\s*rent|rental|సెల్ఫ్\s*డ్రైవ్|రెంటల్/i.test(combined),
+    isAirport: /airport|drop|pickup|blr|flight|విమానాశ్రయం|ఎయిర్‌పోర్ట్/i.test(combined),
+    isGandikota: /gandikota|canyon|belum|cave|tour|గండికోట/i.test(combined),
+    isCleanCab: /clean|ambiance|vehicle|good\s*vehicles?|ac|innova|etios|కారు|వాహనం/i.test(combined),
+    isPunctualDriver: /punctual|driver|chauffeur|fast\s*service|staff|friendly|డ్రైవర్|టైమ్/i.test(combined),
+    isOutstation: /outstation|hyderabad|bangalore|chennai|హైదరాబాద్|బెంగళూరు/i.test(combined),
+    isFairPricing: /fair|price|pricing|rate|rates|zero\s*hidden|ధర/i.test(combined),
     rawTag: tags[0] || "",
   };
 }
@@ -800,6 +871,71 @@ function generateShortDirect(
         `Totally satisfied!`,
       ];
     }
+  } else if (ind === "TOURS_TRAVELS") {
+    if (intent.isSelfDrive) {
+      openers = [
+        `Booked self-drive rental from ${bName} and had a fantastic experience.`,
+        `Smooth self-drive car rental at ₹1,499/day with FASTag included.`,
+        `Sanitized car, easy documentation, and quick vehicle handover at ${bName}.`,
+        `Rented an Etios self-drive car for our weekend road trip.`,
+      ];
+      closers = [
+        `Zero hidden charges at return and deposit was settled promptly.`,
+        `Best self-drive car service in Kadapa!`,
+        `Vehicle was in showroom condition with chilled AC.`,
+        `100% recommended for hassle-free self-drive!`,
+      ];
+    } else if (intent.isTirupati) {
+      openers = [
+        `Booked ${bName} for our family Tirupati darshan round trip.`,
+        `Punctual early morning pickup for our Tirupati temple trip.`,
+        `Clean AC Innova Crysta and very disciplined chauffeur for Tirupati darshan.`,
+        `Hassle-free sacred pilgrimage tour to Tirupati with ${bName}.`,
+      ];
+      closers = [
+        `Round trip was just ₹2,099 as quoted with zero hidden costs.`,
+        `Safe driving on ghat roads and peaceful family darshan.`,
+        `Driver was polite, knew temple timings, and waited patiently.`,
+        `Will always book them for pilgrimage trips!`,
+      ];
+    } else if (intent.isAirport) {
+      openers = [
+        `Fixed-fare Bangalore airport drop with ${bName}.`,
+        `Punctual 2 AM pickup for our morning flight to Bangalore airport.`,
+        `Hassle-free outstation airport transfer from Kadapa.`,
+        `Reliable airport drop service with ${bName}.`,
+      ];
+      closers = [
+        `Reached BLR airport well ahead of schedule with smooth highway driving.`,
+        `Fixed fare of ₹5,499 with zero surge pricing or night drama.`,
+        `Spacious luggage boot, chilled AC, and very safe highway chauffeur.`,
+        `Dependable airport drop anytime!`,
+      ];
+    } else if (intent.isGandikota) {
+      openers = [
+        `Had a memorable day tour to Gandikota canyon and Belum Caves with ${bName}.`,
+        `Superb sightseeing package to Gandikota from Kadapa.`,
+        `Full-day Gandikota tour at ₹2,799 with clean AC car and polite driver.`,
+      ];
+      closers = [
+        `Driver acted as a helpful guide and showed all viewpoints patiently.`,
+        `Returned safely to Kadapa by evening without feeling rushed.`,
+        `Best day trip package around Kadapa!`,
+      ];
+    } else {
+      openers = [
+        `Punctual pickup, spotless AC cab, and courteous driver from ${bName}.`,
+        `Dependable cab service in Kadapa with upfront transparent pricing.`,
+        `Very smooth outstation journey with ${bName}.`,
+        `Booked through WhatsApp and received instant confirmation from Pavan & Jyothi.`,
+      ];
+      closers = [
+        `Driver was polite, drove safely, and AC was chilling throughout.`,
+        `Zero hidden costs, exactly what was quoted on WhatsApp.`,
+        `Will definitely book again for our next journey!`,
+        `Top travel service in Kadapa and Rayalaseema!`,
+      ];
+    }
   } else {
     openers = [
       `Neat work on the ${item}.`,
@@ -898,6 +1034,26 @@ function generateProductQuality(
         `A solid place for gold transactions.`,
       ];
     }
+  } else if (ind === "TOURS_TRAVELS") {
+    openers = [
+      `The vehicle condition and interior hygiene at ${bName} were ${adj}.`,
+      `Took their cab service for ${item} and the entire ride was ${adj}.`,
+      `Noticeable punctuality and driving comfort with ${bName}.`,
+      `Chose ${bName} specifically for their clean AC fleet.`,
+    ];
+    middles = [
+      `The car was thoroughly cleaned, AC was cooling strong, and seats were very comfortable.`,
+      `The chauffeur maintained steady speeds, avoided abrupt braking, and followed all road safety rules.`,
+      `Upfront pricing with FASTag and fuel was clearly outlined without any last-minute surprises.`,
+      `Booking on WhatsApp with Pavan was smooth and vehicle was at our doorstep on time.`,
+    ];
+    closers = [
+      `Reliable travel service and safe driving.`,
+      `Very happy with the overall travel experience.`,
+      `Comfort and punctuality speak for themselves.`,
+      `Great value for the fare charged.`,
+      `A dependable travel partner in Kadapa.`,
+    ];
   } else {
     openers = [
       `The ${quality} on the ${item} is ${adj}.`,
@@ -1122,6 +1278,62 @@ function generateProblemSolution(
       ]);
       break;
 
+    case "TOURS_TRAVELS":
+      if (intent.isSelfDrive) {
+        problem = pickRandom([
+          `Needed a clean, reliable self-drive car in Kadapa for an urgent family trip without hefty deposit hassles.`,
+          `Was looking for an affordable self-drive car with FASTag and clear fuel policy for a weekend road trip.`,
+        ]);
+        solution = pickRandom([
+          `Pavan and Jyothi at ${bName} arranged a sanitized Toyota Etios within 30 minutes with clear documentation.`,
+          `They provided a well-maintained car at ₹1,499/day, checked vehicle condition together, and handed over keys swiftly.`,
+        ]);
+        result = pickRandom([
+          `The road trip was seamless, car had great mileage, and deposit was settled right away on return.`,
+          `Zero hidden fees and hassle-free return. Best self-drive rental experience in Kadapa!`,
+        ]);
+      } else if (intent.isAirport) {
+        problem = pickRandom([
+          `Had an early morning flight from Bangalore airport and was anxious about getting a dependable cab from Kadapa at 2 AM.`,
+          `Needed guaranteed on-time transport to BLR airport without last-minute driver cancellations.`,
+        ]);
+        solution = pickRandom([
+          `${bName} dispatched an Innova Crysta 15 minutes ahead of schedule and the driver was well-rested and alert.`,
+          `They offered a fixed fare of ₹5,499 with zero surge pricing and handled the highway journey with extreme care.`,
+        ]);
+        result = pickRandom([
+          `Reached Bangalore airport comfortably 2 hours before boarding without any tension.`,
+          `Smooth highway ride, polite chauffeur, and transparent billing. Highly recommended!`,
+        ]);
+      } else if (intent.isTirupati) {
+        problem = pickRandom([
+          `Planning a family Tirupati darshan with elderly parents and needed a comfortable AC vehicle with a calm, experienced driver.`,
+          `Wanted a reliable round-trip package to Tirupati from Kadapa with transparent rates and zero toll confusion.`,
+        ]);
+        solution = pickRandom([
+          `${bName} arranged a clean AC Innova at ₹2,099 with an experienced driver who knew all ghat road regulations.`,
+          `The chauffeur was respectful, assisted elderly family members with boarding, and waited patiently during darshan.`,
+        ]);
+        result = pickRandom([
+          `Our family had a peaceful, blessed darshan and return journey was completely smooth.`,
+          `Affordable fare, punctual service, and genuine hospitality from start to finish.`,
+        ]);
+      } else {
+        problem = pickRandom([
+          `Needed an urgent outstation cab from Kadapa on short notice with safe highway driving.`,
+          `Was looking for a dependable travel service in Kadapa that charges fair rates without hidden add-ons.`,
+        ]);
+        solution = pickRandom([
+          `${bName} confirmed our booking immediately on WhatsApp and the AC cab was ready at our doorstep on time.`,
+          `Driver drove with great discipline, maintained proper speed limits, and kept the vehicle clean and cool.`,
+        ]);
+        result = pickRandom([
+          `Reached our destination safely and on schedule. Truly impressed with their professionalism.`,
+          `Billing was transparent and exact to the quote. Will definitely book all future trips with ${bName}!`,
+        ]);
+      }
+      break;
+
     default:
       solution = pickRandom([
         `The team at ${bName} patiently understood the requirement and suggested the right options.`,
@@ -1267,6 +1479,58 @@ function generateOccasionContext(
         `Made the transaction so much smoother!`,
         `Will surely recommend to friends.`,
         `Much appreciated!`,
+      ];
+    }
+  } else if (ind === "TOURS_TRAVELS") {
+    if (intent.isTirupati) {
+      openers = [
+        `Booked a cab with ${bName} ${occasion} for our family Tirupati darshan.`,
+        `Needed a reliable AC cab ${occasion} for our pilgrimage to Tirupati.`,
+        `Reserved an Innova Crysta ${occasion} for our family temple trip.`,
+      ];
+      middles = [
+        `The driver reached our home 15 minutes before time, was very respectful, and drove safely on ghat roads.`,
+        `The package rate was clear with zero hidden tolls or extra driver allowance demands.`,
+        `The clean vehicle and smooth driving made the pilgrimage peaceful and comfortable.`,
+      ];
+      closers = [
+        `Truly grateful for the safe journey and prompt service!`,
+        `Made our family pilgrimage completely stress-free!`,
+        `Will surely book with them again for our next temple trip.`,
+        `Much appreciated!`,
+      ];
+    } else if (intent.isSelfDrive) {
+      openers = [
+        `Rented a self-drive car from ${bName} ${occasion}.`,
+        `Needed a reliable self-drive car ${occasion} for a weekend trip.`,
+        `Availed their self-drive rental ${occasion} at ₹1,499/day.`,
+      ];
+      middles = [
+        `The vehicle handover was swift, FASTag was pre-loaded, and the car drove like a dream.`,
+        `Inspection was transparent and security deposit was refunded promptly upon return.`,
+        `Zero hidden costs and transparent fuel policy throughout.`,
+      ];
+      closers = [
+        `Best self-drive car experience in Kadapa!`,
+        `Smooth rental and dependable service!`,
+        `Will definitely rent from them again.`,
+      ];
+    } else {
+      openers = [
+        `Booked an outstation cab with ${bName} ${occasion}.`,
+        `Approached ${bName} ${occasion} for our highway travel.`,
+        `Needed dependable cab service ${occasion} from Kadapa.`,
+      ];
+      middles = [
+        `Driver was punctual, the AC car was spotless, and highway driving was very safe.`,
+        `Coordination over WhatsApp was seamless and pricing was 100% transparent.`,
+        `Reached our destination right on time without any hassle.`,
+      ];
+      closers = [
+        `Truly grateful for the safe and comfortable travel!`,
+        `Made the whole journey so much smoother!`,
+        `Will surely rely on them for all future travel needs.`,
+        `Highly recommended travel partner!`,
       ];
     }
   } else {
@@ -1438,6 +1702,19 @@ function generateDetailedReview(
       ]);
       break;
 
+    case "TOURS_TRAVELS":
+      opener = pickRandom([
+        `Booked ${bName} for our outstation journey from Kadapa.`,
+        `Coordinated with ${bName} for our family travel requirements.`,
+        `Used ${bName} after a friend recommended their reliable cab service.`,
+      ]);
+      middle = pickRandom([
+        `First, the driver arrived 10 minutes early in a sanitized AC vehicle. Second, highway driving was remarkably safe and calm.`,
+        `The upfront transparent pricing on WhatsApp and zero hidden charges on tolls exceeded expectations.`,
+        `The vehicle condition, chilled air conditioning, and polite driver etiquette made the entire trip relaxing.`,
+      ]);
+      break;
+
     default:
       opener = pickRandom([
         `Coordinated with ${bName} for our ${item1}.`,
@@ -1472,6 +1749,38 @@ function generateCasualLocal(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
+  if (ind === "TOURS_TRAVELS") {
+    const travelHighlight = intent.isSelfDrive
+      ? "self-drive car rentals"
+      : intent.isTirupati
+      ? "Tirupati darshan packages"
+      : intent.isAirport
+      ? "airport drops"
+      : intent.isGandikota
+      ? "Gandikota day tours"
+      : "clean outstation cabs";
+    const openers = [
+      `One of the best cab and rental services in Kadapa for ${travelHighlight}.`,
+      `If you need reliable outstation cabs or self-drive cars, ${bName} is the go-to place in Kadapa.`,
+      `Locals in Kadapa recommended ${bName} for travel bookings and they were 100% right.`,
+      `Easily among the most punctual and trustworthy travel services in Rayalaseema.`,
+    ];
+    const middles = [
+      `Chauffeurs are disciplined, vehicles are spotless, and fares are completely transparent.`,
+      `Pavan and Jyothi coordinate everything smoothly on WhatsApp without any hidden charges.`,
+      `Smooth highway driving, chilled AC, and zero last-minute cancellations.`,
+    ];
+    const closers = [
+      `Check them out for your next trip!`,
+      `Good to have a reliable cab partner in Kadapa.`,
+      `Deserves 5 stars for honest and safe service.`,
+      `Will refer friends and family for sure.`,
+    ];
+    const notePart = note ? ` Handled ${note.toLowerCase()} smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `One of the better places in the area for ${item}.`,
@@ -1529,6 +1838,14 @@ function generateMinimalist(
         `Spot bank payment. Transparent valuation. Highly recommend.`,
       ];
     }
+  } else if (ind === "TOURS_TRAVELS") {
+    fragments = [
+      `Spotless AC car. Punctual pickup. Dependable chauffeur from ${bName}.`,
+      `Fixed upfront fare. No hidden costs. 10/10 travel experience with ${bName}.`,
+      `Punctual early morning drop. Safe highway driving. Highly recommended!`,
+      `Smooth self-drive booking. FASTag enabled. Clean vehicle and hassle-free return.`,
+      `Comfortable Innova Crysta. Calm ghat road driving. Blessed family Tirupati trip.`,
+    ];
   } else {
     fragments = [
       `Super neat ${item}. Fair price, on-time service.`,
@@ -1551,6 +1868,36 @@ function generateEnthusiastic(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  const intent = detectTagIntent(tags, ind);
+  if (ind === "TOURS_TRAVELS") {
+    const travelHighlight = intent.isSelfDrive
+      ? "self-drive car rental"
+      : intent.isTirupati
+      ? "family Tirupati pilgrimage"
+      : intent.isAirport
+      ? "Bangalore airport drop"
+      : intent.isGandikota
+      ? "Gandikota day trip"
+      : "outstation journey";
+    const openers = [
+      `Absolutely loved our journey with ${bName} for our ${travelHighlight}!`,
+      `So glad we booked our ${travelHighlight} with ${bName}!`,
+      `Such a delightful and peaceful travel experience with ${bName}.`,
+    ];
+    const middles = [
+      `The vehicle condition was pristine, AC was chilling, and the driver reached right on time.`,
+      `Pavan and Jyothi confirmed the booking on WhatsApp instantly and pricing was 100% upfront.`,
+      `The driver drove very safely on the highway and was extremely respectful throughout.`,
+    ];
+    const closers = [
+      `Big thumbs up to the entire team!`,
+      `Will definitely book all our future family trips with them.`,
+      `Thank you for making our travel so smooth and stress-free!`,
+    ];
+    const notePart = note ? ` ${note} was managed smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `Absolutely loved what ${bName} did with our ${item}!`,
@@ -1579,6 +1926,26 @@ function generateFirstTime(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  if (ind === "TOURS_TRAVELS") {
+    const openers = [
+      `First time booking a cab with ${bName} in Kadapa.`,
+      `Used ${bName} for the first time for our outstation journey.`,
+      `Was my first experience with their travel and rental service.`,
+    ];
+    const middles = [
+      `Pavan and Jyothi on WhatsApp made booking effortless and answered all route queries patiently.`,
+      `The cab was waiting at my doorstep 10 minutes before pickup time, sparkling clean.`,
+      `The transparent quote with zero hidden extras gave immediate confidence in their service.`,
+    ];
+    const closers = [
+      `Definitely won't be my last booking with them.`,
+      `Very pleased with the driving and comfort on my first try.`,
+      `Found our permanent go-to travel service in Kadapa!`,
+    ];
+    const notePart = note ? ` Also managed ${note.toLowerCase()} effortlessly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `First time trying ${bName} for ${item}.`,
@@ -1607,6 +1974,26 @@ function generateRepeatCustomer(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  if (ind === "TOURS_TRAVELS") {
+    const openers = [
+      `Have used ${bName} for multiple outstation and pilgrimage trips now.`,
+      `Another punctual and comfortable journey with ${bName}.`,
+      `This is our third time booking cabs with them from Kadapa.`,
+    ];
+    const middles = [
+      `Their punctuality, vehicle cleanliness, and polite driver behavior never decline.`,
+      `Always prompt on WhatsApp bookings and drivers always arrive early with working AC.`,
+      `Consistent upfront billing every single time with zero surprise charges.`,
+    ];
+    const closers = [
+      `Always a pleasure traveling with this team.`,
+      `Consistency and passenger safety are why we keep coming back.`,
+      `The most dependable travels in Rayalaseema!`,
+    ];
+    const notePart = note ? ` Handled ${note.toLowerCase()} with their usual care.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `Have been coming to ${bName} multiple times now.`,
@@ -1692,6 +2079,22 @@ function generateRelief(
         `Honest and transparent service.`,
       ];
     }
+  } else if (ind === "TOURS_TRAVELS") {
+    openers = [
+      `Was initially worried about getting a punctual cab from Kadapa for an early morning departure.`,
+      `Had doubts whether the self-drive rental would have hidden fuel or deposit deductions.`,
+      `Was anxious about highway driver discipline for our family pilgrimage trip.`,
+    ];
+    middles = [
+      `Thankfully, the team at ${bName} arrived 15 minutes early in a spotless vehicle.`,
+      `The driver maintained safe highway speeds, avoided aggressive overtaking, and handled ghat roads smoothly.`,
+      `The billing was 100% transparent and matched the exact WhatsApp quote.`,
+    ];
+    closers = [
+      `Completely relieved and very satisfied with the journey!`,
+      `Exceeded expectations in terms of comfort and passenger safety.`,
+      `True peace of mind throughout the entire road trip!`,
+    ];
   } else {
     openers = [
       `Was initially wondering about the turnaround on the ${item}.`,
@@ -1755,6 +2158,9 @@ function generateFamilyContext(
   } else if (ind === "AUTO_GARAGE") {
     opener = `Brought our family vehicle here for ${item} before a long trip.`;
     middle = `The ride is remarkably smooth and the vehicle is safe for travel.`;
+  } else if (ind === "TOURS_TRAVELS") {
+    opener = `Booked an outstation cab with ${bName} for our family trip ${occasion}.`;
+    middle = `The vehicle was spotless with powerful AC, and the chauffeur drove very calmly and safely with elderly family members on board.`;
   }
 
   const closer = pickRandom([
@@ -1776,6 +2182,26 @@ function generateStaffService(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  if (ind === "TOURS_TRAVELS") {
+    const openers = [
+      `Really appreciated the respectful behavior of the chauffeur and desk staff at ${bName}.`,
+      `The team running ${bName} (Pavan & Jyothi) are genuinely polite and helpful.`,
+      `Customer service and travel assistance here are top notch.`,
+    ];
+    const middles = [
+      `They answered our route queries patiently on WhatsApp and confirmed the cab right away.`,
+      `The driver was well-mannered, drove with great caution, and helped with our family luggage.`,
+      `Zero attitude, zero fare haggling, just courteous and professional hospitality throughout.`,
+    ];
+    const closers = [
+      `Good people doing honest travel business.`,
+      `Rare to find such courteous cab drivers and managers nowadays.`,
+      `Great service culture and dependable travels!`,
+    ];
+    const notePart = note ? ` They took care of ${note.toLowerCase()} smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `Really appreciated the respectful behavior of the staff at ${bName}.`,
@@ -1804,6 +2230,26 @@ function generateValuePricing(
   lex: DomainLexicon,
   ind: IndustryType
 ): string {
+  if (ind === "TOURS_TRAVELS") {
+    const openers = [
+      `Fair pricing and honest billing at ${bName}.`,
+      `Got great value for our outstation cab package with ${bName}.`,
+      `Compared cab fares across Kadapa and ${bName} offered the most transparent quote.`,
+    ];
+    const middles = [
+      `The vehicle condition is showroom clean and AC is powerful without any overcharging.`,
+      `They clearly explained the fare breakup upfront with zero hidden driver allowance or toll surprises.`,
+      `The trip was completed comfortably and the pricing was completely justified.`,
+    ];
+    const closers = [
+      `Real value for money in cab services.`,
+      `Honest dealings with zero hidden fees. Highly satisfied.`,
+      `Would definitely recommend ${bName} to anyone traveling from Kadapa.`,
+    ];
+    const notePart = note ? ` Addressed ${note.toLowerCase()} without extra fuss.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `Fair pricing and honest business at ${bName}.`,
@@ -2096,6 +2542,49 @@ function generateTeluguConversational(
         `నమ్మకమైన వెహికల్ సర్వీసింగ్ గ్యారేజ్, థాంక్యూ!`,
         `డ్రైవింగ్ చాలా స్మూత్ గా ఉంది, వర్త్ ఇట్!`,
       ]);
+      break;
+
+    case "TOURS_TRAVELS":
+      if (intent.isSelfDrive) {
+        opener = pickRandom([
+          `వీకెండ్ ట్రిప్ కోసం ${bName} నుండి సెల్ఫ్ డ్రైవ్ కార్ తీసుకున్నాము.`,
+          `${bName} లో ₹1,499/day కే ఫాస్ట్‌ట్యాగ్‌తో సెల్ఫ్ డ్రైవ్ కారు ఇచ్చారు.`,
+        ]);
+        middle = pickRandom([
+          `కారు కండిషన్ చాలా బాగుంది, ఏసీ సూపర్ కూలింగ్ ఇచ్చింది, హ్యాండోవర్ చాలా ఫాస్ట్ గా జరిగింది.`,
+          `రిటర్న్ చేసేటప్పుడు ఎటువంటి హిడెన్ ఛార్జెస్ వేయకుండా డిపాజిట్ వెంటనే ఇచ్చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో సెల్ఫ్ డ్రైవ్ కార్లకి బెస్ట్ సర్వీస్!`,
+          `థాంక్యూ ${bName}, కచ్చితంగా మళ్ళీ బుక్ చేస్తాము!`,
+        ]);
+      } else if (intent.isTirupati) {
+        opener = pickRandom([
+          `ఫ్యామిలీ తిరుపతి దర్శనం కోసం ${bName} క్యాబ్ బుక్ చేశాము.`,
+          `తిరుపతి టెంపుల్ ట్రిప్ కోసం ఇన్నోవా క్రిస్టా బుక్ చేశాము.`,
+        ]);
+        middle = pickRandom([
+          `డ్రైవర్ తెల్లవారుజామున సమయానికి వచ్చారు, ఘాట్ రోడ్ లో చాలా సేఫ్ గా డ్రైవ్ చేశారు.`,
+          `రౌండ్ ట్రిప్ జస్ట్ ₹2,099 కే ఎలాంటి హిడెన్ కాస్ట్స్ లేకుండా సర్వీస్ ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `ఫ్యామిలీ అందరికీ జర్నీ చాలా కంఫర్టబుల్ గా ఉంది. థాంక్యూ ${bName}!`,
+          `కడపలో బెస్ట్ ట్రావెల్స్ సర్వీస్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `అర్జెంటు అవుట్‌స్టేషన్ ప్రయాణం కోసం ${bName} ని సంప్రదించాము.`,
+          `${bName} లో క్యాబ్ సర్వీస్ చాలా నీట్‌గా మరియు సేఫ్‌గా ఉంది.`,
+        ]);
+        middle = pickRandom([
+          `డ్రైవర్ చాలా మర్యాదగా మాట్లాడారు, హైవే లో జాగ్రత్తగా డ్రైవ్ చేశారు.`,
+          `వాట్సాప్ లో కోట్ చేసిన రేటు మాత్రమే తీసుకున్నారు, ఎటువంటి ఎక్స్‌ట్రా అడగలేదు.`,
+        ]);
+        closer = pickRandom([
+          `చాలా నమ్మకమైన ట్రావెల్స్ సర్వీస్. థాంక్యూ పవన్ గారు & జ్యోతి గారు!`,
+          `కడపలో బెస్ట్ క్యాబ్స్. హ్యాపీ కస్టమర్!`,
+        ]);
+      }
       break;
 
     default:
@@ -2404,6 +2893,50 @@ function generateTeluguCraftsmanship(
       ]);
       break;
 
+    case "TOURS_TRAVELS": {
+      if (intent.isSelfDrive) {
+        opener = pickRandom([
+          `${bName} లో తీసుకున్న సెల్ఫ్ డ్రైవ్ కారు కండిషన్ చాలా ఎక్సలెంట్ గా ఉంది.`,
+          `సెల్ఫ్ డ్రైవ్ కార్ల నిర్వహణ మరియు క్లీన్‌నెస్ విషయంలో ${bName} నంబర్ వన్.`,
+        ]);
+        middle = pickRandom([
+          `టైర్లు, బ్రేక్స్ మరియు ఏసీ పర్ఫెక్ట్ వర్కింగ్ లో ఉన్నాయి, జర్నీ చాలా స్మూత్ గా సాగింది.`,
+          `ఇంటీరియర్ చాలా ఫ్రెష్ గా ఉంది, ఎలాంటి మెకానికల్ ఇష్యూస్ లేకుండా డ్రైవింగ్ చాలా ఎంజాయ్ చేశాము.`,
+        ]);
+        closer = pickRandom([
+          `మెయింటెనెన్స్ సూపర్బ్, వర్త్ ఎవ్రీ రూపీ!`,
+          `కడపలో బెస్ట్ సెల్ఫ్ డ్రైవ్ సర్వీస్, థాంక్యూ ${bName}!`,
+        ]);
+      } else if (intent.isCleanCab) {
+        opener = pickRandom([
+          `క్యాబ్ చాలా నీట్‌గా శానిటైజ్ చేసి టైమ్‌కి పంపించారు.`,
+          `${bName} లో వెహికల్ మెయింటెనెన్స్ మరియు హైజీన్ చాలా బాగున్నాయి.`,
+        ]);
+        middle = pickRandom([
+          `సీట్లు చాలా కంఫర్టబుల్ గా ఉన్నాయి, ఏసీ కూలింగ్ సూపర్ గా పనిచేసింది.`,
+          `కారులో మంచి సువాసన మరియు క్లీన్ ఇంటీరియర్ ఉండటం వల్ల లాంగ్ జర్నీ చాలా హ్యాపీగా గడిచింది.`,
+        ]);
+        closer = pickRandom([
+          `టాప్ క్లాస్ క్యాబ్ మెయింటెనెన్స్, థాంక్యూ ${bName}!`,
+          `ఫ్యామిలీ తో ప్రయాణానికి బెస్ట్ ఛాయిస్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${bName} లో ట్రావెల్స్ సర్వీస్ మరియు వెహికల్ కండిషన్ టాప్ నాచ్.`,
+          `కడప నుండి అవుట్‌స్టేషన్ ట్రిప్ కోసం క్యాబ్ బుక్ చేశాము, సర్వీస్ చాలా ప్రొఫెషనల్.`,
+        ]);
+        middle = pickRandom([
+          `వెహికల్ పికప్ మరియు స్మూత్ డ్రైవింగ్ తో సేఫ్ గా గమ్యం చేర్చారు.`,
+          `డ్రైవర్ రూట్స్ లో చాలా అనుభవం ఉన్నవారు, ఘాట్ రోడ్ లో కూడా చాలా జాగ్రత్తగా నడిపారు.`,
+        ]);
+        closer = pickRandom([
+          `క్వాలిటీ సర్వీస్, వర్త్ ఎవ్రీ రూపీ!`,
+          `నమ్మకమైన ట్రావెల్స్ సర్వీస్, థాంక్యూ ${bName}!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `${item} వర్క్ చాలా neat గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
@@ -2501,6 +3034,27 @@ function generateTeluguPunchy(
         `${item} చాలా నీట్‌గా చేశారు. స్టాఫ్ రెస్పాన్స్ బాగుంది, థాంక్యూ ${bName}!`,
         `చక్కటి సర్వీస్. అవుట్‌పుట్ చాలా బాగా వచ్చింది. వర్త్ ఇట్!`,
         `క్లీన్ వర్క్ మరియు ఫాస్ట్ డెలివరీ. ఫ్యామిలీ అందరికీ బాగా నచ్చింది.`,
+      ]);
+    }
+  } else if (ind === "TOURS_TRAVELS") {
+    if (intent.isSelfDrive) {
+      chosen = pickRandom([
+        `సెల్ఫ్ డ్రైవ్ కారు కండిషన్ సూపర్. రీజనబుల్ ప్రైస్ మరియు ఈజీ ప్రాసెస్!`,
+        `ఫాస్ట్‌ట్యాగ్ తో కార్ టైమ్‌కి ఇచ్చారు. ఏసీ సూపర్ కూలింగ్, నో హిడెన్ ఛార్జెస్!`,
+        `కడపలో సెల్ఫ్ డ్రైవ్ కార్లకి బెస్ట్ ఛాయిస్. డిపాజిట్ కూడా వెంటనే రిఫండ్ చేశారు.`,
+      ]);
+    } else if (intent.isTirupati) {
+      chosen = pickRandom([
+        `తిరుపతి ట్రిప్ చాలా సేఫ్ గా సాగింది. డ్రైవర్ సకాలంలో వచ్చారు!`,
+        `ఫ్యామిలీ తిరుపతి దర్శనం చాలా హ్యాపీగా జరిగింది. ఇన్నోవా క్రిస్టా సూపర్ కంఫర్ట్!`,
+        `ఘాట్ రోడ్ లో సేఫ్ డ్రైవింగ్, రీజనబుల్ ఫేర్. థాంక్యూ ${bName}!`,
+      ]);
+    } else {
+      chosen = pickRandom([
+        `మంచి కండిషన్ ఉన్న క్యాబ్ మరియు టైమ్‌కి సర్వీస్ ఇచ్చారు. ప్రైస్ చాలా రీజనబుల్.`,
+        `డ్రైవర్ రెస్పాన్స్ బాగుంది, డ్రైవింగ్ చాలా సేఫ్. థాంక్యూ ${bName}!`,
+        `కడపలో బెస్ట్ ట్రావెల్స్ సర్వీస్. జర్నీ చాలా కంఫర్టబుల్ గా జరిగింది.`,
+        `ఎయిర్‌పోర్ట్ డ్రాప్ సమయానికి చేశారు, నో టెన్షన్. వర్త్ ఇట్!`,
       ]);
     }
   } else {
@@ -2817,6 +3371,57 @@ function generateTeluguRoman(
       ]);
       break;
 
+    case "TOURS_TRAVELS": {
+      if (intent.isSelfDrive) {
+        opener = pickRandom([
+          `Weekend trip kosam ${bName} daggara self drive car rent ki teesukunnamu.`,
+          `${bName} lo self drive car rental experience chala smooth ga undi.`,
+          `Kadapa lo reasonable price ki self drive car kavali ante ${bName} best option.`,
+        ]);
+        middle = pickRandom([
+          `Car condition super neat ga undi, AC chilling and pickup smooth.`,
+          `FastTag and documentation quick ga complete chesi timely handover icharu.`,
+          `Return time lo zero hassle, security deposit ventane refund chesaru.`,
+        ]);
+        closer = pickRandom([
+          `Best self drive cars in Kadapa, highly recommended!`,
+          `Thanks to ${bName} team, will book again for sure!`,
+          `10/10 car rental service!`,
+        ]);
+      } else if (intent.isTirupati) {
+        opener = pickRandom([
+          `Family tho Tirupati darshan trip kosam ${bName} cab book chesamu.`,
+          `Tirupati temple trip ki Innova Crysta book chesamu, great journey.`,
+        ]);
+        middle = pickRandom([
+          `Driver early morning time ki reach ayyaru, ghat road lo chala safe driving chesaru.`,
+          `Clean AC cab and polite driver behavior, family members andaru comfortable ga unnaru.`,
+          `Round trip fare chala reasonable, no hidden extra charges.`,
+        ]);
+        closer = pickRandom([
+          `Tirupati trip chala peaceful ga jarigindi, thanks to ${bName}!`,
+          `Best outstation cabs in Kadapa, will book again!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `Outstation travel kosam ${bName} cabs book chesamu.`,
+          `Airport drop kosam ${bName} ni approach ayyamu, on-time service.`,
+          `${bName} travels service aithe chala professional and dependable ga undi.`,
+        ]);
+        middle = pickRandom([
+          `Cab condition chala clean ga undi, driver chala respectful ga unnaru.`,
+          `Safe highway driving and transparent pricing, extra charges emi adagaledu.`,
+          `On-time pickup and drop made the whole journey full comfortable.`,
+        ]);
+        closer = pickRandom([
+          `Best travels in Kadapa! Thanks to ${bName} team.`,
+          `Worth every rupee, definitely recommend for outstation travel!`,
+          `Super service and safe driving!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `Chala baga chesaru, ${item} work aithe super neat ga vachindi.`,
@@ -3095,6 +3700,64 @@ function generateTeluguOccasion(
       ]);
       break;
 
+    case "TOURS_TRAVELS": {
+      if (intent.isTirupati) {
+        opener = pickRandom([
+          `మా ఫ్యామిలీ తిరుపతి దర్శనం ట్రిప్ కోసం ${bName} లో క్యాబ్ బుక్ చేసుకున్నాము.`,
+          `తిరుమల శ్రీవారి దర్శనం కోసం కడప నుండి క్యాబ్ బుకింగ్ ${bName} లో చేశాము.`,
+        ]);
+        middle = pickRandom([
+          `డ్రైవర్ తెల్లవారుజామునే సమయానికి వచ్చి ఘాట్ రోడ్ లో చాలా సేఫ్ గా డ్రైవ్ చేశారు.`,
+          `ఇన్నోవా క్రిస్టా చాలా నీట్‌గా శానిటైజ్ చేసి తెచ్చారు, పెద్దవాళ్లతో ప్రయాణం చాలా సుఖంగా సాగింది.`,
+          `దర్శనం పూర్తయ్యే వరకు ఓపికగా వెయిట్ చేసి సాయంత్రం సేఫ్ గా ఇంటికి చేర్చారు.`,
+        ]);
+        closer = pickRandom([
+          `తిరుపతి యాత్ర చాలా ప్రశాంతంగా జరిగింది, థాంక్యూ ${bName}!`,
+          `ఫ్యామిలీ ట్రిప్స్ కి కడపలో నంబర్ వన్ ట్రావెల్స్!`,
+        ]);
+      } else if (intent.isGandikota) {
+        opener = pickRandom([
+          `ఫ్రెండ్స్‌తో కలిసి గండికోట మరియు బెలుం గుహల టూర్ కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
+          `వీకెండ్ గండికోట గ్రాండ్ కాన్యన్ ట్రిప్ కోసం ఇక్కడి నుండి కారు తీసుకున్నాము.`,
+        ]);
+        middle = pickRandom([
+          `రూట్ ప్లానింగ్ మరియు సైట్‌సీయింగ్ స్పాట్స్ చాలా బాగా గైడ్ చేశారు.`,
+          `జర్నీ అంతా ఏసీ కూలింగ్ మరియు మ్యూజిక్ సిస్టమ్ తో చాలా ఎంజాయ్ చేశాము.`,
+        ]);
+        closer = pickRandom([
+          `ట్రిప్ సూపర్ మెమరబుల్ గా మారింది, థాంక్యూ ${bName}!`,
+          `కడపలో టూర్ ప్యాకేజీలకి బెస్ట్ ఛాయిస్!`,
+        ]);
+      } else if (intent.isAirport) {
+        opener = pickRandom([
+          `బెంగళూరు ఎయిర్‌పోర్ట్ డ్రాప్ కోసం ${bName} లో అర్జెంట్ గా క్యాబ్ బుక్ చేసుకున్నాము.`,
+          `ఫ్లైట్ టైమింగ్స్ కి తగ్గట్టు ఎయిర్‌పోర్ట్ పికప్ సర్వీస్ ఇక్కడ తీసుకున్నాము.`,
+        ]);
+        middle = pickRandom([
+          `రాత్రి సమయమైనా డ్రైవర్ చాలా అలర్ట్ గా మరియు జాగ్రత్తగా డ్రైవ్ చేసి సమయానికి చేర్చారు.`,
+          `టోల్ గేట్లు మరియు రూట్ లో ఎక్కడా టైమ్ వేస్ట్ కాకుండా చూసుకున్నారు.`,
+        ]);
+        closer = pickRandom([
+          `ఆన్-టైమ్ ఎయిర్‌పోర్ట్ డ్రాప్, ఫుల్లీ రిలాక్స్డ్! థాంక్యూ ${bName}!`,
+          `అత్యవసర ప్రయాణాలకి నమ్మకమైన సర్వీస్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `మా ఫ్యామిలీ ఫంక్షన్ మరియు అవుట్‌స్టేషన్ ట్రిప్ కోసం ${bName} ని బుక్ చేసుకున్నాము.`,
+          `సెలవుల్లో టూర్ వెళ్ళడానికి ${bName} ట్రావెల్స్ సర్వీస్ తీసుకున్నాము.`,
+        ]);
+        middle = pickRandom([
+          `వెహికల్ కండిషన్ చాలా బాగుంది, డ్రైవర్ చాలా మర్యాదగా మాట్లాడి సహకరించారు.`,
+          `ముందు చెప్పిన ఫేర్ ప్రకారమే తీసుకున్నారు, ఎలాంటి ఎక్స్‌ట్రా ఛార్జీలు వేయలేదు.`,
+        ]);
+        closer = pickRandom([
+          `ప్రయాణం చాలా సురక్షితంగా మరియు హాయిగా సాగింది, థాంక్యూ ${bName}!`,
+          `కడపలో బెస్ట్ ట్రావెల్స్ సర్వీస్!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `మా ఈవెంట్ రిక్వైర్మెంట్ కోసం ${bName} లో సర్వీస్ తీసుకున్నాము.`,
@@ -3168,6 +3831,13 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "హైజీనిక్ అంబియన్స్ & ఎక్సలెంట్ స్టైలింగ్",
           "ఫుల్లీ శాటిస్‌ఫైడ్ & నమ్మకమైన సెలూన్",
         ]);
+      case "TOURS_TRAVELS":
+        return pickRandom([
+          "సేఫ్ జర్నీ & సమయానికి సర్వీస్",
+          "కడపలో బెస్ట్ ట్రావెల్స్ & క్లీన్ క్యాబ్స్",
+          "తిరుపతి & గండికోట ట్రిప్స్ కి బెస్ట్",
+          "రీజనబుల్ ప్రైస్ & సూపర్ కండిషన్ కార్లు",
+        ]);
       default:
         return pickRandom([
           "చాలా మంచి అనుభవం & Super Quality",
@@ -3225,6 +3895,13 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "Top Ladies Salon in Kadapa",
           "Neat Styling & Hygienic Care",
           "Professional Ladies Beauty Care",
+        ]);
+      case "TOURS_TRAVELS":
+        return pickRandom([
+          "Safe Highway Journey & On-Time Service",
+          "Best Outstation Cabs in Kadapa",
+          "Top Self Drive Cars & Clean Cabs",
+          "Reasonable Pricing & Courteous Drivers",
         ]);
       default:
         return pickRandom([
@@ -3368,6 +4045,15 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
         "Trustworthy & Highly Professional",
         "Clear Guidance & Seamless Execution",
         "Honest Advisory & Prompt Documentation",
+      ]);
+
+    case "TOURS_TRAVELS":
+      return pickRandom([
+        "Punctual, Safe & Clean Cabs",
+        "Hassle-Free Self Drive Car Rental",
+        "Smooth Outstation Trip & Polite Driver",
+        "Best Tirupati Darshan & Airport Service",
+        "Transparent Fares & Well-Maintained Fleet",
       ]);
 
     default:
@@ -3526,6 +4212,37 @@ function generateProceduralFallback(
             `క్లీన్ టూల్స్ వాడారు మరియు హైజీన్ బాగా మెయింటైన్ చేశారు.`,
             `లేడీస్ కి అనుకూలమైన వాతావరణం మరియు మర్యాదపూర్వక స్టాఫ్.`,
             `మాకు కావాల్సిన స్టైల్ ని చాలా ఓపిగ్గా చేసి ఇచ్చారు.`,
+          ];
+        }
+        break;
+      }
+
+      case "TOURS_TRAVELS": {
+        if (intent.isSelfDrive) {
+          starters = [
+            `సెల్ఫ్ డ్రైవ్ కారు కండిషన్ చాలా బాగుంది.`,
+            `${bName} లో సెల్ఫ్ డ్రైవ్ కార్ల సర్వీస్ చాలా నమ్మకంగా ఉంది.`,
+            `కడపలో రీజనబుల్ ప్రైస్ కి మంచి సెల్ఫ్ డ్రైవ్ కారు ఇచ్చారు.`,
+            `హ్యాండోవర్ ప్రాసెస్ చాలా ఫాస్ట్‌గా మరియు ఈజీగా జరిగింది.`,
+          ];
+          middles = [
+            `ఏసీ కూలింగ్ మరియు టైర్ కండిషన్ పర్ఫెక్ట్‌గా ఉన్నాయి.`,
+            `ఎలాంటి హిడెన్ ఛార్జీలు లేకుండా డిపాజిట్ వెంటనే ఇచ్చేశారు.`,
+            `లాంగ్ జర్నీ లో ఎక్కడా ఎలాంటి ప్రాబ్లమ్ రాలేదు.`,
+            `ఫాస్ట్‌ట్యాగ్ తో కార్ ఇవ్వడం వల్ల టోల్ గేట్స్ దగ్గర టైమ్ సేవ్ అయ్యింది.`,
+          ];
+        } else {
+          starters = [
+            `క్యాబ్ సమయానికి వచ్చి సేఫ్ గా డ్రాప్ చేశారు.`,
+            `${bName} లో డ్రైవర్ చాలా మర్యాదగా మరియు జాగ్రత్తగా డ్రైవ్ చేశారు.`,
+            `అవుట్‌స్టేషన్ ప్రయాణానికి క్లీన్ ఏసీ క్యాబ్ పంపించారు.`,
+            `కడపలో నమ్మకమైన ట్రావెల్స్ మరియు క్యాబ్ సర్వీస్.`,
+          ];
+          middles = [
+            `హైవే లో చాలా సురక్షితంగా మరియు హాయిగా డ్రైవ్ చేశారు.`,
+            `చెప్పిన రేటు ప్రకారమే తీసుకున్నారు, ఎక్స్‌ట్రా ఏమీ అడగలేదు.`,
+            `కారు ఇంటీరియర్ చాలా పరిశుభ్రంగా ఉంది.`,
+            `ఫ్యామిలీ తో ప్రయాణం చాలా సంతోషంగా సాగింది.`,
           ];
         }
         break;
@@ -3702,6 +4419,37 @@ function generateProceduralFallback(
           `Maintained strict hygiene standards with clean, sanitized tools.`,
           `Welcoming atmosphere exclusively for women in Viswandhapuram, Kadapa.`,
           `Affordable pricing with genuine, courteous care.`,
+        ];
+      }
+      break;
+    }
+
+    case "TOURS_TRAVELS": {
+      if (intent.isSelfDrive) {
+        starters = [
+          `Seamless self drive car rental experience at ${bName}.`,
+          `Got a well-maintained car with full documentation.`,
+          `Very reasonable daily rate and quick vehicle handover.`,
+          `Top-notch self drive service in Kadapa.`,
+        ];
+        middles = [
+          `The car AC, engine pickup, and tires were in flawless condition.`,
+          `FastTag was active and documentation took barely 5 minutes.`,
+          `Security deposit was refunded promptly upon return without hassles.`,
+          `Clean interior and reliable performance throughout our outstation trip.`,
+        ];
+      } else {
+        starters = [
+          `Punctual, safe, and dependable cab service from ${bName}.`,
+          `Hired an outstation cab for our family trip with complete peace of mind.`,
+          `Courteous driver and spotless AC cab provided on time.`,
+          `Highly reliable travel agency in Kadapa.`,
+        ];
+        middles = [
+          `The chauffeur drove very safely on the highways and ghat roads.`,
+          `Pricing was totally transparent with zero unexpected demands.`,
+          `Vehicle interior was sanitized, fragrant, and extremely comfortable.`,
+          `On-time pickup and drop made our journey stress-free.`,
         ];
       }
       break;

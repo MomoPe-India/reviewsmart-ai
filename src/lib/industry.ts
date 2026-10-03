@@ -11,6 +11,7 @@ export type IndustryType =
   | "PHOTOGRAPHY_STUDIO"
   | "PRINTING_GRAPHICS"
   | "GOLD_BUYERS"
+  | "TOURS_TRAVELS"
   | "GENERAL";
 
 export interface IndustryConfig {
@@ -440,6 +441,43 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     },
   },
 
+  TOURS_TRAVELS: {
+    type: "TOURS_TRAVELS",
+    label: "Tours, Travels & Self-Drive Cabs",
+    tagline: "Premier Cab Service, Outstation Rides, Pilgrimage Packages & Self-Drive Car Rentals",
+    tags: [
+      "Tirupati Darshan",
+      "Self Drive",
+      "Airport Drops",
+      "Gandikota Tour",
+      "Clean AC Cabs",
+      "Fair Pricing",
+      "Punctual Driver",
+      "Outstation Trips",
+      "Friendly Chauffeur",
+      "Fast Booking",
+    ],
+    placeholder: "Mention route, car model (Innova Crysta, Etios), driver or booking experience (optional)...",
+    keywords: "mana tours kadapa cab service outstation cabs self drive car rental tirupati temple darshan package bangalore airport fixed drop gandikota canyon day tour clean ac vehicles innova crysta etios upfront transparent pricing punctual chauffeurs fastag enabled zero hidden charges",
+    reviewDrafts: {
+      direct: {
+        headline: "Punctual Pickup & Spotless AC Cab!",
+        text: (name, tags, note) =>
+          `Booked a cab with ${name} and had a completely hassle-free journey. The ${tags || "clean AC vehicle and punctual driver"} made traveling comfortable and safe.${note ? ` Handled our trip for ${note} smoothly.` : ""} Transparent upfront fare with zero hidden charges. Highly recommended cab service!`,
+      },
+      detailed: {
+        headline: "Reliable, Safe & 100% Transparent Travel Partner",
+        text: (name, tags, note) =>
+          `Used ${name} for our outstation journey. Chauffeur arrived 10 minutes before schedule, drove very safely on the highway, and the vehicle was thoroughly sanitized with powerful AC.${note ? ` Specifically impressed with their service for ${note}.` : ""} Billing was clear and exactly as quoted on WhatsApp. One of the best travels in Rayalaseema!`,
+      },
+      enthusiastic: {
+        headline: "Top Class Cab & Rental Service in Kadapa!",
+        text: (name, tags, note) =>
+          `Outstanding experience with ${name}! The cars are in showroom condition, drivers are polite and disciplined, and pricing is super fair.${note ? ` Loved how they arranged ${note}!` : ""} From booking to drop-off, everything was top-notch. Will always book with them!`,
+      },
+    },
+  },
+
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
@@ -665,6 +703,27 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.GOLD_BUYERS;
   }
 
+  if (
+    hasWord(normCat, "tours") ||
+    hasWord(normCat, "travel") ||
+    hasWord(normCat, "travels") ||
+    hasWord(normCat, "tourism") ||
+    hasWord(normCat, "cab") ||
+    hasWord(normCat, "cabs") ||
+    hasWord(normCat, "taxi") ||
+    hasWord(normCat, "car rental") ||
+    hasWord(normCat, "self drive") ||
+    hasWord(normCat, "self-drive") ||
+    hasWord(normCat, "tour operator") ||
+    hasWord(normCat, "travel agency") ||
+    hasWord(normCat, "transports") ||
+    hasWord(normCat, "transportation") ||
+    normCat.includes("tours and travels") ||
+    normCat.includes("tours & travels")
+  ) {
+    return INDUSTRY_CONFIGS.TOURS_TRAVELS;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 2: BUSINESS NAME MATCHING (If category was generic/unspecified)
   // ═══════════════════════════════════════════════════════════════════════
@@ -788,6 +847,23 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.GOLD_BUYERS;
   }
 
+  if (
+    hasWord(normName, "tours") ||
+    hasWord(normName, "travels") ||
+    hasWord(normName, "travel") ||
+    hasWord(normName, "cabs") ||
+    hasWord(normName, "cab") ||
+    hasWord(normName, "taxi") ||
+    hasWord(normName, "self drive") ||
+    hasWord(normName, "self-drive") ||
+    hasWord(normName, "transports") ||
+    normName.includes("mana tours") ||
+    normName.includes("tours & travels") ||
+    normName.includes("tours and travels")
+  ) {
+    return INDUSTRY_CONFIGS.TOURS_TRAVELS;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 3: TAGLINE CONTEXTUAL MATCHING (Precise multi-word phrases)
   // ═══════════════════════════════════════════════════════════════════════
@@ -857,6 +933,20 @@ export function detectIndustry(
     normTag.includes("shopping")
   ) {
     return INDUSTRY_CONFIGS.RETAIL_SHOP;
+  }
+
+  if (
+    normTag.includes("tours") ||
+    normTag.includes("travels") ||
+    normTag.includes("cab") ||
+    normTag.includes("taxi") ||
+    normTag.includes("self drive") ||
+    normTag.includes("car rental") ||
+    normTag.includes("airport drop") ||
+    normTag.includes("darshan") ||
+    normTag.includes("pilgrimage")
+  ) {
+    return INDUSTRY_CONFIGS.TOURS_TRAVELS;
   }
 
   return INDUSTRY_CONFIGS.GENERAL;
