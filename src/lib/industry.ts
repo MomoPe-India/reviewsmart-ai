@@ -12,6 +12,7 @@ export type IndustryType =
   | "PRINTING_GRAPHICS"
   | "GOLD_BUYERS"
   | "TOURS_TRAVELS"
+  | "TATTOO_STUDIO"
   | "GENERAL";
 
 export interface IndustryConfig {
@@ -478,6 +479,43 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     },
   },
 
+  TATTOO_STUDIO: {
+    type: "TATTOO_STUDIO",
+    label: "Tattoo & Body Piercing Studio",
+    tagline: "Custom Tattoo Art, Realistic Portraits, Sterile Piercings & Cover-Up Specialists",
+    tags: [
+      "Custom Tattoo Art",
+      "Hygienic Studio",
+      "Skilled Artist",
+      "Sterilized Needles",
+      "Portrait Tattoo",
+      "Ear & Nose Piercing",
+      "Cover-Up Tattoo",
+      "Painless Experience",
+      "Aftercare Guidance",
+      "Fair Pricing",
+    ],
+    placeholder: "Mention tattoo design (portrait, lettering, tribal), piercing, artist skill or hygiene...",
+    keywords: "karthik tattoo studio kts kadapa professional tattoo artist body piercing ear piercing nose piercing helix piercing custom tattoo portrait tattoo cover up tattoo sterile single use needles hygienic studio wireless tattoo machine pain free tattoo aftercare healing advice",
+    reviewDrafts: {
+      direct: {
+        headline: "Superb Tattoo Detailing & 100% Hygienic Studio!",
+        text: (name, tags, note) =>
+          `Got inked at ${name} and the outcome exceeded my expectations! The ${tags || "skilled artist and sterile setup"} made the whole session comfortable.${note ? ` They did an extraordinary job on ${note}.` : ""} Extremely clean studio with fresh single-use needles and quality ink. Best tattoo studio in Kadapa!`,
+      },
+      detailed: {
+        headline: "Skilled Tattoo Artist, Painless Piercing & Great Aftercare",
+        text: (name, tags, note) =>
+          `Visited ${name} after hearing great reviews, and they totally lived up to the reputation. The artist took time during consultation to refine the design to perfection.${note ? ` Specifically impressed with their work on ${note}.` : ""} Super hygienic setup, opened sterilized needles right in front of me, and gave clear aftercare instructions. Highly recommended!`,
+      },
+      enthusiastic: {
+        headline: "Master of Tattoo Art & Safe Piercings in Kadapa!",
+        text: (name, tags, note) =>
+          `Hands down the best tattoo studio in Rayalaseema! ${name} creates true art on skin with crisp line work and smooth shading.${note ? ` Loved how they customized ${note}!` : ""} Friendly vibe, reasonable pricing, and utmost hygiene. 10/10 experience!`,
+      },
+    },
+  },
+
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
@@ -724,6 +762,20 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.TOURS_TRAVELS;
   }
 
+  if (
+    hasWord(normCat, "tattoo") ||
+    hasWord(normCat, "tattoos") ||
+    hasWord(normCat, "piercing") ||
+    hasWord(normCat, "piercings") ||
+    hasWord(normCat, "body art") ||
+    normCat.includes("tattoo studio") ||
+    normCat.includes("body piercing") ||
+    normCat.includes("ear piercing") ||
+    normCat.includes("nose piercing")
+  ) {
+    return INDUSTRY_CONFIGS.TATTOO_STUDIO;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 2: BUSINESS NAME MATCHING (If category was generic/unspecified)
   // ═══════════════════════════════════════════════════════════════════════
@@ -864,6 +916,18 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.TOURS_TRAVELS;
   }
 
+  if (
+    hasWord(normName, "tattoo") ||
+    hasWord(normName, "tattoos") ||
+    hasWord(normName, "piercing") ||
+    hasWord(normName, "piercings") ||
+    normName.includes("tattoo studio") ||
+    normName.includes("kts") ||
+    normName.includes("karthik tattoo")
+  ) {
+    return INDUSTRY_CONFIGS.TATTOO_STUDIO;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 3: TAGLINE CONTEXTUAL MATCHING (Precise multi-word phrases)
   // ═══════════════════════════════════════════════════════════════════════
@@ -947,6 +1011,15 @@ export function detectIndustry(
     normTag.includes("pilgrimage")
   ) {
     return INDUSTRY_CONFIGS.TOURS_TRAVELS;
+  }
+
+  if (
+    normTag.includes("tattoo") ||
+    normTag.includes("piercing") ||
+    normTag.includes("body art") ||
+    normTag.includes("get inked")
+  ) {
+    return INDUSTRY_CONFIGS.TATTOO_STUDIO;
   }
 
   return INDUSTRY_CONFIGS.GENERAL;

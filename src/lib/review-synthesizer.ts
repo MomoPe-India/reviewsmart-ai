@@ -564,6 +564,55 @@ export const DOMAIN_LEXICONS: Record<IndustryType, DomainLexicon> = {
     ],
   },
 
+  TATTOO_STUDIO: {
+    items: [
+      "custom tattoo design",
+      "fine-line portrait tattoo",
+      "ear and nose piercing",
+      "cover-up tattoo artwork",
+      "calligraphy name tattoo",
+      "helix and cartilage piercing",
+      "tribal forearm tattoo",
+      "minimalist aesthetic tattoo",
+      "tattoo touch-up and shading",
+      "skin pigmentation art",
+    ],
+    qualities: [
+      "100% sterile setup with fresh single-use needles opened in front of me",
+      "exceptional precision with crisp line work and smooth shading",
+      "gentle hands and virtually painless piercing technique",
+      "patient consultation and stencil customization until perfection",
+      "modern wireless tattoo machine and high-grade skin-safe inks",
+      "spotless studio hygiene and clear day-by-day healing aftercare advice",
+      "skilled artistic hands that brought the reference design alive",
+      "honest and reasonable pricing with zero hidden charges",
+    ],
+    adjectives: [
+      "skilled and patient",
+      "neat and hygienic",
+      "detailed and precise",
+      "gentle and professional",
+      "creative and dependable",
+      "friendly and courteous",
+    ],
+    actions: [
+      "got inked with a custom tattoo at",
+      "got ear piercing done at",
+      "visited for a portrait tattoo at",
+      "consulted for a cover-up tattoo at",
+      "got nose piercing done at",
+      "availed body piercing service at",
+    ],
+    occasions: [
+      "for my first permanent tattoo",
+      "for a meaningful memorial tattoo",
+      "for a stylish ear piercing",
+      "for an aesthetic custom design",
+      "recently",
+      "last week",
+    ],
+  },
+
   GENERAL: {
     items: [
       "service requirement",
@@ -624,6 +673,12 @@ export interface TagIntent {
   isPunctualDriver: boolean;
   isOutstation: boolean;
   isFairPricing: boolean;
+  // Tattoo & Piercing
+  isCustomTattoo: boolean;
+  isPiercing: boolean;
+  isCoverUp: boolean;
+  isPortrait: boolean;
+  isHygiene: boolean;
   rawTag: string;
 }
 
@@ -663,6 +718,12 @@ export function detectTagIntent(tags: string[], ind: IndustryType): TagIntent {
     isPunctualDriver: /punctual|driver|chauffeur|fast\s*service|staff|friendly|డ్రైవర్|టైమ్/i.test(combined),
     isOutstation: /outstation|hyderabad|bangalore|chennai|హైదరాబాద్|బెంగళూరు/i.test(combined),
     isFairPricing: /fair|price|pricing|rate|rates|zero\s*hidden|ధర/i.test(combined),
+    // Tattoo & Piercing
+    isCustomTattoo: /custom|tattoo|ink|lettering|tribal|టాటూ|ఇంక్/i.test(combined),
+    isPiercing: /piercing|ear|nose|helix|body\s*piercing|పియర్సింగ్|ముక్కుపుడక|చెవి/i.test(combined),
+    isCoverUp: /cover-?up|re-?work|కవర్\s*అప్/i.test(combined),
+    isPortrait: /portrait|realism|face|పోర్ట్రెయిట్/i.test(combined),
+    isHygiene: /hygiene|sterile|needle|clean|హైజీన్|నీడిల్/i.test(combined),
     rawTag: tags[0] || "",
   };
 }
@@ -936,6 +997,56 @@ function generateShortDirect(
         `Top travel service in Kadapa and Rayalaseema!`,
       ];
     }
+  } else if (ind === "TATTOO_STUDIO") {
+    if (intent.isPiercing) {
+      openers = [
+        `Got ear and nose piercing done at ${bName} and it was virtually painless.`,
+        `Very gentle hands and sterile single-use equipment for piercing at ${bName}.`,
+        `Super hygienic piercing setup with clear healing advice.`,
+        `Got helix piercing done here and the healing has been so smooth.`,
+      ];
+      closers = [
+        `Zero swelling or irritation, healed up quickly!`,
+        `Opened sterilized needles right in front of me. Highly recommend!`,
+        `Most gentle and safe piercing studio in Kadapa!`,
+        `Extremely satisfied with the piercing experience!`,
+      ];
+    } else if (intent.isPortrait) {
+      openers = [
+        `Got a realistic portrait tattoo done by Karthik at ${bName}.`,
+        `The facial detailing and shading on my portrait tattoo are unbelievable!`,
+        `Brought a complex portrait photo to ${bName} and the outcome is identical.`,
+      ];
+      closers = [
+        `The line work and depth look alive on skin. True artistic talent!`,
+        `Everyone who sees the portrait is stunned by the perfection.`,
+        `Master tattoo artist in Kadapa!`,
+      ];
+    } else if (intent.isCoverUp) {
+      openers = [
+        `Came to ${bName} for a cover-up tattoo over an old faded design.`,
+        `Karthik designed a clever cover-up that completely masked my old tattoo.`,
+        `Exceptional cover-up tattoo work at ${bName}.`,
+      ];
+      closers = [
+        `You cannot even tell there was an old tattoo underneath. Amazing transformation!`,
+        `Creative stencil placement and rich dark shading. Delighted!`,
+        `Best cover-up specialist in Rayalaseema!`,
+      ];
+    } else {
+      openers = [
+        `Got inked with a custom tattoo at ${bName} and the detailing is superb.`,
+        `First-class tattoo studio in Kadapa with top-grade hygiene.`,
+        `Very patient artist at ${bName} who refined the stencil until I was 100% happy.`,
+        `Clean studio, modern wireless tattoo machine, and premium imported inks at ${bName}.`,
+      ];
+      closers = [
+        `Crisp line work, smooth shading, and clear healing guidance.`,
+        `Opened fresh sterile needles in front of me. Utmost professional hygiene!`,
+        `Reasonable pricing and extraordinary artwork. 10/10 recommendation!`,
+        `Hands down the best tattoo studio in Kadapa!`,
+      ];
+    }
   } else {
     openers = [
       `Neat work on the ${item}.`,
@@ -1053,6 +1164,26 @@ function generateProductQuality(
       `Comfort and punctuality speak for themselves.`,
       `Great value for the fare charged.`,
       `A dependable travel partner in Kadapa.`,
+    ];
+  } else if (ind === "TATTOO_STUDIO") {
+    openers = [
+      `The artistic precision and studio hygiene at ${bName} were ${adj}.`,
+      `Got my ${item} done here and the overall experience was ${adj}.`,
+      `Noticeable attention to detail and sterile setup with ${bName}.`,
+      `Chose ${bName} specifically for their custom tattoo art and skilled hands.`,
+    ];
+    middles = [
+      `The artist showed sterilized single-use needles before starting, and the studio was spotless and hygienic.`,
+      `The linework is razor sharp, shading is smooth, and the ink pigmentation is deeply vibrant.`,
+      `The wireless tattoo machine made minimal noise and the artist's gentle touch made the session comfortable.`,
+      `Clear day-by-day aftercare healing instructions were provided to ensure perfect recovery.`,
+    ];
+    closers = [
+      `Reliable tattoo studio and true artistry on skin.`,
+      `Very happy with the overall outcome and zero post-tattoo irritation.`,
+      `Hygiene and artistry speak for themselves.`,
+      `Great value for the detailing provided.`,
+      `A dependable tattoo and piercing studio in Kadapa.`,
     ];
   } else {
     openers = [
@@ -1334,6 +1465,49 @@ function generateProblemSolution(
       }
       break;
 
+    case "TATTOO_STUDIO":
+      if (intent.isPiercing) {
+        problem = pickRandom([
+          `Was very hesitant about getting ear and nose piercing due to fear of pain and infection.`,
+          `Needed a safe, sterile studio in Kadapa for cartilage piercing with disposable equipment.`,
+        ]);
+        solution = pickRandom([
+          `The specialist at ${bName} used sterilized single-use equipment and performed the piercing with incredible speed and gentle hands.`,
+          `They sanitized the area thoroughly, guided my breathing, and made the whole process virtually painless.`,
+        ]);
+        result = pickRandom([
+          `Healed cleanly without swelling or pain. Truly grateful for the gentle care!`,
+          `Zero discomfort and clear aftercare guidance. Best piercing service in Kadapa!`,
+        ]);
+      } else if (intent.isCoverUp) {
+        problem = pickRandom([
+          `Had an old, poorly done tattoo that I was embarrassed of and needed an expert cover-up artist.`,
+          `Looked all over Kadapa for a tattoo artist skilled enough to completely mask an old dark tattoo.`,
+        ]);
+        solution = pickRandom([
+          `Karthik at ${bName} designed a brilliant custom piece that seamlessly incorporated and masked the old artwork.`,
+          `He spent two hours refining the stencil overlay and used rich shading to conceal the old ink completely.`,
+        ]);
+        result = pickRandom([
+          `The old tattoo is 100% invisible now! The new design looks stunning and modern.`,
+          `Exceeded all expectations. Best tattoo cover-up artist in Rayalaseema!`,
+        ]);
+      } else {
+        problem = pickRandom([
+          `Wanted to get my first permanent tattoo in Kadapa but was nervous about hygiene, needle reuse, and design accuracy.`,
+          `Had a very intricate reference artwork and was searching for an artist who could execute crisp, fine line work.`,
+        ]);
+        solution = pickRandom([
+          `Karthik at ${bName} walked me through the design, opened a sealed sterile needle right in front of me, and maintained hospital-grade hygiene.`,
+          `He customized the stencil patiently until the sizing was perfect, and worked with steady, master hands using a wireless machine.`,
+        ]);
+        result = pickRandom([
+          `The tattoo turned out even better than the reference image with razor-sharp detailing and rich contrast.`,
+          `Minimal pain during the session and flawless healing with zero irritation. Best tattoo studio in Kadapa!`,
+        ]);
+      }
+      break;
+
     default:
       solution = pickRandom([
         `The team at ${bName} patiently understood the requirement and suggested the right options.`,
@@ -1533,6 +1707,41 @@ function generateOccasionContext(
         `Highly recommended travel partner!`,
       ];
     }
+  } else if (ind === "TATTOO_STUDIO") {
+    if (intent.isPiercing) {
+      openers = [
+        `Got ear and nose piercing done at ${bName} ${occasion}.`,
+        `Visited ${bName} ${occasion} for safe body piercing.`,
+        `Needed a hygienic studio ${occasion} for helix piercing.`,
+      ];
+      middles = [
+        `The piercer was gentle, used fresh disposable needles, and completed it in seconds.`,
+        `Clean, sanitized setup and gave very clear healing and aftercare instructions.`,
+        `Virtually zero pain and healed up very smoothly.`,
+      ];
+      closers = [
+        `Truly grateful for the safe and gentle piercing!`,
+        `Best piercing experience in Kadapa!`,
+        `Will surely recommend to friends and family.`,
+      ];
+    } else {
+      openers = [
+        `Got my custom tattoo done at ${bName} ${occasion}.`,
+        `Approached ${bName} ${occasion} for a special memorial tattoo design.`,
+        `Decided to get inked at ${bName} ${occasion}.`,
+      ];
+      middles = [
+        `Karthik took time to customize the artwork and executed crisp lines with smooth shading.`,
+        `The studio hygiene was impeccable and the wireless machine made the session comfortable.`,
+        `The final tattoo looks phenomenal and healed cleanly without any issues.`,
+      ];
+      closers = [
+        `Truly grateful for the beautiful tattoo artwork!`,
+        `Made this milestone so much more memorable!`,
+        `Will surely visit again for my next tattoo.`,
+        `Master artist in Kadapa, much appreciated!`,
+      ];
+    }
   } else {
     openers = [
       `Got ${item} done ${occasion}.`,
@@ -1715,6 +1924,19 @@ function generateDetailedReview(
       ]);
       break;
 
+    case "TATTOO_STUDIO":
+      opener = pickRandom([
+        `Visited ${bName} for our ${item1} session.`,
+        `Consulted with Karthik at ${bName} regarding ${item1}.`,
+        `Got our ${item1} done after seeing great reviews about their studio in Kadapa.`,
+      ]);
+      middle = pickRandom([
+        `First, the artist unwrapped new sterilized needles right in front of us. Second, the linework and shading on ${item2} were executed with exceptional artistic accuracy.`,
+        `The studio cleanliness, modern wireless machine, and gentle hands made the entire session comfortable.`,
+        `The stencil customization was patient and the post-session healing guidance on ${item2} was very thorough.`,
+      ]);
+      break;
+
     default:
       opener = pickRandom([
         `Coordinated with ${bName} for our ${item1}.`,
@@ -1776,6 +1998,35 @@ function generateCasualLocal(
       `Good to have a reliable cab partner in Kadapa.`,
       `Deserves 5 stars for honest and safe service.`,
       `Will refer friends and family for sure.`,
+    ];
+    const notePart = note ? ` Handled ${note.toLowerCase()} smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "TATTOO_STUDIO") {
+    const tattooHighlight = intent.isPiercing
+      ? "painless body piercings"
+      : intent.isPortrait
+      ? "realistic portrait tattoos"
+      : intent.isCoverUp
+      ? "creative cover-up tattoos"
+      : "custom tattoo designs";
+    const openers = [
+      `One of the best studios in Kadapa for ${tattooHighlight}.`,
+      `If you're planning to get inked or pierced, ${bName} is the go-to place in Kadapa.`,
+      `Locals in Kadapa recommended Karthik at ${bName} for tattooing and they were 100% right.`,
+      `Easily among the most skilled and hygienic tattoo artists in Rayalaseema.`,
+    ];
+    const middles = [
+      `The artist is patient, explains the stencil placement carefully, and maintains top-notch hygiene.`,
+      `Clean setup, fresh sterile needles opened in front of you, and crisp linework with rich shading.`,
+      `Very polite artist who puts first-timers completely at ease and gives honest advice.`,
+    ];
+    const closers = [
+      `Check them out if you want quality body art!`,
+      `Good to have a world-class tattoo studio right here in Kadapa.`,
+      `Deserves 5 stars for authentic artwork and hygiene.`,
+      `Will refer all my friends for tattoos and piercings!`,
     ];
     const notePart = note ? ` Handled ${note.toLowerCase()} smoothly.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -1846,6 +2097,14 @@ function generateMinimalist(
       `Smooth self-drive booking. FASTag enabled. Clean vehicle and hassle-free return.`,
       `Comfortable Innova Crysta. Calm ghat road driving. Blessed family Tirupati trip.`,
     ];
+  } else if (ind === "TATTOO_STUDIO") {
+    fragments = [
+      `Sterile needles. Flawless linework. Top-notch tattoo studio in Kadapa.`,
+      `Custom tattoo design. Smooth shading. 10/10 artist skill at ${bName}.`,
+      `Painless piercing. Fresh disposable needles. Clear healing instructions.`,
+      `Spotless studio hygiene. Wireless machine. Great aftercare advice.`,
+      `Master portrait detailing. Honest pricing. Best tattoo artist in Kadapa!`,
+    ];
   } else {
     fragments = [
       `Super neat ${item}. Fair price, on-time service.`,
@@ -1893,6 +2152,33 @@ function generateEnthusiastic(
       `Big thumbs up to the entire team!`,
       `Will definitely book all our future family trips with them.`,
       `Thank you for making our travel so smooth and stress-free!`,
+    ];
+    const notePart = note ? ` ${note} was managed smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "TATTOO_STUDIO") {
+    const tattooHighlight = intent.isPiercing
+      ? "piercing session"
+      : intent.isPortrait
+      ? "portrait tattoo"
+      : intent.isCoverUp
+      ? "cover-up tattoo"
+      : "custom tattoo";
+    const openers = [
+      `Absolutely in love with my new ${tattooHighlight} from ${bName}!`,
+      `So glad I chose ${bName} for my ${tattooHighlight}!`,
+      `Such a delightful and comfortable experience getting inked at ${bName}.`,
+    ];
+    const middles = [
+      `The attention to detail, razor-sharp linework, and smooth shading completely blew me away.`,
+      `Karthik is exceptionally talented and made sure the stencil sat in the exact perfect spot.`,
+      `The studio is spotless, needles were fresh single-use, and the healing advice was crystal clear.`,
+    ];
+    const closers = [
+      `Big thumbs up to Karthik and the team!`,
+      `Will definitely come back for my next tattoo!`,
+      `Thank you for creating such a masterpiece on my skin!`,
     ];
     const notePart = note ? ` ${note} was managed smoothly.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -1946,6 +2232,26 @@ function generateFirstTime(
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
   }
 
+  if (ind === "TATTOO_STUDIO") {
+    const openers = [
+      `First time getting inked and chose ${bName} in Kadapa.`,
+      `Was my first time visiting a tattoo studio and went to ${bName}.`,
+      `First tattoo experience here and was naturally nervous at the start.`,
+    ];
+    const middles = [
+      `Karthik was super patient, explained the entire process calmly, and opened sealed sterile needles in front of me.`,
+      `The stencil placement was checked multiple times to ensure perfect alignment, and the wireless machine felt surprisingly gentle.`,
+      `The studio setup was spotless and hygienic, which gave me immense confidence immediately.`,
+    ];
+    const closers = [
+      `Definitely won't be my last tattoo with Karthik!`,
+      `So relieved and thrilled with how it turned out on my very first try.`,
+      `Found my permanent tattoo artist in Kadapa!`,
+    ];
+    const notePart = note ? ` Also managed ${note.toLowerCase()} effortlessly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `First time trying ${bName} for ${item}.`,
@@ -1989,6 +2295,26 @@ function generateRepeatCustomer(
       `Always a pleasure traveling with this team.`,
       `Consistency and passenger safety are why we keep coming back.`,
       `The most dependable travels in Rayalaseema!`,
+    ];
+    const notePart = note ? ` Handled ${note.toLowerCase()} with their usual care.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "TATTOO_STUDIO") {
+    const openers = [
+      `Have gotten multiple tattoos done at ${bName} now.`,
+      `Returned to ${bName} for my second tattoo piece in Kadapa.`,
+      `This is my third visit here for custom body art and piercings.`,
+    ];
+    const middles = [
+      `Their standard of hygiene, needle safety, and artistic execution has never dropped.`,
+      `Karthik is always welcoming, attentive to new design ideas, and gives honest feedback.`,
+      `Clean healing, vibrant ink retention, and razor-sharp linework every single time.`,
+    ];
+    const closers = [
+      `Always a pleasure getting inked with Karthik.`,
+      `Artistic excellence and strict hygiene keep me coming back.`,
+      `The most dependable tattoo studio in Kadapa!`,
     ];
     const notePart = note ? ` Handled ${note.toLowerCase()} with their usual care.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -2095,6 +2421,22 @@ function generateRelief(
       `Exceeded expectations in terms of comfort and passenger safety.`,
       `True peace of mind throughout the entire road trip!`,
     ];
+  } else if (ind === "TATTOO_STUDIO") {
+    openers = [
+      `Was initially very nervous about needle pain and hygiene before visiting ${bName}.`,
+      `Had doubts whether an artist in Kadapa could accurately capture such an intricate tattoo design.`,
+      `Was hesitant about getting pierced because my previous piercing elsewhere caused swelling.`,
+    ];
+    middles = [
+      `Thankfully, Karthik at ${bName} proved my apprehensions completely wrong.`,
+      `He opened brand new sterilized needles right in front of me, worked with gentle precision, and kept checking on my comfort.`,
+      `The tattoo lines came out laser-sharp and the healing has been completely smooth without irritation.`,
+    ];
+    closers = [
+      `Relieved, thrilled, and very satisfied!`,
+      `Exceeded my expectations in the best artistic way possible.`,
+      `True professionalism and clinical hygiene standards!`,
+    ];
   } else {
     openers = [
       `Was initially wondering about the turnaround on the ${item}.`,
@@ -2161,6 +2503,13 @@ function generateFamilyContext(
   } else if (ind === "TOURS_TRAVELS") {
     opener = `Booked an outstation cab with ${bName} for our family trip ${occasion}.`;
     middle = `The vehicle was spotless with powerful AC, and the chauffeur drove very calmly and safely with elderly family members on board.`;
+  } else if (ind === "TATTOO_STUDIO") {
+    opener = intent.isPiercing
+      ? `Visited ${bName} with a family member for ear and nose piercing.`
+      : `Visited ${bName} with family to get matching custom tattoos.`;
+    middle = intent.isPiercing
+      ? `The specialist was extremely gentle, used sterilized equipment, and made the whole piercing calm and pain-free.`
+      : `Karthik customized our tattoo stencils patiently and made everyone feel relaxed in the studio.`;
   }
 
   const closer = pickRandom([
@@ -2197,6 +2546,26 @@ function generateStaffService(
       `Good people doing honest travel business.`,
       `Rare to find such courteous cab drivers and managers nowadays.`,
       `Great service culture and dependable travels!`,
+    ];
+    const notePart = note ? ` They took care of ${note.toLowerCase()} smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "TATTOO_STUDIO") {
+    const openers = [
+      `Really appreciated the respectful and patient behavior of Karthik at ${bName}.`,
+      `The artist at ${bName} is genuinely polite, humble, and deeply skilled.`,
+      `Customer care and personal consultation here are top notch.`,
+    ];
+    const middles = [
+      `He answered all my tattoo design queries calmly and didn't rush the stencil placement.`,
+      `He checked on my pain tolerance constantly and kept the entire atmosphere comfortable.`,
+      `No false promises or rushing, just authentic artistry and clinical hygiene throughout.`,
+    ];
+    const closers = [
+      `True artist doing honest work in Kadapa.`,
+      `Rare to find such courteous and patient tattoo artists nowadays.`,
+      `Great studio culture and dependable care!`,
     ];
     const notePart = note ? ` They took care of ${note.toLowerCase()} smoothly.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -2245,6 +2614,26 @@ function generateValuePricing(
       `Real value for money in cab services.`,
       `Honest dealings with zero hidden fees. Highly satisfied.`,
       `Would definitely recommend ${bName} to anyone traveling from Kadapa.`,
+    ];
+    const notePart = note ? ` Addressed ${note.toLowerCase()} without extra fuss.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "TATTOO_STUDIO") {
+    const openers = [
+      `Fair pricing and honest quotes at ${bName}.`,
+      `Got great value for our custom tattoo artwork with ${bName}.`,
+      `Compared tattoo studio rates across Kadapa and ${bName} offered the most reasonable price for this level of quality.`,
+    ];
+    const middles = [
+      `The linework and shading are truly international grade without any overpriced commercial hype.`,
+      `They clearly explained the pricing based on tattoo size and detailing upfront with zero hidden charges.`,
+      `Included sterile equipment, disposable cartridges, and thorough healing advice in the package.`,
+    ];
+    const closers = [
+      `Real value for money for custom skin art.`,
+      `Honest dealings and master artistry. Highly satisfied.`,
+      `Would definitely recommend ${bName} to anyone wanting a tattoo in Kadapa.`,
     ];
     const notePart = note ? ` Addressed ${note.toLowerCase()} without extra fuss.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -2583,6 +2972,42 @@ function generateTeluguConversational(
         closer = pickRandom([
           `చాలా నమ్మకమైన ట్రావెల్స్ సర్వీస్. థాంక్యూ పవన్ గారు & జ్యోతి గారు!`,
           `కడపలో బెస్ట్ క్యాబ్స్. హ్యాపీ కస్టమర్!`,
+        ]);
+      }
+      break;
+
+    case "TATTOO_STUDIO":
+      if (intent.isPiercing) {
+        opener = pickRandom([
+          `${bName} లో ఇయర్ మరియు నోస్ పియర్సింగ్ చేయించుకున్నాను.`,
+          `నొప్పి లేకుండా సేఫ్ పియర్సింగ్ కోసం ${bName} స్టూడియోకి వెళ్లాము.`,
+          `హైలీ హైజీనిక్ సెటప్‌తో పియర్సింగ్ సర్వీస్ తీసుకున్నాము.`,
+        ]);
+        middle = pickRandom([
+          `డిస్పోజబుల్ సింగిల్-యూజ్ నీడిల్స్ వాడారు, ఏమాత్రం నొప్పి తెలియకుండా చాలా జెంటిల్ గా చేశారు.`,
+          `స్టూడియో చాలా నీట్‌గా ఉంది, పియర్సింగ్ తర్వాత హీలింగ్ కేర్ టిప్స్ చాలా వివరంగా చెప్పారు.`,
+          `ఎలాంటి వాపు లేదా ఇన్ఫెక్షన్ లేకుండా చాలా త్వరగా నయమైంది.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో బెస్ట్ పియర్సింగ్ స్టూడియో, థాంక్యూ కార్తీక్ గారు!`,
+          `సేఫ్ అండ్ పెయిన్‌లెస్ సర్వీస్, డెఫినెట్‌గా రికమండ్ చేస్తాను!`,
+          `హైజీన్ విషయంలో నంబర్ వన్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${bName} లో కస్టమ్ టాటూ వేయించుకున్నాను, ఫినిషింగ్ సూపర్బ్ గా వచ్చింది.`,
+          `మంచి టాటూ ఆర్టిస్ట్ కోసం వెతికి ${bName} ని ఎంచుకున్నాను.`,
+          `కడపలో బెస్ట్ టాటూ స్టూడియో ${bName}, చాలా గ్రేట్ ఎక్స్‌పీరియన్స్!`,
+        ]);
+        middle = pickRandom([
+          `కంటి ముందే సీల్డ్ నీడిల్ ఓపెన్ చేసి చూపించారు, స్టూడియో హైజీన్ 100% పర్ఫెక్ట్ గా ఉంది.`,
+          `వైర్‌లెస్ టాటూ మెషిన్ తో చాలా స్మూత్ గా వేశారు, షేడింగ్ మరియు లైన్ వర్క్ డీటెయిలింగ్ అదిరిపోయింది.`,
+          `స్టెన్సిల్ డిజైన్ నాకిష్టమైనట్టు వచ్చే వరకు ఓపిగ్గా అడ్జస్ట్ చేసి వేశారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో నంబర్ వన్ టాటూ ఆర్టిస్ట్, థాంక్యూ ${bName}!`,
+          `రీజనబుల్ ప్రైస్ మరియు వరల్డ్ క్లాస్ ఆర్ట్, ఫుల్లీ శాటిస్‌ఫైడ్!`,
+          `నా ఫ్రెండ్స్ అందరికీ రికమండ్ చేస్తాను, వర్త్ ఎవ్రీ రూపీ!`,
         ]);
       }
       break;
@@ -2937,6 +3362,37 @@ function generateTeluguCraftsmanship(
       break;
     }
 
+    case "TATTOO_STUDIO": {
+      if (intent.isPiercing) {
+        opener = pickRandom([
+          `${bName} లో పియర్సింగ్ చాలా జాగ్రత్తగా, సేఫ్ గా చేశారు.`,
+          `ఇయర్ మరియు నోస్ పియర్సింగ్ కోసం ${bName} ని సంప్రదించాను, చాలా మంచి అనుభవం.`,
+        ]);
+        middle = pickRandom([
+          `కొత్త నీడిల్స్ వాడారు, ఏమాత్రం నొప్పి లేకుండా సున్నితంగా పూర్తి చేశారు.`,
+          `హైజీనిక్ మెయింటెనెన్స్ చాలా బాగుంది, ఆఫ్టర్‌కేర్ కేరింగ్ టిప్స్ వివరంగా చెప్పారు.`,
+        ]);
+        closer = pickRandom([
+          `చాలా నమ్మకమైన పియర్సింగ్ స్టూడియో, థాంక్యూ ${bName}!`,
+          `కడపలో పియర్సింగ్ కి బెస్ట్ ప్లేస్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${bName} లో టాటూ వేయించుకున్నాను, కార్తీక్ గారి ఆర్ట్ వర్క్ ఎక్సలెంట్ గా ఉంది.`,
+          `కడపలో బెస్ట్ టాటూ డిజైనింగ్ మరియు ప్రొఫెషనల్ ఆర్టిస్ట్ అంటే ${bName}.`,
+        ]);
+        middle = pickRandom([
+          `ఫైన్ లైన్స్ మరియు షేడింగ్ వర్క్ చాలా అద్భుతంగా వచ్చింది, స్టూడియో చాలా పరిశుభ్రంగా ఉంది.`,
+          `వైర్‌లెస్ మెషిన్ తో నీట్ గా వేశారు, ఇన్ఫెక్షన్ రాకుండా చాలా జాగ్రత్తలు చెప్పారు.`,
+        ]);
+        closer = pickRandom([
+          `వరల్డ్ క్లాస్ టాటూ వర్క్‌మెన్‌షిప్, వర్త్ ఎవ్రీ రూపీ!`,
+          `టాప్ క్వాలిటీ టాటూ స్టూడియో, థాంక్యూ ${bName}!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `${item} వర్క్ చాలా neat గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
@@ -3055,6 +3511,27 @@ function generateTeluguPunchy(
         `డ్రైవర్ రెస్పాన్స్ బాగుంది, డ్రైవింగ్ చాలా సేఫ్. థాంక్యూ ${bName}!`,
         `కడపలో బెస్ట్ ట్రావెల్స్ సర్వీస్. జర్నీ చాలా కంఫర్టబుల్ గా జరిగింది.`,
         `ఎయిర్‌పోర్ట్ డ్రాప్ సమయానికి చేశారు, నో టెన్షన్. వర్త్ ఇట్!`,
+      ]);
+    }
+  } else if (ind === "TATTOO_STUDIO") {
+    if (intent.isPiercing) {
+      chosen = pickRandom([
+        `పియర్సింగ్ చాలా సేఫ్ గా, నొప్పి లేకుండా చేశారు. హైజీన్ సూపర్బ్!`,
+        `డిస్పోజబుల్ నీడిల్స్ వాడారు, చాలా కేరింగ్ గా పియర్సింగ్ చేశారు. థాంక్యూ ${bName}!`,
+        `కడపలో బెస్ట్ పియర్సింగ్ సెటప్, హీలింగ్ కూడా చాలా ఫాస్ట్ గా అయ్యింది.`,
+      ]);
+    } else if (intent.isPortrait) {
+      chosen = pickRandom([
+        `పోర్ట్రెయిట్ టాటూ డీటెయిలింగ్ అదిరిపోయింది. కార్తీక్ గారి ఆర్ట్ వర్క్ ఎక్సలెంట్!`,
+        `ఫోటోలో ఉన్నట్టే స్కిన్ మీద అద్భుతంగా వేశారు. రియలిస్టిక్ షేడింగ్ సూపర్!`,
+        `కడపలో బెస్ట్ పోర్ట్రెయిట్ టాటూ ఆర్టిస్ట్! ఫుల్లీ శాటిస్‌ఫైడ్.`,
+      ]);
+    } else {
+      chosen = pickRandom([
+        `కస్టమ్ టాటూ ఫినిషింగ్ చాలా నీట్ గా వచ్చింది. ప్రైస్ చాలా రీజనబుల్.`,
+        `స్టూడియో హైజీన్ 100% పర్ఫెక్ట్. లైన్ వర్క్ మరియు షేడింగ్ అదిరింది.`,
+        `మంచి రెస్పాన్స్, పేషెంట్‌గా వేశారు. కడపలో బెస్ట్ టాటూ స్టూడియో!`,
+        `టాటూ చాలా బ్యూటిఫుల్ గా వచ్చింది, నో ఇన్ఫెక్షన్. వర్త్ ఇట్!`,
       ]);
     }
   } else {
@@ -3422,6 +3899,40 @@ function generateTeluguRoman(
       break;
     }
 
+    case "TATTOO_STUDIO": {
+      if (intent.isPiercing) {
+        opener = pickRandom([
+          `${bName} lo ear and nose piercing cheyinchukunnanu, chala smooth ga aipoindi.`,
+          `Painless piercing kosam ${bName} tattoo studio ki vellanu, great experience.`,
+        ]);
+        middle = pickRandom([
+          `Disposal sterile needles use chesaru, zero pain and immediate care tips icharu.`,
+          `Studio hygiene chala clean ga undi, aftercare advice clearly explain chesaru.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best piercing studio, thanks to Karthik!`,
+          `Super gentle hands and clean setup. 10/10 recommended!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `${bName} daggara custom tattoo vespinchaanu, detailing and linework super ga vachindi.`,
+          `Kadapa lo best tattoo studio ante ${bName}, Karthik artistic skill top notch.`,
+          `First tattoo experience ikkade, initially fear undindi but chala comfortable ga chesaru.`,
+        ]);
+        middle = pickRandom([
+          `Fresh needle open chesi choopinchaaru, studio cleanliness 100% genuine.`,
+          `Wireless tattoo machine tho smooth ga vesaru, shading and contrast aithe next level.`,
+          `Stencil design perfect ga set chesi patient ga complete chesaru.`,
+        ]);
+        closer = pickRandom([
+          `True artist in Kadapa, fully satisfied with my tattoo!`,
+          `Reasonable price and world-class detailing, highly recommended!`,
+          `Friends andaru tattoo choosi super antunnaru, thanks to ${bName}!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `Chala baga chesaru, ${item} work aithe super neat ga vachindi.`,
@@ -3758,6 +4269,37 @@ function generateTeluguOccasion(
       break;
     }
 
+    case "TATTOO_STUDIO": {
+      if (intent.isPiercing) {
+        opener = pickRandom([
+          `నా ఫేవరెట్ ఇయర్ పియర్సింగ్ కోసం ${bName} స్టూడియోకి వెళ్లాను.`,
+          `నొప్పి లేకుండా ముక్కుపుడక లేదా చెవి పియర్సింగ్ కోసం ఇక్కడికి వచ్చాము.`,
+        ]);
+        middle = pickRandom([
+          `డిస్పోజబుల్ నీడిల్స్ వాడారు, చాలా స్మూత్ గా మరియు శ్రద్ధగా పూర్తి చేశారు.`,
+          `హైజీన్ చాలా చక్కగా మెయింటైన్ చేశారు, ఇన్ఫెక్షన్ రాకుండా జాగ్రత్తలు చెప్పారు.`,
+        ]);
+        closer = pickRandom([
+          `సూపర్ జెంటిల్ సర్వీస్, థాంక్యూ ${bName}!`,
+          `కడపలో బెస్ట్ పియర్సింగ్ సెటప్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `నా ఫస్ట్ పర్మనెంట్ టాటూ కోసం ${bName} ని ఎంచుకున్నాను.`,
+          `స్పెషల్ మెమోరియల్ టాటూ వేయించుకోవడానికి ${bName} స్టూడియోకి వెళ్లాను.`,
+        ]);
+        middle = pickRandom([
+          `కార్తీక్ గారు డిజైన్ ని చాలా డీటెయిల్డ్‌గా స్కిన్ మీద పర్ఫెక్ట్ గా వేశారు.`,
+          `లైన్స్ మరియు షేడింగ్ క్వాలిటీ నెక్స్ట్ లెవెల్ లో ఉంది, స్టూడియో చాలా పరిశుభ్రంగా ఉంది.`,
+        ]);
+        closer = pickRandom([
+          `టాటూ ఆర్ట్ సూపర్ గా కుదిరింది, థాంక్యూ కార్తీక్ గారు!`,
+          `కడపలో బెస్ట్ టాటూ స్టూడియో, హైలీ రికమండెడ్!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `మా ఈవెంట్ రిక్వైర్మెంట్ కోసం ${bName} లో సర్వీస్ తీసుకున్నాము.`,
@@ -3838,6 +4380,13 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "తిరుపతి & గండికోట ట్రిప్స్ కి బెస్ట్",
           "రీజనబుల్ ప్రైస్ & సూపర్ కండిషన్ కార్లు",
         ]);
+      case "TATTOO_STUDIO":
+        return pickRandom([
+          "పర్ఫెక్ట్ టాటూ వర్క్ & హైజీనిక్ స్టూడియో",
+          "కడపలో బెస్ట్ టాటూ ఆర్టిస్ట్ & సేఫ్ పియర్సింగ్",
+          "అద్భుతమైన షేడింగ్ & లైన్ వర్క్",
+          "నొప్పి లేని పియర్సింగ్ & సూపర్ కేర్",
+        ]);
       default:
         return pickRandom([
           "చాలా మంచి అనుభవం & Super Quality",
@@ -3902,6 +4451,13 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "Best Outstation Cabs in Kadapa",
           "Top Self Drive Cars & Clean Cabs",
           "Reasonable Pricing & Courteous Drivers",
+        ]);
+      case "TATTOO_STUDIO":
+        return pickRandom([
+          "Top Tattoo Studio & Clean Setup in Kadapa",
+          "Master Linework & Smooth Shading",
+          "Painless Piercing & Great Aftercare",
+          "100% Sterile & Authentic Art",
         ]);
       default:
         return pickRandom([
@@ -4054,6 +4610,15 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
         "Smooth Outstation Trip & Polite Driver",
         "Best Tirupati Darshan & Airport Service",
         "Transparent Fares & Well-Maintained Fleet",
+      ]);
+
+    case "TATTOO_STUDIO":
+      return pickRandom([
+        "Flawless Tattoo Linework & Sterile Studio",
+        "Master Tattoo Artist & Smooth Shading",
+        "Virtually Painless Piercing & Great Aftercare",
+        "Best Custom Tattoo & Piercing Studio in Kadapa",
+        "Hospital-Grade Hygiene & Precision Art",
       ]);
 
     default:
@@ -4243,6 +4808,35 @@ function generateProceduralFallback(
             `చెప్పిన రేటు ప్రకారమే తీసుకున్నారు, ఎక్స్‌ట్రా ఏమీ అడగలేదు.`,
             `కారు ఇంటీరియర్ చాలా పరిశుభ్రంగా ఉంది.`,
             `ఫ్యామిలీ తో ప్రయాణం చాలా సంతోషంగా సాగింది.`,
+          ];
+        }
+        break;
+      }
+
+      case "TATTOO_STUDIO": {
+        if (intent.isPiercing) {
+          starters = [
+            `పియర్సింగ్ చాలా సేఫ్ గా మరియు సున్నితంగా చేశారు.`,
+            `${bName} లో ఇయర్ మరియు నోస్ పియర్సింగ్ చాలా నీట్ గా అయ్యింది.`,
+            `కడపలో హైజీనిక్ పియర్సింగ్ కి బెస్ట్ ప్లేస్.`,
+          ];
+          middles = [
+            `డిస్పోజబుల్ నీడిల్స్ వాడారు, ఎలాంటి నొప్పి లేకుండా చేశారు.`,
+            `స్టూడియో చాలా పరిశుభ్రంగా ఉంది, హీలింగ్ కేర్ టిప్స్ చెప్పారు.`,
+            `ఎలాంటి ఇన్ఫెక్షన్ లేకుండా చాలా త్వరగా నయమైంది.`,
+          ];
+        } else {
+          starters = [
+            `టాటూ వర్క్ ఫినిషింగ్ చాలా neat గా వచ్చింది.`,
+            `కస్టమ్ టాటూ డిజైన్ చాలా చక్కగా స్కిన్ మీద వేశారు.`,
+            `${bName} లో ఆర్టిస్ట్ వర్క్ చాలా genuine గా ఉంది.`,
+            `కడపలో బెస్ట్ టాటూ స్టూడియో.`,
+          ];
+          middles = [
+            `లైన్ వర్క్ మరియు షేడింగ్ డీటెయిలింగ్ సూపర్బ్ గా ఉంది.`,
+            `కంటి ముందే సీల్డ్ నీడిల్స్ ఓపెన్ చేసి వాడారు.`,
+            `వైర్‌లెస్ మెషిన్ తో చాలా స్మూత్ గా వేశారు.`,
+            `డిజైన్ కలర్స్ చాలా బ్రైట్ గా మరియు షార్ప్‌గా ఉన్నాయి.`,
           ];
         }
         break;
@@ -4450,6 +5044,38 @@ function generateProceduralFallback(
           `Pricing was totally transparent with zero unexpected demands.`,
           `Vehicle interior was sanitized, fragrant, and extremely comfortable.`,
           `On-time pickup and drop made our journey stress-free.`,
+        ];
+      }
+      break;
+    }
+
+    case "TATTOO_STUDIO": {
+      if (intent.isPiercing) {
+        starters = [
+          `Gentle, safe, and sterile piercing service at ${bName}.`,
+          `Got ear and nose piercing done with virtually zero discomfort.`,
+          `Highly hygienic piercing studio in Kadapa.`,
+          `Clean and swift piercing with fresh disposable needles.`,
+        ];
+        middles = [
+          `The piercer opened disposable single-use needles right in front of me.`,
+          `They sanitized the area thoroughly and guided my breathing calmly.`,
+          `Healed quickly without swelling or infection thanks to their aftercare advice.`,
+          `Very gentle technique and spotless studio cleanliness.`,
+        ];
+      } else {
+        starters = [
+          `Flawlessly executed custom tattoo artwork at ${bName}.`,
+          `Got inked with top precision and hospital-grade hygiene.`,
+          `Karthik delivered incredible tattoo detailing at ${bName}.`,
+          `Crisp line work and smooth shading on my tattoo.`,
+          `Best professional tattoo studio in Kadapa.`,
+        ];
+        middles = [
+          `The artist opened fresh sealed needles in front of me with zero shortcuts.`,
+          `The linework is laser-sharp and the shading has great contrast and depth.`,
+          `Modern wireless tattoo machine made the session remarkably comfortable.`,
+          `Clear day-by-day healing instructions ensured perfect recovery.`,
         ];
       }
       break;

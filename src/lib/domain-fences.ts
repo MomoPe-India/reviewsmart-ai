@@ -391,6 +391,41 @@ export const DOMAIN_FENCES: Record<IndustryType, DomainFenceConfig> = {
     ],
   },
 
+  TATTOO_STUDIO: {
+    industryType: "TATTOO_STUDIO",
+    allowedKeywords: [
+      "tattoo", "tattoos", "piercing", "piercings", "ink", "inked", "artist",
+      "needle", "needles", "sterilized", "hygienic", "hygiene", "clean", "portrait",
+      "custom", "lettering", "cover-up", "cover up", "shading", "line work", "finishing",
+      "ear piercing", "nose piercing", "helix", "tribal", "painless", "healing",
+      "aftercare", "karthik", "kts", "kadapa", "studio", "wireless machine",
+      "skin", "design", "fineline", "stencil", "touch-up", "consultation",
+      "friendly", "safe", "rate", "price", "pricing", "budget", "care", "advice",
+    ],
+    forbiddenKeywords: [
+      "gold", "bullion", "pledged", "xrf", "karat", "carat", "cab", "cabs", "taxi",
+      "self-drive", "tirupati", "darshan", "airport drop", "flex banner", "sign board",
+      "visiting card", "mug", "pillow", "haircut", "facial", "salon", "spa", "doctor",
+      "dental", "clinic", "hospital", "teeth", "biryani", "food menu", "restaurant",
+      "software", "app dev", "code", "pre-wedding", "candid shoot", "saree draping",
+      "making charges", "fabric", "goldsmith",
+    ],
+    forbiddenPhrases: [
+      /\b(gold|bullion|pledged|xrf|karat|carat)\b/i,
+      /\b(cabs?|taxis?|outstation\s*cabs?|tirupati\s*darshan|self-?drives?)\b/i,
+      /\b(photo\s*frames?|flex\s*banners?|sign\s*boards?|visiting\s*cards?)\b/i,
+      /\b(haircuts?|facials?|makeups?|salons?|spas?)\b/i,
+      /\b(doctors?|dentals?|clinics?|hospitals?|medicines?)\b/i,
+      /\b(biryani|dining|restaurants?|food\s*taste)\b/i,
+      /\b(software\s*dev|app\s*dev|clean\s*code)\b/i,
+      /\b(pre-weddings?|candid\s*photography|wedding\s*films?)\b/i,
+    ],
+    positiveIdentifiers: [
+      /\b(tattoos?|piercings?|inked?|artists?|needles?|hygienic|portraits?|cover-?ups?|aftercare|shading|line\s*work|helix|ear\s*piercing|nose\s*piercing|kts)\b/i,
+      /(టాటూ|పియర్సింగ్|ఇంక్|ఆర్టిస్ట్|డిజైన్|నీడిల్|హైజీన్|కడప|షేడింగ్)/i,
+    ],
+  },
+
   GENERAL: {
     industryType: "GENERAL",
     allowedKeywords: [
