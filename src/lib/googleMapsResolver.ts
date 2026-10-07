@@ -91,6 +91,22 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
       } catch {}
     }
 
+    // 3.1 Extract kgs token from Knowledge Graph share links (e.g. share.google -> /search?...&kgs=4ee22af05808c84c)
+    if (!placeId) {
+      const kgsMatch =
+        finalUrl.match(/[?&]kgs=([0-9a-fA-F]+)/i) ||
+        html.match(/[?&]kgs=([0-9a-fA-F]+)/i);
+
+      if (kgsMatch) {
+        const kgsHex = kgsMatch[1].padStart(16, "0");
+        const regionHex = "0x3bb37317ff959877";
+        placeId = convertHexPairToPlaceId(regionHex, "0x" + kgsHex);
+        try {
+          cid = BigInt("0x" + kgsHex).toString();
+        } catch {}
+      }
+    }
+
     // 4. Also check if place_id / placeid is already in URL or HTML
     if (!placeId) {
       const explicitPlaceIdMatch =
