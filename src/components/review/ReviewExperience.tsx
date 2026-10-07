@@ -136,7 +136,7 @@ export default function ReviewExperience({
 
     // Known merchants Place ID fallbacks if not yet present
     if (business.slug === "momo-it-technologies") {
-      placeId = (business.googlePlaceId || "").trim() || "ChIJd5iV_xdzszsRTMgIWPAq4k4";
+      placeId = (business.googlePlaceId || "").trim() || "ChIJJ_r1d6GW3AURRHpHHZBD5Kk";
     } else if (business.slug === "sushmas-fashion-beauty" && !placeId) {
       placeId = "ChIJbzsJc9NzszsRtBUfS0gXCHk";
     } else if (business.slug === "vrgold" && !placeId) {
