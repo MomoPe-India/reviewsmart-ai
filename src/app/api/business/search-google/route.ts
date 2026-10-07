@@ -154,7 +154,7 @@ Respond strictly in pure JSON without markdown quotes:
     const momoResult = {
       name: "Momo IT Technologies",
       branchName: "Krishnapuram, Kadapa (HQ)",
-      address: "4/106, Road, Krishnapuram, Kadapa, Andhra Pradesh 516005",
+      address: "4/106, Road, Krishnapuram, Kadapa, Andhra Pradesh 516003",
       category: "Software Development & IT Solutions",
       googlePlaceId: "ChIJd5iV_xdzszsR_OIKD3ympJo",
       placeId: "ChIJd5iV_xdzszsR_OIKD3ympJo",
