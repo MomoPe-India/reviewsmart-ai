@@ -158,7 +158,7 @@ Respond strictly in pure JSON without markdown quotes:
       category: "Software Development & IT Solutions",
       googlePlaceId: "ChIJJ_r1d6GW3AURRHpHHZBD5Kk",
       placeId: "ChIJJ_r1d6GW3AURRHpHHZBD5Kk",
-      googleReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJJ_r1d6GW3AURRHpHHZBD5Kk",
+      googleReviewUrl: "https://g.page/r/CUR6Rx2QQ-SpECE/review",
       suggestedTags: [
         "Expert Developers",
         "Robust Software",

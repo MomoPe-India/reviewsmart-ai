@@ -134,10 +134,19 @@ export default function ReviewExperience({
     let rawUrl = (business.googleReviewUrl || "").trim();
     let placeId = (business.googlePlaceId || "").trim();
 
-    // Known merchants Place ID fallbacks if not yet present
+    // 0. Official Google short review links (g.page/r/.../review) take absolute top priority
     if (business.slug === "momo-it-technologies") {
-      placeId = (business.googlePlaceId || "").trim() || "ChIJJ_r1d6GW3AURRHpHHZBD5Kk";
-    } else if (business.slug === "sushmas-fashion-beauty" && !placeId) {
+      return "https://g.page/r/CUR6Rx2QQ-SpECE/review";
+    }
+
+    if (rawUrl && rawUrl.includes("g.page/r/")) {
+      return rawUrl.endsWith("/review") || rawUrl.endsWith("/review/")
+        ? rawUrl
+        : `${rawUrl.replace(/\/+$/, "")}/review`;
+    }
+
+    // Known merchants Place ID fallbacks if not yet present
+    if (business.slug === "sushmas-fashion-beauty" && !placeId) {
       placeId = "ChIJbzsJc9NzszsRtBUfS0gXCHk";
     } else if (business.slug === "vrgold" && !placeId) {
       placeId = "ChIJHUVe5u5zszsR-sspZhPvhms";
