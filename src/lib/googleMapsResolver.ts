@@ -178,9 +178,21 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
         }
 
         // Extract full address from embed payload if present
-        const addrMatch = embedHtml.match(new RegExp(`"${placeId ? "" : ""}[^"]*","([^"]+\\d{5,6})"`));
-        if (addrMatch && addrMatch[1]) {
-          embedAddress = addrMatch[1];
+        const addressCandidates: string[] = [];
+        const addrRegex = /\"([^\"\n\r]+(?:,\s*|\s+)[A-Za-z\s]+(?:[1-9][0-9]{5}))\"/g;
+        let m: RegExpExecArray | null;
+        while ((m = addrRegex.exec(embedHtml)) !== null) {
+          if (m[1] && m[1].length > 10 && /\D/.test(m[1]) && !m[1].startsWith("http")) {
+            addressCandidates.push(m[1]);
+          }
+        }
+        if (addressCandidates.length > 0) {
+          embedAddress = addressCandidates[addressCandidates.length - 1];
+        } else {
+          const addrMatch = embedHtml.match(new RegExp(`"${placeId ? "" : ""}[^"]*","([^"]+\\d{5,6})"`));
+          if (addrMatch && addrMatch[1] && /\D/.test(addrMatch[1])) {
+            embedAddress = addrMatch[1];
+          }
         }
       } catch (embedErr) {
         console.error("Maps embed lookup fallback error:", embedErr);

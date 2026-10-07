@@ -83,6 +83,13 @@ export default function SmartHubExperience({
     siteUrl = `https://${siteUrl}`;
   }
 
+  // Google Maps directions / profile URL
+  const mapsUrl = business.googlePlaceId
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${business.googlePlaceId}`
+    : business.googleAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.googleAddress)}`
+    : null;
+
   const handleShareHub = async () => {
     if (typeof window === "undefined") return;
     const url = window.location.href;
@@ -174,10 +181,16 @@ export default function SmartHubExperience({
         </div>
 
         {business.googleAddress && (
-          <p className="text-[11px] text-slate-400 mt-2 flex items-center justify-center gap-1 max-w-xs truncate">
-            <MapPin className="w-3 h-3 text-red-400 shrink-0" />
-            <span className="truncate">{business.googleAddress}</span>
-          </p>
+          <a
+            href={mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.googleAddress)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-slate-400 hover:text-slate-200 transition mt-2 flex items-center justify-center gap-1 max-w-xs truncate group"
+            title="Open in Google Maps"
+          >
+            <MapPin className="w-3 h-3 text-red-400 shrink-0 group-hover:scale-110 transition" />
+            <span className="truncate underline decoration-dotted underline-offset-2">{business.googleAddress}</span>
+          </a>
         )}
       </div>
 
@@ -292,6 +305,30 @@ export default function SmartHubExperience({
           </a>
         )}
 
+        {/* 3. Locate on Google Maps / Directions */}
+        {mapsUrl && (
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-blue-500/30 hover:border-blue-500/60 shadow-lg flex items-center justify-between gap-3 transition group transform active:scale-98"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30 group-hover:scale-105 transition">
+                <MapPin className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-bold text-white group-hover:text-blue-300 transition block">
+                  Find us on Google Maps
+                </span>
+                <span className="text-[11px] text-slate-400 block">
+                  Get live directions &amp; office location
+                </span>
+              </div>
+            </div>
+            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition shrink-0" />
+          </a>
+        )}
 
         {/* 4. Instagram Profile */}
         {instaUrl && (
