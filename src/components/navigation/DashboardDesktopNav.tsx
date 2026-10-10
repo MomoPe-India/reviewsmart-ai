@@ -9,7 +9,7 @@ import {
   Printer,
   Sparkles,
   Inbox,
-  Store,
+  CreditCard,
 } from "lucide-react";
 
 interface DashboardDesktopNavProps {
@@ -19,7 +19,6 @@ interface DashboardDesktopNavProps {
 
 export default function DashboardDesktopNav({
   isOffline,
-  outletCount,
 }: DashboardDesktopNavProps) {
   const pathname = usePathname();
 
@@ -55,11 +54,10 @@ export default function DashboardDesktopNav({
       active: pathname.startsWith("/dashboard/feedback"),
     },
     {
-      label: "My Outlets",
-      href: "/dashboard/branches",
-      icon: Store,
-      active: pathname.startsWith("/dashboard/branches"),
-      badge: outletCount,
+      label: "Plan & Access",
+      href: "/dashboard/billing",
+      icon: CreditCard,
+      active: pathname.startsWith("/dashboard/billing"),
     },
   ];
 
@@ -87,18 +85,6 @@ export default function DashboardDesktopNav({
               />
               <span className="truncate">{item.label}</span>
             </div>
-
-            {item.badge !== undefined && (
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${
-                  isActive
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                    : "bg-slate-800 text-slate-400 border-slate-700"
-                }`}
-              >
-                {item.badge}
-              </span>
-            )}
           </Link>
         );
       })}

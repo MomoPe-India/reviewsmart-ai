@@ -18,7 +18,7 @@ export default function WhatsAppInviteGenerator({
   const [customerName, setCustomerName] = useState("");
   const [serviceName, setServiceName] = useState(defaultService);
   const [customerPhone, setCustomerPhone] = useState("");
-  const [language, setLanguage] = useState<"TELUGU" | "ENGLISH">("TELUGU");
+  const [language, setLanguage] = useState<"TELUGU" | "ENGLISH" | "HINDI" | "TAMIL" | "KANNADA" | "MALAYALAM">("TELUGU");
   const [copied, setCopied] = useState(false);
 
   const getBaseAppUrl = () => {
@@ -42,6 +42,46 @@ export default function WhatsAppInviteGenerator({
   const getInviteMessage = () => {
     const custGreeting = customerName.trim() ? `${customerName.trim()} garu` : "Sir/Madam";
     const serviceMention = serviceName.trim() ? serviceName.trim() : "service";
+
+    if (language === "HINDI") {
+      return (
+        `नमस्ते ${customerName.trim() ? customerName.trim() + " जी" : "जी"}! 🙏\n\n` +
+        `आज ${businessName} की ${serviceMention} सेवा चुनने के लिए बहुत-बहुत धन्यवाद।\n\n` +
+        `कृपया Google पर 5-स्टार रेटिंग देकर अपना अनुभव साझा करें, यह हमारे लिए बहुत महत्वपूर्ण है:\n` +
+        `👉 ${reviewUrl}\n\n` +
+        `अपनी समीक्षा पोस्ट करें और तुरंत अपना विशेष डिस्काउंट वाउचर प्राप्त करें! 🎉`
+      );
+    }
+
+    if (language === "TAMIL") {
+      return (
+        `வணக்கம் ${customerName.trim() ? customerName.trim() + " அவர்களே" : "அன்பான வாடிக்கையாளரே"}! 🙏\n\n` +
+        `இன்று ${businessName} இன் ${serviceMention} சேவையைத் தேர்ந்தெடுத்தமைக்கு மிக்க நன்றி.\n\n` +
+        `கூகுளில் 5-நட்சத்திர மதிப்பீடு வழங்கி தங்களின் ஆதரவை 5 வினாடிகளில் தெரியப்படுத்துங்கள்:\n` +
+        `👉 ${reviewUrl}\n\n` +
+        `விமர்சனத்தைப் பதிவிட்டு உடனடியாக தங்களின் பிரத்யேக தள்ளுபடி வவுச்சரைப் பெறுங்கள்! 🎉`
+      );
+    }
+
+    if (language === "KANNADA") {
+      return (
+        `ನಮಸ್ಕಾರ ${customerName.trim() ? customerName.trim() + " ಅವರೇ" : "ಗ್ರಾಹಕರೇ"}! 🙏\n\n` +
+        `ಇಂದು ${businessName} ನ ${serviceMention} ಸೇವೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು.\n\n` +
+        `ಗೂಗಲ್‌ನಲ್ಲಿ 5-ಸ್ಟಾರ್ ರೇಟಿಂಗ್ ನೀಡುವ ಮೂಲಕ ನಿಮ್ಮ ಅನುಭವವನ್ನು 5 ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ:\n` +
+        `👉 ${reviewUrl}\n\n` +
+        `ನಿಮ್ಮ ವಿಮರ್ಶೆ ಪೋಸ್ಟ್ ಮಾಡಿ ಮತ್ತು ತಕ್ಷಣ ವಿಶೇಷ ರಿಯಾಯಿತಿ ವೋಚರ್ ಪಡೆಯಿರಿ! 🎉`
+      );
+    }
+
+    if (language === "MALAYALAM") {
+      return (
+        `നമസ്കാരം ${customerName.trim() ? customerName.trim() : "പ്രിയ ഉപഭോക്താവേ"}! 🙏\n\n` +
+        `ഇന്ന് ${businessName}-ന്റെ ${serviceMention} സേവനം തിരഞ്ഞെടുത്തതിന് വളരെ നന്ദി.\n\n` +
+        `Google-ൽ 5-സ്റ്റാർ റേറ്റിംഗ് നൽകി നിങ്ങളുടെ അനുഭവം പങ്കുവെക്കാൻ ദയവായി 5 സെക്കൻഡ് ചെലവഴിക്കൂ:\n` +
+        `👉 ${reviewUrl}\n\n` +
+        `റിവ്യൂ പോസ്റ്റ് ചെയ്ത് ഉടൻ തന്നെ പ്രത്യേക കിഴിവ് വൗച്ചർ നേടൂ! 🎉`
+      );
+    }
 
     if (language === "TELUGU") {
       return (
@@ -99,29 +139,30 @@ export default function WhatsAppInviteGenerator({
       </div>
 
       {/* Language Toggle */}
-      <div className="flex items-center gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
-        <button
-          type="button"
-          onClick={() => setLanguage("TELUGU")}
-          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
-            language === "TELUGU"
-              ? "bg-emerald-500 text-slate-950 shadow"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          తెలుగు (Telugu)
-        </button>
-        <button
-          type="button"
-          onClick={() => setLanguage("ENGLISH")}
-          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
-            language === "ENGLISH"
-              ? "bg-emerald-500 text-slate-950 shadow"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          English
-        </button>
+      <div className="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
+        {(
+          [
+            { code: "TELUGU", label: "తెలుగు" },
+            { code: "ENGLISH", label: "English" },
+            { code: "HINDI", label: "हिंदी" },
+            { code: "TAMIL", label: "தமிழ்" },
+            { code: "KANNADA", label: "ಕನ್ನಡ" },
+            { code: "MALAYALAM", label: "മലയാളം" },
+          ] as const
+        ).map((item) => (
+          <button
+            key={item.code}
+            type="button"
+            onClick={() => setLanguage(item.code)}
+            className={`py-1.5 px-2.5 rounded-lg text-xs font-bold transition shrink-0 ${
+              language === item.code
+                ? "bg-emerald-500 text-slate-950 shadow"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       {/* Form Fields */}

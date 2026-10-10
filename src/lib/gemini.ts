@@ -99,6 +99,14 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
       languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural TELUGU SCRIPT (తెలుగు), as written by local customers on mobile.`;
     } else if (languageMode === "TELUGU_ROMAN" || languageMode === "TELUGU_ENGLISH") {
       languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic TANGLISH (conversational Telugu typed in English script, e.g., 'Chala baga chesaru, super quality and fast service. Staff kuda friendly ga unaru.').`;
+    } else if (languageMode === "HINDI") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural HINDI SCRIPT (हिंदी), as written by real everyday Indian customers on Google Maps (e.g. 'बहुत ही शानदार सेवा, समय पर काम पूरा हुआ और स्टाफ बहुत विनम्र है।').`;
+    } else if (languageMode === "TAMIL") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural TAMIL SCRIPT (தமிழ்), as written by real everyday customers on Google Maps (e.g. 'மிகவும் அருமையான சேவை மற்றும் சிறந்த தரம். குறித்த நேரத்தில் முடித்து தந்தார்கள்.').`;
+    } else if (languageMode === "KANNADA") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural KANNADA SCRIPT (ಕನ್ನಡ), as written by real everyday customers on Google Maps (e.g. 'ಅತ್ಯುತ್ತಮ ಸೇವೆ ಮತ್ತು ಗುಣಮಟ್ಟ. ಸಿಬ್ಬಂದಿ ತುಂಬಾ ಸ್ನೇಹಪರ ಮತ್ತು ಸಹಕಾರಿಯಾಗಿದ್ದಾರೆ.').`;
+    } else if (languageMode === "MALAYALAM") {
+      languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural MALAYALAM SCRIPT (മലയാളം), as written by real everyday customers on Google Maps (e.g. 'മികച്ച സേവനവും സമയനിഷ്ഠയും. വളരെ മാന്യമായ പെരുമാറ്റം.').`;
     } else if (languageMode === "ENGLISH") {
       languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in natural, conversational English.`;
     } else {
@@ -298,7 +306,7 @@ export async function generateReviewReply(
   reviewText: string,
   rating: number,
   reviewerName?: string,
-  language: "ENGLISH" | "TELUGU" = "ENGLISH",
+  language: "ENGLISH" | "TELUGU" | "HINDI" | "TAMIL" | "KANNADA" | "MALAYALAM" = "ENGLISH",
   tone: string = "WARM"
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -309,10 +317,18 @@ export async function generateReviewReply(
     for (const model of modelsToTry) {
       try {
         const client = new GoogleGenAI({ apiKey });
-        const langGuidance =
-          language === "TELUGU"
-            ? "Write the reply entirely in respectful, natural TELUGU (తెలుగు) as a warm local business owner."
-            : "Write the reply in natural, friendly English.";
+        let langGuidance = "Write the reply in natural, friendly English.";
+        if (language === "TELUGU") {
+          langGuidance = "Write the reply entirely in respectful, natural TELUGU (తెలుగు) as a warm local business owner.";
+        } else if (language === "HINDI") {
+          langGuidance = "Write the reply entirely in respectful, natural HINDI (हिंदी) as a warm, courteous Indian business owner.";
+        } else if (language === "TAMIL") {
+          langGuidance = "Write the reply entirely in respectful, natural TAMIL (தமிழ்) as a warm, courteous business owner.";
+        } else if (language === "KANNADA") {
+          langGuidance = "Write the reply entirely in respectful, natural KANNADA (ಕನ್ನಡ) as a warm, courteous business owner.";
+        } else if (language === "MALAYALAM") {
+          langGuidance = "Write the reply entirely in respectful, natural MALAYALAM (മലയാളം) as a warm, courteous business owner.";
+        }
 
         const prompt = `You are the owner/manager of "${businessName}". 
 A customer left this ${rating}-star review on Google:
@@ -340,6 +356,51 @@ Write a short, genuine 1-2 sentence response thanking them specifically for thei
   }
 
   // Intelligent dynamic fallback for review reply
+  if (language === "HINDI") {
+    if (rating >= 4) {
+      const hindiReplies = [
+        `नमस्ते${nameGreeting}! ${businessName} में आने और अपनी बहुमूल्य समीक्षा साझा करने के लिए बहुत-बहुत धन्यवाद। हम आगे भी आपकी सेवा के लिए तत्पर हैं!`,
+        `बहुत-बहुत धन्यवाद${nameGreeting}! हमारी सेवा आपको पसंद आई, यह जानकर हमारी टीम को बहुत खुशी हुई। हमेशा आपके स्वागत के लिए तैयार हैं।`,
+        `धन्यवाद${nameGreeting}! आपका समर्थन हमारे व्यवसाय के लिए बहुत महत्वपूर्ण है। जल्द ही आपसे फिर मिलने की उम्मीद करते हैं!`,
+      ];
+      return hindiReplies[Math.floor(Math.random() * hindiReplies.length)];
+    }
+    return `नमस्ते${nameGreeting}, अपना बहुमूल्य सुझाव देने के लिए धन्यवाद। हम आपकी संतुष्टि के लिए अपनी सेवा में और सुधार करेंगे।`;
+  }
+
+  if (language === "TAMIL") {
+    if (rating >= 4) {
+      const tamilReplies = [
+        `வணக்கம்${nameGreeting}! ${businessName} வருகை தந்து தங்களின் மேலான கருத்தைப் பகிர்ந்தமைக்கு மனமார்ந்த நன்றிகள். மீண்டும் தங்களை வரவேற்க காத்திருக்கிறோம்!`,
+        `மிக்க நன்றி${nameGreeting}! எங்கள் சேவை தங்களுக்குப் பிடித்ததில் நாங்கள் மிகுந்த மகிழ்ச்சியடைகிறோம். எப்போதும் சிறந்த சேவையை வழங்க உறுதியளிக்கிறோம்.`,
+      ];
+      return tamilReplies[Math.floor(Math.random() * tamilReplies.length)];
+    }
+    return `வணக்கம்${nameGreeting}, தங்களின் மேலான பின்னூட்டத்திற்கு நன்றி. தங்களின் முழு திருப்திக்காக நாங்கள் மேலும் சிறப்பாக செயல்படுவோம்.`;
+  }
+
+  if (language === "KANNADA") {
+    if (rating >= 4) {
+      const kannadaReplies = [
+        `ನಮಸ್ಕಾರ${nameGreeting}! ${businessName} ಗೆ ಭೇಟಿ ನೀಡಿ ತಮ್ಮ ಅಮೂಲ್ಯವಾದ ವಿಮರ್ಶೆಯನ್ನು ಹಂಚಿಕೊಂಡಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮನ್ನು ಮತ್ತೆ ಸ್ವಾಗತಿಸಲು ಎದುರುನೋಡುತ್ತಿದ್ದೇವೆ!`,
+        `ತುಂಬಾ ಧನ್ಯವಾದಗಳು${nameGreeting}! ನಮ್ಮ ಸೇವೆ ತಮಗೆ ತೃಪ್ತಿ ತಂದಿದ್ದಕ್ಕೆ ನಮ್ಮ ತಂಡಕ್ಕೆ ತುಂಬಾ ಸಂತೋಷವಾಗಿದೆ. ಸದಾ ಉತ್ತಮ ಸೇವೆಯನ್ನು ಒದಗಿಸಲು ಬದ್ಧರಾಗಿದ್ದೇವೆ.`,
+      ];
+      return kannadaReplies[Math.floor(Math.random() * kannadaReplies.length)];
+    }
+    return `ನಮಸ್ಕಾರ${nameGreeting}, ನಿಮ್ಮ ಅಮೂಲ್ಯವಾದ ಸಲಹೆಗೆ ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ತೃಪ್ತಿಗಾಗಿ ನಾವು ಇನ್ನಷ್ಟು ಉತ್ತಮವಾಗಿ ಸೇವೆ ಸಲ್ಲಿಸುತ್ತೇವೆ.`;
+  }
+
+  if (language === "MALAYALAM") {
+    if (rating >= 4) {
+      const malayalamReplies = [
+        `നമസ്കാരം${nameGreeting}! ${businessName} സന്ദർശിക്കുകയും താങ്കളുടെ വിലയേറിയ അഭിപ്രായം പങ്കുവെക്കുകയും ചെയ്തതിന് ഹൃദയം നിറഞ്ഞ നന്ദി. വീണ്ടും സ്വാഗതം ചെയ്യുന്നു!`,
+        `വളരെ നന്ദി${nameGreeting}! ഞങ്ങളുടെ സേവനം താങ്കൾക്ക് സംതൃപ്തി നൽകിയതിൽ ഞങ്ങൾക്ക് അതിയായ സന്തോഷമുണ്ട്. എപ്പോഴും മികച്ച സേവനം നൽകാൻ പ്രതിജ്ഞാബദ്ധരാണ്.`,
+      ];
+      return malayalamReplies[Math.floor(Math.random() * malayalamReplies.length)];
+    }
+    return `നമസ്കാരം${nameGreeting}, താങ്കളുടെ വിലപ്പെട്ട അഭിപ്രായത്തിന് നന്ദി. താങ്കളുടെ സംതൃപ്തിക്കായി ഞങ്ങൾ കൂടുതൽ മെച്ചപ്പെടുത്തലുകൾ വരുത്തുന്നതാണ്.`;
+  }
+
   if (language === "TELUGU") {
     if (rating >= 4) {
       const teluguReplies = [

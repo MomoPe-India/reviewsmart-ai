@@ -8,7 +8,7 @@ import {
   Settings,
   Sparkles,
   Inbox,
-  Store,
+  Printer,
 } from "lucide-react";
 
 export default function MobileAppBottomNav() {
@@ -22,7 +22,7 @@ export default function MobileAppBottomNav() {
       active: pathname === "/dashboard",
     },
     {
-      label: "Customise Card",
+      label: "Customise",
       href: "/dashboard/settings",
       icon: Settings,
       active: pathname.startsWith("/dashboard/settings"),
@@ -34,16 +34,16 @@ export default function MobileAppBottomNav() {
       active: pathname.startsWith("/dashboard/assistant"),
     },
     {
-      label: "Review Shield",
+      label: "Shield",
       href: "/dashboard/feedback",
       icon: Inbox,
       active: pathname.startsWith("/dashboard/feedback"),
     },
     {
-      label: "Outlets",
-      href: "/dashboard/branches",
-      icon: Store,
-      active: pathname.startsWith("/dashboard/branches"),
+      label: "Stand Studio",
+      href: "/dashboard/studio",
+      icon: Printer,
+      active: pathname.startsWith("/dashboard/studio"),
     },
   ];
 

@@ -51,7 +51,7 @@ export default async function BillingPage({
         subscription={subscription}
         settings={settings}
         recentPayments={recentPayments}
-        initialPlan={searchParams?.plan === "ADDON_BRANCH" ? "ADDON_BRANCH" : "MONTHLY_299"}
+        initialPlan="ONLINE_LIFETIME"
       />
     </div>
   );

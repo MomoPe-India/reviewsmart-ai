@@ -1052,22 +1052,22 @@ export default function ReviewExperience({
             </div>
 
             {/* Language & Cadence Selector */}
-            <div className="flex items-center justify-between gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800 overflow-x-auto no-scrollbar">
               <button
                 type="button"
                 onClick={() => handleLanguageChange("AUTO")}
-                className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
                   languageMode === "AUTO"
                     ? "bg-amber-400 text-slate-950 shadow-sm"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                <span>🌐 All Styles</span>
+                <span>🌐 All</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleLanguageChange("ENGLISH")}
-                className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
                   languageMode === "ENGLISH"
                     ? "bg-amber-400 text-slate-950 shadow-sm"
                     : "text-slate-400 hover:text-white"
@@ -1077,14 +1077,58 @@ export default function ReviewExperience({
               </button>
               <button
                 type="button"
+                onClick={() => handleLanguageChange("HINDI")}
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
+                  languageMode === "HINDI"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇮🇳 हिंदी</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => handleLanguageChange("TELUGU_SCRIPT")}
-                className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
                   languageMode === "TELUGU_SCRIPT"
                     ? "bg-amber-400 text-slate-950 shadow-sm"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                <span>తెలుగు + English</span>
+                <span>🇮🇳 తెలుగు</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("TAMIL")}
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
+                  languageMode === "TAMIL"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇮🇳 தமிழ்</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("KANNADA")}
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
+                  languageMode === "KANNADA"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇮🇳 ಕನ್ನಡ</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange("MALAYALAM")}
+                className={`py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shrink-0 ${
+                  languageMode === "MALAYALAM"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇮🇳 മലയാളം</span>
               </button>
             </div>
 
@@ -1164,6 +1208,18 @@ export default function ReviewExperience({
                         <span className="text-[10px] block truncate font-bold">{opt.headline || opt.tone}</span>
                         {opt.languageMix === "TELUGU_SCRIPT" && (
                           <span className="text-[8px] text-amber-400 block font-semibold">తెలుగు</span>
+                        )}
+                        {opt.languageMix === "HINDI" && (
+                          <span className="text-[8px] text-amber-400 block font-semibold">हिंदी</span>
+                        )}
+                        {opt.languageMix === "TAMIL" && (
+                          <span className="text-[8px] text-amber-400 block font-semibold">தமிழ்</span>
+                        )}
+                        {opt.languageMix === "KANNADA" && (
+                          <span className="text-[8px] text-amber-400 block font-semibold">ಕನ್ನಡ</span>
+                        )}
+                        {opt.languageMix === "MALAYALAM" && (
+                          <span className="text-[8px] text-amber-400 block font-semibold">മലയാളം</span>
                         )}
                       </button>
                     );

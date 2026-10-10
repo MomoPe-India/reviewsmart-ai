@@ -9,7 +9,16 @@ import {
   BusinessProfile,
 } from "./domain-fences";
 
-export type LanguageMode = "ENGLISH" | "TELUGU_SCRIPT" | "TELUGU_ENGLISH" | "TELUGU_ROMAN" | "AUTO";
+export type LanguageMode =
+  | "ENGLISH"
+  | "TELUGU_SCRIPT"
+  | "TELUGU_ENGLISH"
+  | "TELUGU_ROMAN"
+  | "HINDI"
+  | "TAMIL"
+  | "KANNADA"
+  | "MALAYALAM"
+  | "AUTO";
 
 export interface SynthesizerParams {
   businessName: string;
@@ -4847,6 +4856,209 @@ function generateTeluguOccasion(
   return review;
 }
 
+// ─── MULTI-LANGUAGE PAN-INDIA GENERATORS ────────────────────────────────────
+function generateHindiConversational(
+  bName: string,
+  tags: string[],
+  note: string,
+  lex: DomainLexicon,
+  ind: IndustryType
+): string {
+  const tag = pickRandom(tags) || "service";
+  let opener: string;
+  let middle: string;
+  let closer: string;
+
+  switch (ind) {
+    case "APPLIANCE_REPAIR":
+      opener = pickRandom([
+        `हमारे घर पर AC और फ्रिज सर्विसिंग के लिए ${bName} से संपर्क किया।`,
+        `${bName} की डोरस्टेप अप्लायंस रिपेयर सेवा बहुत ही शानदार रही।`,
+      ]);
+      middle = pickRandom([
+        `टेक्नीशियन समय पर पहुंचे और वाटरप्रूफ कवर के साथ जेट वॉश बहुत ही सफाई से किया।`,
+        `कूलिंग की समस्या को तुरंत समझकर सही तरीके से ठीक किया, गैस प्रेशर भी चेक किया।`,
+      ]);
+      closer = pickRandom([
+        `बहुत ही बढ़िया सर्विस और सही चार्ज! धन्यवाद ${bName}।`,
+        `घर बैठे बेहतरीन सर्विस मिली, 5 स्टार रेटिंग!`,
+      ]);
+      break;
+
+    case "GOLD_BUYERS":
+      opener = pickRandom([
+        `पुराने सोने के मूल्यांकन और उचित दाम के लिए ${bName} बहुत ही भरोसेमंद जगह है।`,
+        `${bName} में पारदर्शी तरीके से गोल्ड टेस्टिंग और तुरंत पेमेंट की सुविधा मिली।`,
+      ]);
+      middle = pickRandom([
+        `जर्मन कम्प्यूटरीकृत मशीन पर सामने ही शुद्धता की जांच की गई, कोई छिपे हुए चार्ज नहीं थे।`,
+        `डिजिटल वजन और लाइव मार्केट रेट के आधार पर तुरंत बैंक ट्रांसफर हो गया।`,
+      ]);
+      closer = pickRandom([
+        `100% पारदर्शी और सुरक्षित सेवा! बहुत संतुष्ट हैं।`,
+        `पूरी तरह से भरोसेमंद गोल्ड बायर्स, धन्यवाद ${bName}।`,
+      ]);
+      break;
+
+    case "SALON_BEAUTY":
+      opener = pickRandom([
+        `${bName} में सैलून और ग्रूमिंग सर्विस का अनुभव बहुत ही बेहतरीन रहा।`,
+        `फैमिली फंक्शन के लिए मेकअप और स्टाइलिंग के लिए ${bName} का चुनाव किया।`,
+      ]);
+      middle = pickRandom([
+        `स्टाफ बहुत ही प्रोफेशनल है और हाइजीन का पूरा ध्यान रखा जाता है।`,
+        `नेचुरल लुक और परफेक्ट फिनिशिंग के साथ बहुत ही खूबसूरत सर्विस दी।`,
+      ]);
+      closer = pickRandom([
+        `बहुत ही खुश हैं, सभी को यहाँ आने की सलाह देंगे!`,
+        `उत्कृष्ट सेवा और दोस्ताना माहौल!`,
+      ]);
+      break;
+
+    case "TOURS_TRAVELS":
+      opener = pickRandom([
+        `हमारी फैमिली ट्रिप और आउटस्टेशन यात्रा के लिए ${bName} से कैब बुक की।`,
+        `${bName} की ट्रेवल्स सर्विस बहुत ही समयनिष्ठ और सुरक्षित रही।`,
+      ]);
+      middle = pickRandom([
+        `गाड़ी बिल्कुल साफ-सुथरी थी और ड्राइवर ने बहुत ही सुरक्षित तरीके से ड्राइव किया।`,
+        `किराया बिल्कुल पारदर्शी था, कोई अतिरिक्त चार्ज नहीं लिया गया।`,
+      ]);
+      closer = pickRandom([
+        `यात्रा बहुत ही आरामदायक रही, धन्यवाद ${bName}!`,
+        `फैमिली और सोलो ट्रिप के लिए बेस्ट ट्रेवल्स सर्विस!`,
+      ]);
+      break;
+
+    default:
+      opener = pickRandom([
+        `${bName} से ${tag} की सर्विस लेकर बहुत ही अच्छा अनुभव रहा।`,
+        `${bName} की सेवा और काम की गुणवत्ता वास्तव में बहुत सराहनीय है।`,
+        `यहाँ पहली बार आए और इनकी सर्विस से पूरी तरह संतुष्ट हैं।`,
+      ]);
+      middle = pickRandom([
+        `स्टाफ बहुत ही विनम्र और सहयोगी है, काम बिल्कुल समय पर पूरा किया।`,
+        `गुणवत्ता बहुत ही शानदार है और दाम भी काफी वाजिब हैं।`,
+        `हमारी ज़रूरतों को बहुत ध्यान से सुनकर बेहतरीन काम करके दिया।`,
+      ]);
+      closer = pickRandom([
+        `बहुत ही भरोसेमंद जगह, सभी को यहाँ आने की सलाह देते हैं!`,
+        `उत्कृष्ट कार्य! धन्यवाद ${bName} की टीम।`,
+        `पूरी तरह से संतुष्ट, भविष्य में भी ज़रूर आएंगे!`,
+      ]);
+      break;
+  }
+
+  let review = `${opener} ${middle} ${closer}`;
+  if (note) review += ` विशेष रूप से ${note} का काम बहुत ही बेहतरीन रहा।`;
+  return review;
+}
+
+function generateHindiPunchy(
+  bName: string,
+  tags: string[],
+  note: string,
+  lex: DomainLexicon,
+  ind: IndustryType
+): string {
+  const options = [
+    `शानदार काम और बहुत ही विनम्र स्टाफ। समय पर डिलीवरी मिली, पूरी तरह संतुष्ट!`,
+    `${bName} में बहुत ही प्रोफेशनल सर्विस है। वाजिब दाम और बेहतरीन क्वालिटी!`,
+    `काम की फिनिशिंग बहुत ही बढ़िया है। टीम का व्यवहार भी बहुत मददगार रहा। 5 स्टार!`,
+    `तेज़ सर्विस, ईमानदार टीम और बेहतरीन अनुभव। सभी को रेकमेंड करता हूँ!`,
+  ];
+  let res = pickRandom(options);
+  if (note) res += ` ${note} के लिए धन्यवाद!`;
+  return res;
+}
+
+function generateTamilConversational(
+  bName: string,
+  tags: string[],
+  note: string,
+  lex: DomainLexicon,
+  ind: IndustryType
+): string {
+  const tag = pickRandom(tags) || "service";
+  const opener = pickRandom([
+    `${bName} இல் ${tag} சேவை எடுத்துக்கொண்டோம், மிகவும் அருமையான அனுபவம்.`,
+    `${bName} நிறுவனத்தின் தரம் மற்றும் அணுகுமுறை மிகவும் பாராட்டுக்குரியது.`,
+    `இங்கு வந்ததில் மிகவும் மகிழ்ச்சி, சிறந்த வாடிக்கையாளர் சேவை வழங்குகிறார்கள்.`,
+  ]);
+  const middle = pickRandom([
+    `பணியாளர்கள் மிகவும் மரியாதையுடனும் பொறுமையுடனும் கவனித்துக் கொண்டார்கள்.`,
+    `குறித்த நேரத்தில் பணியை மிக நேர்த்தியாகவும் தரமாகவும் முடித்துக்கொடுத்தார்கள்.`,
+    `நியாயமான கட்டணம் மற்றும் வெளிப்படையான அணுகுமுறை மிகவும் பிடித்திருந்தது.`,
+  ]);
+  const closer = pickRandom([
+    `அனைவருக்கும் மனதார பரிந்துரைக்கிறேன்! மிக்க நன்றி ${bName}.`,
+    `100% திருப்தியான சேவை! மீண்டும் நிச்சயம் வருவோம்.`,
+    `சிறந்த தரம் மற்றும் நம்பகமான சேவை, 5 நட்சத்திரங்கள்!`,
+  ]);
+
+  let review = `${opener} ${middle} ${closer}`;
+  if (note) review += ` குறிப்பாக ${note} பணி மிகச் சிறப்பாக இருந்தது.`;
+  return review;
+}
+
+function generateKannadaConversational(
+  bName: string,
+  tags: string[],
+  note: string,
+  lex: DomainLexicon,
+  ind: IndustryType
+): string {
+  const tag = pickRandom(tags) || "service";
+  const opener = pickRandom([
+    `${bName} ನಲ್ಲಿ ${tag} ಸೇವೆ ಪಡೆದುಕೊಂಡೆವು, ನಿಜವಾಗಿಯೂ ಅತ್ಯುತ್ತಮ ಅನುಭವ.`,
+    `${bName} ಅವರ ಕೆಲಸದ ಗುಣಮಟ್ಟ ಮತ್ತು ಸೇವೆ ತುಂಬಾ ಮೆಚ್ಚುಗೆಯಾಗಿದೆ.`,
+    `ಇಲ್ಲಿನ ಸೇವೆ ನಮಗೆ ತುಂಬಾ ಇಷ್ಟವಾಯಿತು, ಗ್ರಾಹಕರಿಗೆ ಅತ್ಯುತ್ತಮ ಸ್ಪಂದನೆ ನೀಡುತ್ತಾರೆ.`,
+  ]);
+  const middle = pickRandom([
+    `ಸಿಬ್ಬಂದಿ ಬಹಳ ವಿನಮ್ರವಾಗಿ ಮತ್ತು ಸ್ನೇಹಪರವಾಗಿ ನಮ್ಮ ಅಗತ್ಯಗಳನ್ನು ಪೂರೈಸಿದರು.`,
+    `ಸಮಯಕ್ಕೆ ಸರಿಯಾಗಿ ಮತ್ತು ಅಚ್ಚುಕಟ್ಟಾಗಿ ಕೆಲಸ ಮುಗಿಸಿಕೊಟ್ಟರು.`,
+    `ನ್ಯಾಯಯುತ ಬೆಲೆ ಮತ್ತು ನಂಬಿಕಸ್ಥ ಕೆಲಸ, ಯಾವುದೇ ಗೊಂದಲವಿಲ್ಲ.`,
+  ]);
+  const closer = pickRandom([
+    `ಎಲ್ಲರಿಗೂ ಖಂಡಿತವಾಗಿ ಶಿಫಾರಸು ಮಾಡುತ್ತೇನೆ! ಧನ್ಯವಾದಗಳು ${bName}.`,
+    `ಸಂಪೂರ್ಣ ತೃಪ್ತಿದಾಯಕ ಸೇವೆ! ಮತ್ತೆ ಖಂಡಿತವಾಗಿ ಬರುತ್ತೇವೆ.`,
+    `ಉತ್ತಮ ಗುಣಮಟ್ಟ ಮತ್ತು ವಿಶ್ವಾಸಾರ್ಹ ಸೇವೆ, 5 ಸ್ಟಾರ್ ರೇಟಿಂಗ್!`,
+  ]);
+
+  let review = `${opener} ${middle} ${closer}`;
+  if (note) review += ` ವಿಶೇಷವಾಗಿ ${note} ಕೆಲಸ ತುಂಬಾ ಚೆನ್ನಾಗಿ ಮಾಡಿಕೊಟ್ಟಿದ್ದಾರೆ.`;
+  return review;
+}
+
+function generateMalayalamConversational(
+  bName: string,
+  tags: string[],
+  note: string,
+  lex: DomainLexicon,
+  ind: IndustryType
+): string {
+  const tag = pickRandom(tags) || "service";
+  const opener = pickRandom([
+    `${bName}-ൽ നിന്ന് ${tag} സേവനം ലഭ്യമാക്കി, വളരെ മികച്ച അനുഭവമായിരുന്നു.`,
+    `${bName} നൽകിയ മികച്ച സേവനവും ഗുണനിലവാരവും വളരെ പ്രശംസനീയമാണ്.`,
+    `ഇവിടെ വന്നതിൽ വളരെ സംതൃപ്തിയുണ്ട്, മികച്ച കസ്റ്റമർ കെയർ നൽകുന്നു.`,
+  ]);
+  const middle = pickRandom([
+    `സ്റ്റാഫ് വളരെ സൗഹൃദപരമായും ഉത്തരവാദിത്തത്തോടെയും കാര്യങ്ങൾ ചെയ്തുതന്നു.`,
+    `കൃത്യസമയത്ത് മികച്ച ഫിനിഷിംഗോടെ ജോലി പൂർത്തിയാക്കി നൽകി.`,
+    `ന്യായമായ ചാർജുകളും വിശ്വസനീയമായ സമീപനവും ഏറെ ഇഷ്ടപ്പെട്ടു.`,
+  ]);
+  const closer = pickRandom([
+    `എല്ലാവർക്കും ധൈര്യമായി ശുപാർശ ചെയ്യുന്നു! നന്ദി ${bName}.`,
+    `സമ്പൂർണ്ണ സംതൃപ്തി നൽകിയ അനുഭവം! തീർച്ചയായും വീണ്ടും വരും.`,
+    `മികച്ച സർവീസും ഉയർന്ന നിലവാരവും, 5 സ്റ്റാർ റേറ്റിംഗ്!`,
+  ]);
+
+  let review = `${opener} ${middle} ${closer}`;
+  if (note) review += ` പ്രത്യേകിച്ച് ${note} പ്രവർത്തനം വളരെ മികച്ചതായിരുന്നു.`;
+  return review;
+}
+
 // ─── HEADLINE GENERATOR (Domain-Isolated) ────────────────────────────────────
 export function buildDynamicHeadline(text: string, lang: string, ind: IndustryType): string {
   if (lang === "TELUGU_SCRIPT") {
@@ -5171,6 +5383,39 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
       ]);
 
     default:
+      if (lang === "HINDI") {
+        return pickRandom([
+          "उत्कृष्ट सेवा और बढ़िया क्वालिटी",
+          "100% संतोषजनक अनुभव",
+          "बहुत ही विनम्र स्टाफ और सही दाम",
+          "शानदार काम और समय पर डिलीवरी",
+          "भरोसेमंद सेवा और बेहतरीन अनुभव",
+        ]);
+      }
+      if (lang === "TAMIL") {
+        return pickRandom([
+          "சிறந்த சேவை & நியாயமான விலை",
+          "நம்பகமான தரம் மற்றும் சிறந்த அனுபவம்",
+          "மரியாதையான பணியாளர்கள் & துரிதமான சேவை",
+          "மிகவும் திருப்திகரமான அனுபவம்",
+        ]);
+      }
+      if (lang === "KANNADA") {
+        return pickRandom([
+          "ಅತ್ಯುತ್ತಮ ಸೇವೆ ಮತ್ತು ಉತ್ತಮ ಗುಣಮಟ್ಟ",
+          "ಸಮಯಕ್ಕೆ ಸರಿಯಾದ ಡೆಲಿವರಿ ಮತ್ತು ಉತ್ತಮ ಸ್ಪಂದನೆ",
+          "ವಿಶ್ವಾಸಾರ್ಹ ಸೇವೆ ಮತ್ತು ನ್ಯಾಯಯುತ ಬೆಲೆ",
+          "ಸಂಪೂರ್ಣ ತೃಪ್ತಿದಾಯಕ ಅನುಭವ",
+        ]);
+      }
+      if (lang === "MALAYALAM") {
+        return pickRandom([
+          "മികച്ച സേവനവും ന്യായമായ വിലയും",
+          "സമ്പൂർണ്ണ സംതൃപ്തി നൽകിയ അനുഭവം",
+          "ഉത്തരവാദിത്തമുള്ള സമീപനവും മികച്ച ഗുണനിലവാരവും",
+          "വളരെ നല്ല സർവീസ്",
+        ]);
+      }
       return pickRandom([
         "Genuine & Dependable Service",
         "Great Experience Overall",
@@ -5188,10 +5433,87 @@ function generateProceduralFallback(
   lex: DomainLexicon,
   ind: IndustryType,
   roundSeed: number,
-  isTelugu: boolean
+  targetLang: string = "ENGLISH"
 ): string {
   const intent = detectTagIntent([tag], ind);
-  if (isTelugu) {
+
+  if (targetLang === "HINDI") {
+    const s = pickRandom([
+      `${bName} से ${tag} का काम बहुत ही बढ़िया तरीके से हुआ।`,
+      `${bName} की सेवा और स्टाफ का व्यवहार बहुत अच्छा रहा।`,
+      `यहाँ से सेवा लेकर पूरी तरह संतुष्ट हैं।`,
+    ]);
+    const m = pickRandom([
+      `समय पर काम पूरा किया गया और दाम भी बिल्कुल सही थे।`,
+      `क्वालिटी बहुत ही शानदार है और काम में पूरी सफाई है।`,
+      `स्टाफ ने बहुत ही विनम्रता से हमारी बात सुनी और मदद की।`,
+    ]);
+    const e = pickRandom([
+      `सभी को यहाँ आने की सलाह देता हूँ!`,
+      `धन्यवाद ${bName}! 5 स्टार रेटिंग।`,
+      `बहुत ही भरोसेमंद जगह।`,
+    ]);
+    return `${s} ${m} ${e}`;
+  }
+
+  if (targetLang === "TAMIL") {
+    const s = pickRandom([
+      `${bName} இல் ${tag} பணி மிகச் சிறப்பாக முடிந்தது.`,
+      `${bName} வாடிக்கையாளர் சேவை மிகவும் அருமையாக இருந்தது.`,
+      `இங்கு வந்ததில் மிகுந்த மகிழ்ச்சி மற்றும் திருப்தி.`,
+    ]);
+    const m = pickRandom([
+      `குறித்த நேரத்தில் பணியை முடித்துத் தந்தார்கள்.`,
+      `நியாயமான விலை மற்றும் சிறந்த தரம்.`,
+      `பணியாளர்கள் மிகுந்த மரியாதையுடன் உதவினார்கள்.`,
+    ]);
+    const e = pickRandom([
+      `அனைவருக்கும் பரிந்துரைக்கிறேன்!`,
+      `மிக்க நன்றி ${bName}! 5 நட்சத்திரங்கள்.`,
+      `மிகவும் திருப்தியான சேவை.`,
+    ]);
+    return `${s} ${m} ${e}`;
+  }
+
+  if (targetLang === "KANNADA") {
+    const s = pickRandom([
+      `${bName} ನಲ್ಲಿ ${tag} ಕೆಲಸ ತುಂಬಾ ಚೆನ್ನಾಗಿ ಆಯಿತು.`,
+      `${bName} ಗ್ರಾಹಕ ಸೇವೆ ಮತ್ತು ಗುಣಮಟ್ಟ ಅತ್ಯುತ್ತಮವಾಗಿದೆ.`,
+      `ಇಲ್ಲಿಗೆ ಭೇಟಿ ನೀಡಿ ತುಂಬಾ ಸಂತೋಷವಾಯಿತು.`,
+    ]);
+    const m = pickRandom([
+      `ಸಮಯಕ್ಕೆ ಸರಿಯಾಗಿ ಕೆಲಸ ಮುಗಿಸಿಕೊಟ್ಟರು ಮತ್ತು ಬೆಲೆ ನ್ಯಾಯಯುತವಾಗಿದೆ.`,
+      `ಕೆಲಸದ ಫಿನಿಶಿಂಗ್ ತುಂಬಾ ಅಚ್ಚುಕಟ್ಟಾಗಿದೆ.`,
+      `ಸಿಬ್ಬಂದಿ ತುಂಬಾ ಸ್ನೇಹಪರವಾಗಿ ಸ್ಪಂದಿಸಿದರು.`,
+    ]);
+    const e = pickRandom([
+      `ಖಂಡಿತವಾಗಿ ಎಲ್ಲರಿಗೂ ಶಿಫಾರಸು ಮಾಡುತ್ತೇನೆ!`,
+      `ಧನ್ಯವಾದಗಳು ${bName}! 5 ಸ್ಟಾರ್ ರೇಟಿಂಗ್.`,
+      `ಅತ್ಯಂತ ತೃಪ್ತಿದಾಯಕ ಸೇವೆ.`,
+    ]);
+    return `${s} ${m} ${e}`;
+  }
+
+  if (targetLang === "MALAYALAM") {
+    const s = pickRandom([
+      `${bName}-ൽ നിന്ന് ${tag} സേവനം വളരെ മികച്ചതായിരുന്നു.`,
+      `${bName} നൽകിയ സേവനവും പെരുമാറ്റവും പ്രശംസനീയമാണ്.`,
+      `ഇവിടെ വന്നതിൽ പൂർണ്ണ തൃപ്തിയുണ്ട്.`,
+    ]);
+    const m = pickRandom([
+      `കൃത്യസമയത്ത് ജോലി പൂർത്തിയാക്കി തന്നു.`,
+      `വളരെ മികച്ച ഗുണനിലവാരവും ന്യായമായ നിരക്കും.`,
+      `സ്റ്റാഫ് വളരെ നല്ല രീതിയിൽ സഹായിച്ചു.`,
+    ]);
+    const e = pickRandom([
+      `എല്ലാവർക്കും ശുപാർശ ചെയ്യുന്നു!`,
+      `വളരെ നന്ദി ${bName}! 5 സ്റ്റാർ.`,
+      `സമ്പൂർണ്ണ സംതൃപ്തി നൽകിയ അനുഭവം.`,
+    ]);
+    return `${s} ${m} ${e}`;
+  }
+
+  if (targetLang === "TELUGU_SCRIPT") {
     let starters: string[];
     let middles: string[];
 
@@ -5927,6 +6249,36 @@ export function synthesizeUniqueReviews(params: SynthesizerParams): SynthesizedR
       lang: "TELUGU_ROMAN",
       generator: () => generateTeluguRoman(businessName, activeTags, customNote, lexicon, industry.type),
     },
+    {
+      structure: "STRUCTURE_HINDI_CONVERSATIONAL",
+      style: "hindi_conversational",
+      lang: "HINDI",
+      generator: () => generateHindiConversational(businessName, activeTags, customNote, lexicon, industry.type),
+    },
+    {
+      structure: "STRUCTURE_HINDI_PUNCHY",
+      style: "hindi_punchy",
+      lang: "HINDI",
+      generator: () => generateHindiPunchy(businessName, activeTags, customNote, lexicon, industry.type),
+    },
+    {
+      structure: "STRUCTURE_TAMIL_CONVERSATIONAL",
+      style: "tamil_conversational",
+      lang: "TAMIL",
+      generator: () => generateTamilConversational(businessName, activeTags, customNote, lexicon, industry.type),
+    },
+    {
+      structure: "STRUCTURE_KANNADA_CONVERSATIONAL",
+      style: "kannada_conversational",
+      lang: "KANNADA",
+      generator: () => generateKannadaConversational(businessName, activeTags, customNote, lexicon, industry.type),
+    },
+    {
+      structure: "STRUCTURE_MALAYALAM_CONVERSATIONAL",
+      style: "malayalam_conversational",
+      lang: "MALAYALAM",
+      generator: () => generateMalayalamConversational(businessName, activeTags, customNote, lexicon, industry.type),
+    },
   ];
 
   // Filter based on explicit languageMode:
@@ -5935,6 +6287,14 @@ export function synthesizeUniqueReviews(params: SynthesizerParams): SynthesizedR
     eligibleStyles = allStyles.filter((s) => s.lang === "TELUGU_SCRIPT");
   } else if (languageMode === "TELUGU_ROMAN" || languageMode === "TELUGU_ENGLISH") {
     eligibleStyles = allStyles.filter((s) => s.lang === "TELUGU_ROMAN");
+  } else if (languageMode === "HINDI") {
+    eligibleStyles = allStyles.filter((s) => s.lang === "HINDI");
+  } else if (languageMode === "TAMIL") {
+    eligibleStyles = allStyles.filter((s) => s.lang === "TAMIL");
+  } else if (languageMode === "KANNADA") {
+    eligibleStyles = allStyles.filter((s) => s.lang === "KANNADA");
+  } else if (languageMode === "MALAYALAM") {
+    eligibleStyles = allStyles.filter((s) => s.lang === "MALAYALAM");
   } else if (languageMode === "ENGLISH") {
     eligibleStyles = allStyles.filter((s) => s.lang === "ENGLISH");
   } else if (!isTeluguContext) {
@@ -5981,21 +6341,33 @@ export function synthesizeUniqueReviews(params: SynthesizerParams): SynthesizedR
   while (acceptedReviews.length < 3 && fallbackSeed < 60) {
     fallbackSeed++;
     const tag = activeTags[fallbackSeed % activeTags.length] || "service";
-    const wantsTelugu = languageMode === "TELUGU_SCRIPT" || (isTeluguContext && acceptedReviews.length === 2);
+    const targetLang =
+      languageMode === "HINDI"
+        ? "HINDI"
+        : languageMode === "TAMIL"
+        ? "TAMIL"
+        : languageMode === "KANNADA"
+        ? "KANNADA"
+        : languageMode === "MALAYALAM"
+        ? "MALAYALAM"
+        : languageMode === "TELUGU_SCRIPT" || (isTeluguContext && acceptedReviews.length === 2)
+        ? "TELUGU_SCRIPT"
+        : "ENGLISH";
+
     const proceduralText = generateProceduralFallback(
       businessName,
       tag,
       lexicon,
       industry.type,
       fallbackSeed + Date.now(),
-      wantsTelugu
+      targetLang
     );
 
     const val = validateReviewUniqueness(proceduralText, history, acceptedTexts, businessName);
     if (val.valid) {
       const rel = validateBusinessRelevance(proceduralText, profile, industry.type);
       if (rel.valid) {
-        const lang = wantsTelugu ? "TELUGU_SCRIPT" : "ENGLISH";
+        const lang = targetLang;
         acceptedTexts.push(proceduralText);
         acceptedReviews.push({
           id: acceptedReviews.length + 1,

@@ -1,4 +1,5 @@
 export type PackageTierId =
+  | "ONLINE_LIFETIME"
   | "STARTER_PVC"
   | "EXECUTIVE_STANDEE"
   | "ALL_IN_ONE_HUB"
@@ -19,6 +20,36 @@ export interface HardwarePackage {
 }
 
 export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
+  ONLINE_LIFETIME: {
+    id: "ONLINE_LIFETIME",
+    name: "ReviewSmart AI Lifetime Pass (All India)",
+    shortName: "Lifetime Pass",
+    price: 3000,
+    tagline: "100% Free For Lifetime • Zero Monthly/Yearly Fees • Free Future Updates",
+    badge: "🇮🇳 Pan-India Flagship • Lifetime Free",
+    isPopular: true,
+    hardwareDeliverables: [
+      "1x 4″×6″ Luxury Crystal Acrylic Counter Standee (Retail Showpiece)",
+      "1x Dual-Sided Vertical PVC Smart NFC Card (Google Review + Digital Visiting Card)",
+      "Official Google 'G' High-Precision Circular QR Badge",
+      "Free Doorstep Express Courier Delivery across India",
+    ],
+    softwareDeliverables: [
+      "Gemini AI 5-Star Review Generation in 6 Indian Languages (EN, TE, HI, TA, KN, ML)",
+      "⚡ Express 1-Tap Sub-3-Second Review Automation",
+      "Native Android Google Maps App Intent Deep Linking",
+      "🎙️ Voice-to-Review Speech Recognition (6 Languages)",
+      "🎁 Interactive Scratch Card & Customer Voucher Rewards",
+      "🛡️ Private WhatsApp Negative Feedback Intercept Shield",
+      "📲 1-Click WhatsApp Personalized Review Inviter (?cust= & ?service=)",
+      "🤖 AI Google Review Reply Copilot (SEO Ranking Booster)",
+      "100% Free for Lifetime — 0 Monthly or Yearly Software Fees Forever",
+      "All Future Platform Updates & New AI Features Included at No Extra Cost",
+    ],
+    bestFor: "Retail stores, restaurants, clinics, boutiques, salons, service businesses across India",
+    salesPitch:
+      "Pay ₹3,000 once and get complete lifetime access with zero renewals. Luxury acrylic standee + PVC card delivered to your shop counter.",
+  },
   STARTER_PVC: {
     id: "STARTER_PVC",
     name: "Starter PVC Card Pack",
@@ -118,8 +149,9 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
 };
 
 export const PACKAGE_LIST = [
-  HARDWARE_PACKAGES.STARTER_PVC,
+  HARDWARE_PACKAGES.ONLINE_LIFETIME,
   HARDWARE_PACKAGES.EXECUTIVE_STANDEE,
+  HARDWARE_PACKAGES.STARTER_PVC,
   HARDWARE_PACKAGES.ALL_IN_ONE_HUB,
   HARDWARE_PACKAGES.ENTERPRISE_CUSTOM,
 ];
@@ -128,11 +160,14 @@ export function getPackageById(id?: string | null): HardwarePackage {
   if (id && id in HARDWARE_PACKAGES) {
     return HARDWARE_PACKAGES[id as PackageTierId];
   }
-  return HARDWARE_PACKAGES.EXECUTIVE_STANDEE;
+  return HARDWARE_PACKAGES.ONLINE_LIFETIME;
 }
 
 export function getPackageByPrice(price?: number | null): HardwarePackage {
-  if (!price || price < 2200) {
+  if (!price || price === 3000) {
+    return HARDWARE_PACKAGES.ONLINE_LIFETIME;
+  }
+  if (price < 2200) {
     return HARDWARE_PACKAGES.STARTER_PVC;
   }
   if (price >= 2200 && price < 2800) {

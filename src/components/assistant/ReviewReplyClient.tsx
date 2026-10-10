@@ -26,7 +26,9 @@ export default function ReviewReplyClient({
   const [reviewerName, setReviewerName] = useState("");
   const [rating, setRating] = useState<number>(5);
   const [reviewText, setReviewText] = useState("");
-  const [language, setLanguage] = useState<"ENGLISH" | "TELUGU">("ENGLISH");
+  const [language, setLanguage] = useState<
+    "ENGLISH" | "TELUGU" | "HINDI" | "TAMIL" | "KANNADA" | "MALAYALAM"
+  >("ENGLISH");
   const [tone, setTone] = useState<"WARM" | "PROFESSIONAL" | "CONCISE">("WARM");
   const [generatedReply, setGeneratedReply] = useState("");
   const [loading, setLoading] = useState(false);
@@ -137,33 +139,34 @@ export default function ReviewReplyClient({
 
           {/* Language & Tone Selection */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div>
+            <div className="sm:col-span-2">
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                 Reply Language
               </label>
-              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setLanguage("ENGLISH")}
-                  className={`flex-1 py-1 rounded-lg text-xs font-bold transition ${
-                    language === "ENGLISH"
-                      ? "bg-white text-indigo-700 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  🇬🇧 English
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLanguage("TELUGU")}
-                  className={`flex-1 py-1 rounded-lg text-xs font-bold transition ${
-                    language === "TELUGU"
-                      ? "bg-white text-indigo-700 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  తెలుగు
-                </button>
+              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar">
+                {(
+                  [
+                    { code: "ENGLISH", label: "🇬🇧 English" },
+                    { code: "HINDI", label: "🇮🇳 हिंदी" },
+                    { code: "TELUGU", label: "🇮🇳 తెలుగు" },
+                    { code: "TAMIL", label: "🇮🇳 தமிழ்" },
+                    { code: "KANNADA", label: "🇮🇳 ಕನ್ನಡ" },
+                    { code: "MALAYALAM", label: "🇮🇳 മലയാളം" },
+                  ] as const
+                ).map((l) => (
+                  <button
+                    key={l.code}
+                    type="button"
+                    onClick={() => setLanguage(l.code)}
+                    className={`py-1 px-2.5 rounded-lg text-xs font-bold transition shrink-0 ${
+                      language === l.code
+                        ? "bg-white text-indigo-700 shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
               </div>
             </div>
 

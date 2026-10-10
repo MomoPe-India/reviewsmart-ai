@@ -3,21 +3,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Mic, MicOff, Loader2, Sparkles, Volume2 } from "lucide-react";
 
+type SupportedSpeechLang = "en-IN" | "te-IN" | "hi-IN" | "ta-IN" | "kn-IN" | "ml-IN";
+
 interface VoiceReviewInputProps {
   onTranscript: (text: string) => void;
-  languageMode?: "ENGLISH" | "TELUGU_SCRIPT" | "AUTO" | string;
+  languageMode?: "ENGLISH" | "TELUGU_SCRIPT" | "HINDI" | "TAMIL" | "KANNADA" | "MALAYALAM" | "AUTO" | string;
   placeholder?: string;
 }
 
 export default function VoiceReviewInput({
   onTranscript,
   languageMode = "AUTO",
-  placeholder = "Speak what you liked (English or Telugu)...",
+  placeholder = "Speak what you liked (English, Hindi, Telugu, Tamil, Kannada, Malayalam)...",
 }: VoiceReviewInputProps) {
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [interimText, setInterimText] = useState("");
-  const [speechLang, setSpeechLang] = useState<"te-IN" | "en-IN">("en-IN");
+  const [speechLang, setSpeechLang] = useState<SupportedSpeechLang>("en-IN");
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
@@ -35,6 +37,14 @@ export default function VoiceReviewInput({
   useEffect(() => {
     if (languageMode === "TELUGU_SCRIPT") {
       setSpeechLang("te-IN");
+    } else if (languageMode === "HINDI") {
+      setSpeechLang("hi-IN");
+    } else if (languageMode === "TAMIL") {
+      setSpeechLang("ta-IN");
+    } else if (languageMode === "KANNADA") {
+      setSpeechLang("kn-IN");
+    } else if (languageMode === "MALAYALAM") {
+      setSpeechLang("ml-IN");
     } else {
       setSpeechLang("en-IN");
     }
@@ -120,7 +130,7 @@ export default function VoiceReviewInput({
               ? "bg-red-500 text-white animate-pulse shadow-red-500/30"
               : "bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/30"
           }`}
-          title="Tap to speak your review in Telugu or English"
+          title="Tap to speak your review in English, Hindi, Telugu, Tamil, Kannada, or Malayalam"
         >
           {isListening ? (
             <>
@@ -131,19 +141,51 @@ export default function VoiceReviewInput({
           ) : (
             <>
               <Mic className="w-3.5 h-3.5 text-amber-400" />
-              <span>🎙️ Voice Input ({speechLang === "te-IN" ? "తెలుగు" : "English"})</span>
+              <span>
+                🎙️ Speak (
+                {speechLang === "te-IN"
+                  ? "తెలుగు"
+                  : speechLang === "hi-IN"
+                  ? "हिंदी"
+                  : speechLang === "ta-IN"
+                  ? "தமிழ்"
+                  : speechLang === "kn-IN"
+                  ? "ಕನ್ನಡ"
+                  : speechLang === "ml-IN"
+                  ? "മലയാളം"
+                  : "English"}
+                )
+              </span>
             </>
           )}
         </button>
 
-        {/* Quick Language Toggle */}
-        <button
-          type="button"
-          onClick={() => setSpeechLang((prev) => (prev === "en-IN" ? "te-IN" : "en-IN"))}
-          className="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold border border-slate-700 transition"
-        >
-          {speechLang === "te-IN" ? "Switch to English" : "Switch to తెలుగు"}
-        </button>
+        {/* Quick Language Toggle Selector */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+          {(
+            [
+              { code: "en-IN", label: "EN" },
+              { code: "te-IN", label: "తెలుగు" },
+              { code: "hi-IN", label: "हिंदी" },
+              { code: "ta-IN", label: "தமிழ்" },
+              { code: "kn-IN", label: "ಕನ್ನಡ" },
+              { code: "ml-IN", label: "മലയാളം" },
+            ] as const
+          ).map((item) => (
+            <button
+              key={item.code}
+              type="button"
+              onClick={() => setSpeechLang(item.code)}
+              className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition ${
+                speechLang === item.code
+                  ? "bg-amber-400 text-slate-950 border-amber-300 font-black shadow-sm"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border-slate-700"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {interimText && (
