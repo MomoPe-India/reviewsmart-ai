@@ -50,9 +50,13 @@ interface BusinessData {
 export default function SmartHubExperience({
   business,
   staff,
+  customerName,
+  serviceName,
 }: {
   business: BusinessData;
   staff?: string | null;
+  customerName?: string | null;
+  serviceName?: string | null;
 }) {
   const [showReviewBooster, setShowReviewBooster] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -247,7 +251,12 @@ export default function SmartHubExperience({
           {/* Embedded Full Review Experience */}
           {showReviewBooster && (
             <div className="mt-4 pt-4 border-t border-white/10 animate-fadeIn">
-              <ReviewExperience business={business} staff={staff} />
+              <ReviewExperience
+                business={business}
+                staff={staff}
+                customerName={customerName}
+                serviceName={serviceName}
+              />
             </div>
           )}
         </div>

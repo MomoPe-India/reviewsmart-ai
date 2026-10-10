@@ -297,7 +297,9 @@ export async function generateReviewReply(
   businessName: string,
   reviewText: string,
   rating: number,
-  reviewerName?: string
+  reviewerName?: string,
+  language: "ENGLISH" | "TELUGU" = "ENGLISH",
+  tone: string = "WARM"
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   const nameGreeting = reviewerName ? ` ${reviewerName}` : "";
@@ -307,12 +309,21 @@ export async function generateReviewReply(
     for (const model of modelsToTry) {
       try {
         const client = new GoogleGenAI({ apiKey });
+        const langGuidance =
+          language === "TELUGU"
+            ? "Write the reply entirely in respectful, natural TELUGU (తెలుగు) as a warm local business owner."
+            : "Write the reply in natural, friendly English.";
+
         const prompt = `You are the owner/manager of "${businessName}". 
 A customer left this ${rating}-star review on Google:
 "${reviewText}"
 Customer Name: ${reviewerName || "Valued Customer"}
+Tone Preference: ${tone}
 
-Write a short, warm, professional 1-2 sentence response thanking them specifically for their support. Sound genuine, humble, and polite. Never use generic AI clichés.`;
+Language Requirement:
+${langGuidance}
+
+Write a short, genuine 1-2 sentence response thanking them specifically for their support and acknowledging their feedback. Never sound generic or like a bot. Sound polite, humble, and welcoming.`;
 
         const response = await client.models.generateContent({
           model,
@@ -329,14 +340,26 @@ Write a short, warm, professional 1-2 sentence response thanking them specifical
   }
 
   // Intelligent dynamic fallback for review reply
+  if (language === "TELUGU") {
+    if (rating >= 4) {
+      const teluguReplies = [
+        `నమస్కారం${nameGreeting}! ${businessName} సందర్శించి మీ అమూల్యమైన రివ్యూ అందించినందుకు హృదయపూర్వక ధన్యవాదాలు. మిమ్మల్ని మళ్లీ చూడాలని ఆశిస్తున్నాము!`,
+        `చాలా ధన్యవాదాలు${nameGreeting}! మా సర్వీస్ మీకు నచ్చినందుకు మా బృందానికి ఎంతో సంతోషంగా ఉంది. ఎల్లప్పుడూ మీకు ఉత్తమ సేవలు అందిస్తాము.`,
+        `ధన్యవాదాలు${nameGreeting}! మీ సపోర్ట్ మా వ్యాపారానికి చాలా విలువైనది. త్వరలోనే మళ్లీ కలవాలని కోరుకుంటున్నాము!`,
+      ];
+      return teluguReplies[Math.floor(Math.random() * teluguReplies.length)];
+    }
+    return `నమస్కారం${nameGreeting}, మీ విలువైన ఫీడ్‌బ్యాక్ తెలిపినందుకు ధన్యవాదాలు. మీ సంతృప్తి కోసం మేము మరింత మెరుగ్గా పనిచేస్తాము.`;
+  }
+
   if (rating >= 4) {
     const highStarReplies = [
-      `Thank you so much${nameGreeting} for visiting us and sharing your kind words! We look forward to serving you again.`,
-      `Really appreciate your feedback${nameGreeting}! Our team is glad you had a pleasant experience with us.`,
-      `Thank you${nameGreeting}! Your support means a lot to our local team. See you again soon!`,
+      `Thank you so much${nameGreeting} for visiting ${businessName} and sharing your kind words! We look forward to serving you again soon.`,
+      `Really appreciate your feedback${nameGreeting}! Our team is thrilled you had a pleasant experience with us.`,
+      `Thank you${nameGreeting}! Your support means the world to our local business. See you again soon!`,
     ];
     return highStarReplies[Math.floor(Math.random() * highStarReplies.length)];
   }
 
-  return `Thank you for taking the time to share your feedback${nameGreeting}. We are continuously working to improve and would appreciate the chance to make things right.`;
+  return `Thank you for taking the time to share your feedback${nameGreeting}. We are continuously working to improve and would appreciate the chance to make things right for you.`;
 }

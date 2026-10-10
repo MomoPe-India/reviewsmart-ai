@@ -10,7 +10,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { businessId, reviewText, rating, reviewerName } = await req.json();
+    const {
+      businessId,
+      reviewText,
+      rating,
+      reviewerName,
+      language = "ENGLISH",
+      tone = "WARM",
+    } = await req.json();
 
     if (!reviewText || !rating) {
       return NextResponse.json(
@@ -32,7 +39,9 @@ export async function POST(req: NextRequest) {
       businessName,
       reviewText,
       Number(rating),
-      reviewerName
+      reviewerName,
+      language,
+      tone
     );
 
     return NextResponse.json({ success: true, reply });

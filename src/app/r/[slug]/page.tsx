@@ -48,7 +48,7 @@ export default async function PublicReviewPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams?: { staff?: string };
+  searchParams?: { staff?: string; cust?: string; service?: string };
 }) {
   const business = await prisma.business.findUnique({
     where: { slug: params.slug },
@@ -153,9 +153,19 @@ export default async function PublicReviewPage({
       {/* Review card or Smart Hub — blurred when unpaid and demo not active */}
       <div className={showWatermark ? "w-full blur-sm brightness-50 pointer-events-none select-none" : "w-full"}>
         {business.qrMode === "SMART_HUB" ? (
-          <SmartHubExperience business={business} staff={searchParams?.staff || null} />
+          <SmartHubExperience
+            business={business}
+            staff={searchParams?.staff || null}
+            customerName={searchParams?.cust || null}
+            serviceName={searchParams?.service || null}
+          />
         ) : (
-          <ReviewExperience business={business} staff={searchParams?.staff || null} />
+          <ReviewExperience
+            business={business}
+            staff={searchParams?.staff || null}
+            customerName={searchParams?.cust || null}
+            serviceName={searchParams?.service || null}
+          />
         )}
       </div>
 

@@ -22,10 +22,18 @@ import {
   CheckCircle2,
   ArrowRight,
   Edit3,
+  Zap,
+  Gift,
+  Share2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { detectIndustry } from "@/lib/industry";
 import { copyToClipboard } from "@/lib/clipboard";
 import { synthesizeUniqueReviews, LanguageMode } from "@/lib/review-synthesizer";
+import VoiceReviewInput from "./VoiceReviewInput";
+import ScratchRewardCard from "./ScratchRewardCard";
+import WhatsAppInviteGenerator from "./WhatsAppInviteGenerator";
 
 interface BusinessData {
   id: string;
@@ -62,9 +70,13 @@ interface ReviewOption {
 export default function ReviewExperience({
   business,
   staff,
+  customerName: incomingCustomerName,
+  serviceName: incomingServiceName,
 }: {
   business: BusinessData;
   staff?: string | null;
+  customerName?: string | null;
+  serviceName?: string | null;
 }) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -73,7 +85,7 @@ export default function ReviewExperience({
   const [languageMode, setLanguageMode] = useState<LanguageMode>("AUTO");
 
   // Private direct feedback state
-  const [customerName, setCustomerName] = useState("");
+  const [customerName, setCustomerName] = useState(incomingCustomerName || "");
   const [customerContact, setCustomerContact] = useState("");
   const [feedbackComments, setFeedbackComments] = useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
@@ -88,6 +100,14 @@ export default function ReviewExperience({
   const [editableDraftText, setEditableDraftText] = useState<string>("");
   const [isEditingDraft, setIsEditingDraft] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Express 1-Tap & Automation state
+  const [isStudioExpanded, setIsStudioExpanded] = useState(false);
+  const [hasOpenedGoogle, setHasOpenedGoogle] = useState(false);
+  const [showRewardCard, setShowRewardCard] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [expressToast, setExpressToast] = useState<string | null>(null);
 
   // Celebration Modal state
   const [showCopyModal, setShowCopyModal] = useState(false);
@@ -127,6 +147,9 @@ export default function ReviewExperience({
       /iPad|iPhone|iPod/.test(ua) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     setIsIOS(appleDevice);
+    if (/Instagram|FBAN|FBAV|WhatsApp/i.test(ua)) {
+      setIsInAppBrowser(true);
+    }
   }, []);
 
   // Resolved Direct GMB Review URL - ALWAYS opens the Google Review Popup Screen directly!
@@ -204,6 +227,11 @@ export default function ReviewExperience({
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
   };
 
+  const getAndroidIntentUrl = (targetUrl: string) => {
+    const clean = targetUrl.replace(/^https?:\/\//, "");
+    return `intent://${clean}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+  };
+
   const getMapsAppUrl = () => {
     // Keep aligned with direct review popup URL so user is never redirected to profile overview
     return getResolvedGoogleUrl();
@@ -257,6 +285,113 @@ export default function ReviewExperience({
       writingStyle: s.writingStyle,
       languageMix: s.languageMix,
     }));
+  };
+
+  // Pre-select top compliment chips & build instant initial draft at t = 0ms
+  useEffect(() => {
+    let startingTags: string[] = [];
+    if (incomingServiceName) {
+      const matched = tagsList.find((t) => t.toLowerCase().includes(incomingServiceName.toLowerCase()));
+      if (matched) {
+        startingTags.push(matched);
+      } else {
+        startingTags.push(incomingServiceName);
+      }
+    }
+    for (const t of tagsList) {
+      if (startingTags.length >= 2) break;
+      if (!startingTags.includes(t)) startingTags.push(t);
+    }
+    setSelectedTags(startingTags);
+
+    const initialDrafts = buildInstantDrafts(startingTags, customNote, languageMode);
+    setReviewOptions(initialDrafts);
+    setSelectedOptionId(1);
+    if (initialDrafts[0]) {
+      setEditableDraftText(initialDrafts[0].text);
+    }
+  }, []);
+
+  // Gamified return-from-Google detection
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && hasOpenedGoogle) {
+        setShowRewardCard(true);
+      }
+    };
+    const handleFocus = () => {
+      if (hasOpenedGoogle) {
+        setShowRewardCard(true);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [hasOpenedGoogle]);
+
+  const handleExpressPostGoogle = async () => {
+    const textToCopy =
+      editableDraftText ||
+      (reviewOptions[0] ? reviewOptions[0].text : `Great experience at ${business.name}! Highly recommended.`);
+
+    // 1. Copy synchronously (critical for Safari/iOS gesture compliance)
+    await copyToClipboard(textToCopy);
+
+    // 2. Haptic vibration
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([35, 25, 45]);
+    }
+
+    setHasOpenedGoogle(true);
+    setCopied(true);
+    setExpressToast("⚡ Review Copied! Opening Google Review...");
+
+    // 3. Track analytics
+    fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        slug: business.slug,
+        businessId: business.id,
+        eventType: "GOOGLE_REDIRECT",
+        rating: rating || 5,
+      }),
+    }).catch(() => {});
+
+    // 4. Confetti burst
+    try {
+      confetti({
+        particleCount: 85,
+        spread: 65,
+        origin: { y: 0.6 },
+        colors: ["#f59e0b", "#4f46e5", "#10b981", "#3b82f6"],
+      });
+    } catch {}
+
+    // 5. Open target Google review directly
+    const ua = navigator.userAgent || "";
+    const isAndroid = /Android/i.test(ua);
+    const targetUrl = isAndroid ? getAndroidIntentUrl(googleUrl) : googleUrl;
+
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 120);
+  };
+
+  const handleVoiceTranscript = (spokenText: string) => {
+    const combined = customNote ? `${customNote} ${spokenText}`.trim() : spokenText.trim();
+    setCustomNote(combined);
+    const updated = buildInstantDrafts(selectedTags, combined, languageMode);
+    setReviewOptions(updated);
+    if (updated[0]) {
+      setEditableDraftText(updated[0].text);
+      copyToClipboard(updated[0].text);
+    }
+    triggerAiGeneration(selectedTags, combined, languageMode);
   };
 
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -620,9 +755,35 @@ export default function ReviewExperience({
                   <span>Instagram</span>
                 </a>
               )}
+              <button
+                type="button"
+                onClick={() => setShowInviteModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                title="Create personalized WhatsApp review invite link"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Invite</span>
+              </button>
             </div>
           )}
         </div>
+
+        {/* In-App Browser Warning Banner */}
+        {isInAppBrowser && (
+          <div className="bg-amber-500/15 border border-amber-500/30 rounded-2xl p-2.5 text-center text-[11px] text-amber-300 font-medium flex items-center justify-center gap-1.5 animate-fadeIn">
+            <span>💡 In-App Browser: For instant Google login, tap <strong>⋮</strong> at top right &rarr; <strong>Open in Chrome / Safari</strong></span>
+          </div>
+        )}
+
+        {/* Personalized Customer Welcome */}
+        {incomingCustomerName && (
+          <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-2.5 text-center text-xs text-emerald-300 font-bold flex items-center justify-center gap-2 animate-fadeIn shadow-sm">
+            <span>👋 Welcome, <strong className="text-white">{incomingCustomerName}</strong>!</span>
+            {incomingServiceName && (
+              <span className="text-[11px] text-emerald-400">· Rate your {incomingServiceName} experience</span>
+            )}
+          </div>
+        )}
 
         {/* Staff Attribution Badge */}
         {staff && (
@@ -682,6 +843,57 @@ export default function ReviewExperience({
                   🤝 We value your honesty! Send a direct note or review on Google
                 </span>
               )}
+            </div>
+          )}
+
+          {/* ─── EXPRESS 1-TAP HERO ACTION CARD ─────────────────────────────── */}
+          {rating >= 4 && (
+            <div className="mt-4 pt-3 border-t border-slate-800 text-left space-y-3 animate-fadeIn">
+              <div className="bg-gradient-to-br from-amber-500/20 via-slate-950 to-indigo-950/60 border-2 border-amber-400/80 rounded-2xl p-4 space-y-3 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <Zap className="w-4 h-4 fill-amber-400 text-amber-400 animate-pulse" />
+                    Express 1-Tap Google Post
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    ⚡ Instant (&lt;3s)
+                  </span>
+                </div>
+
+                {/* Live Snippet Box */}
+                <div className="bg-slate-900/90 border border-amber-400/30 rounded-xl p-3 text-xs text-slate-200 leading-relaxed italic select-none">
+                  &ldquo;{editableDraftText || reviewOptions[0]?.text || `Great experience at ${business.name}! Highly recommended.`}&rdquo;
+                </div>
+
+                {/* Primary 1-Tap Post Button */}
+                <button
+                  type="button"
+                  onClick={handleExpressPostGoogle}
+                  className="w-full py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 active:scale-98 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-amber-950/60 transition cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+                    <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+                  </svg>
+                  <span>⚡ 1-Tap Copy &amp; Post on Google</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="flex items-center justify-between text-[11px] pt-1">
+                  <span className="text-slate-400">
+                    ✅ Copies text &amp; opens Google Maps
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsStudioExpanded((prev) => !prev)}
+                    className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 underline underline-offset-2"
+                  >
+                    <span>{isStudioExpanded ? "Hide Studio ▲" : "Customize / Telugu / Voice ▼"}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -805,9 +1017,14 @@ export default function ReviewExperience({
           </div>
         )}
 
-        {/* ─── 4-5 STARS: AI-ASSISTED REVIEW COMPOSER ──────────────────────── */}
+        {/* ─── 4-5 STARS: AI-ASSISTED REVIEW COMPOSER STUDIO ──────────────── */}
         {isPositive && (
-          <div ref={reviewSectionRef} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-amber-400/30 shadow-2xl animate-fadeIn space-y-4">
+          <div
+            ref={reviewSectionRef}
+            className={`bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-amber-400/30 shadow-2xl transition-all duration-300 space-y-4 ${
+              isStudioExpanded ? "block animate-fadeIn" : "hidden sm:block"
+            }`}
+          >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
@@ -898,8 +1115,15 @@ export default function ReviewExperience({
               </div>
             </div>
 
-            {/* Optional Specific Note */}
-            <div>
+            {/* Optional Specific Note & Voice Dictation */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold text-slate-300 block">
+                Add a specific note or speak feedback:
+              </span>
+              <VoiceReviewInput
+                onTranscript={handleVoiceTranscript}
+                languageMode={languageMode}
+              />
               <input
                 type="text"
                 value={customNote}
@@ -1163,6 +1387,63 @@ export default function ReviewExperience({
             >
               Done / Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── FLOATING EXPRESS TOAST ────────────────────────────────────────── */}
+      {expressToast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-slate-950 font-black text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce">
+          <Zap className="w-4 h-4 fill-slate-950" />
+          <span>{expressToast}</span>
+        </div>
+      )}
+
+      {/* ─── STICKY MOBILE 1-TAP BOTTOM BAR ───────────────────────────────── */}
+      {rating >= 4 && !showCopyModal && !showRewardCard && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-3 bg-slate-950/95 backdrop-blur-xl border-t border-amber-400/40 shadow-2xl flex items-center justify-between gap-2 max-w-lg mx-auto sm:hidden animate-slideUp">
+          <div className="flex-1 truncate">
+            <span className="text-[10px] text-amber-400 font-bold block">🌟 5-Star Ready</span>
+            <span className="text-xs text-white font-semibold truncate block">
+              {editableDraftText ? editableDraftText.slice(0, 36) + "..." : "Auto-copied keyword review"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleExpressPostGoogle}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg shrink-0 active:scale-95 cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+            <span>Post 1-Tap</span>
+          </button>
+        </div>
+      )}
+
+      {/* ─── SCRATCH REWARD CARD MODAL ─────────────────────────────────────── */}
+      {showRewardCard && (
+        <ScratchRewardCard
+          businessName={business.name}
+          whatsappNumber={business.whatsapp || business.phone}
+          onClose={() => setShowRewardCard(false)}
+        />
+      )}
+
+      {/* ─── 1-CLICK WHATSAPP INVITE MODAL ─────────────────────────────────── */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative max-w-md w-full">
+            <button
+              type="button"
+              onClick={() => setShowInviteModal(false)}
+              className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center border border-slate-700 shadow"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <WhatsAppInviteGenerator
+              businessName={business.name}
+              businessSlug={business.slug}
+              defaultService={business.category || "Service"}
+            />
           </div>
         </div>
       )}
