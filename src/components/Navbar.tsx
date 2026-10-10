@@ -80,6 +80,9 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
           <Link href="/#how-it-works" className={navLinkCls}>
             How it Works
           </Link>
+          <Link href="/#pricing" className={navLinkCls}>
+            Pricing (₹2,999)
+          </Link>
           <Link
             href="/r/momo-it-technologies"
             target="_blank"
@@ -186,6 +189,13 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
             Features
           </Link>
           <Link
+            href="/#pricing"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`block text-sm font-medium ${mobileMenuLinkCls}`}
+          >
+            Lifetime Pass (₹2,999)
+          </Link>
+          <Link
             href="/r/momo-it-technologies"
             target="_blank"
             onClick={() => setMobileMenuOpen(false)}
@@ -207,7 +217,7 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center py-2.5 rounded-xl bg-amber-500 text-white font-semibold text-xs"
                   >
-                    Owner Admin Panel
+                    Admin Console
                   </Link>
                 )}
                 {user.role === "MARKETING_AGENT" ? (
