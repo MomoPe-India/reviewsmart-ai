@@ -146,7 +146,9 @@ export default function ReviewExperience({
     }
 
     // Known merchants Place ID fallbacks if not yet present
-    if (business.slug === "sushmas-fashion-beauty" && !placeId) {
+    if (business.slug === "as-refrigeration" && !placeId) {
+      placeId = "ChIJuX7dAX5zszsROYSpGZLNNfw";
+    } else if (business.slug === "sushmas-fashion-beauty" && !placeId) {
       placeId = "ChIJbzsJc9NzszsRtBUfS0gXCHk";
     } else if (business.slug === "vrgold" && !placeId) {
       placeId = "ChIJHUVe5u5zszsR-sspZhPvhms";

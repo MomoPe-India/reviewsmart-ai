@@ -134,6 +134,13 @@ This business is a professional tattoo and body piercing studio (Karthik Tattoo 
 - DO NOT mention gold buying, jewellery, cabs, travel/rental, flex printing, visiting cards, salons/haircuts, restaurants/food, dental/clinics, or software.
 ` : "";
 
+    const applianceRepairInstruction = industry.type === "APPLIANCE_REPAIR" ? `
+CRITICAL POSITIONING (AC, REFRIGERATOR & HOME APPLIANCE REPAIR SERVICES):
+This business is a premier AC, refrigerator, and washing machine repair & servicing specialist in Kadapa (AS Refrigeration).
+- Customers review doorstep appliance repair: deep AC jet cleaning, foam wash, prompt cooling restoration, accurate gas charging (R32, R410, R22), compressor/coil repair, single/double door fridge cooling issues fixed, washing machine motor/spin problems resolved, transparent visiting charges, fair quotation with no hidden costs, polite and certified technicians arriving on time.
+- DO NOT mention gold buying, jewellery, cabs, car rental, tattoo art, body piercings, salons, haircut, flex printing, dental clinics, or software dev.
+` : "";
+
     const prompt = `You are a real customer writing an authentic, human-sounding 5-star Google review on your phone.
 Business Name: "${businessName}"
 Industry: ${industry.label}
@@ -148,6 +155,7 @@ ${languageInstruction}
 ${goldBuyerInstruction}
 ${toursTravelsInstruction}
 ${tattooStudioInstruction}
+${applianceRepairInstruction}
 
 CRITICAL BUSINESS-SPECIFIC & ZERO-POLLUTION RULES:
 1. STRICT FOCUS ON SELECTED SERVICES:

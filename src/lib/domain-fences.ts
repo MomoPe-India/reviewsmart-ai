@@ -426,6 +426,48 @@ export const DOMAIN_FENCES: Record<IndustryType, DomainFenceConfig> = {
     ],
   },
 
+  APPLIANCE_REPAIR: {
+    industryType: "APPLIANCE_REPAIR",
+    allowedKeywords: [
+      "ac", "air condition", "air conditioner", "split ac", "window ac", "cooling",
+      "chilling", "jet wash", "power jet", "foam wash", "chemical wash", "gas charging",
+      "gas refilling", "gas filling", "r32", "r410", "r22", "leakage", "coil", "compressor",
+      "installation", "fitting", "uninstallation", "fridge", "refrigerator", "single door",
+      "double door", "inverter fridge", "thermostat", "defrost", "deep freezer",
+      "washing machine", "front load", "top load", "semi automatic", "fully automatic",
+      "drum", "motor", "spin", "drain", "water leakage", "pcb", "doorstep", "technician",
+      "quick visit", "visiting charge", "genuine parts", "spare parts", "sheik", "as refrigeration",
+      "prompt service", "same day", "affordable", "honest quote", "punctual", "kadapa",
+      "mariapuram", "mariyapuram", "lohiya nagar",
+    ],
+    forbiddenKeywords: [
+      "gold", "bullion", "pledged", "xrf", "karat", "carat", "loan release",
+      "tattoo", "tattoos", "piercing", "piercings", "body art", "inked", "needles",
+      "cab", "cabs", "taxi", "self drive", "car rental", "airport drop", "darshan",
+      "flex", "banner", "sign board", "visiting card", "offset", "printing",
+      "photo frame", "framing", "pre-wedding", "candid", "shoots",
+      "haircut", "facial", "salon", "spa", "doctor", "dental", "clinic", "hospital",
+      "biryani", "dining", "restaurant", "food", "saree", "dress", "textiles",
+      "software dev", "clean code", "ui/ux",
+    ],
+    forbiddenPhrases: [
+      /\b(gold\s*rates?|pledged\s*gold|xrf\s*machines?|sell\s*gold)\b/i,
+      /\b(tattoos?|piercings?|body\s*art|permanent\s*ink|tattoo\s*needles?)\b/i,
+      /\b(cabs?|taxis?|outstation\s*cabs?|tirupati\s*darshan|self-?drives?)\b/i,
+      /\b(flex\s*banners?|sign\s*boards?|visiting\s*cards?|offset\s*printing)\b/i,
+      /\b(photo\s*frames?|pre-weddings?|candid\s*photography|wedding\s*films?)\b/i,
+      /\b(haircuts?|facials?|makeups?|salons?|spas?)\b/i,
+      /\b(doctors?|dentals?|clinics?|hospitals?|medicines?)\b/i,
+      /\b(biryani|dining|restaurants?|food\s*taste)\b/i,
+      /\b(sarees?|dresses?|clothing\s*store|textiles?)\b/i,
+      /\b(software\s*dev|app\s*dev|clean\s*code)\b/i,
+    ],
+    positiveIdentifiers: [
+      /\b(ac\s*(repair|service|cleaning|jet\s*wash|foam\s*wash|gas\s*charging|cooling|installation|compressor|fitting)|refrigerator|fridge\s*(repair|cooling|gas)|washing\s*machine(\s*repair|\s*motor)?|doorstep\s*service|technicians?|genuine\s*spares?|as\s*refrigeration)\b/i,
+      /(ఏసీ\s*(సర్వీస్|రిపేర్|కూలింగ్|గ్యాస్)|ఫ్రిడ్జ్\s*(రిపేర్|సర్వీస్)|వాషింగ్\s*మెషిన్|డోర్‌స్టెప్\s*సర్వీస్|టెక్నీషియన్|కడప)/i,
+    ],
+  },
+
   GENERAL: {
     industryType: "GENERAL",
     allowedKeywords: [

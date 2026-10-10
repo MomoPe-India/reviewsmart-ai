@@ -613,6 +613,57 @@ export const DOMAIN_LEXICONS: Record<IndustryType, DomainLexicon> = {
     ],
   },
 
+  APPLIANCE_REPAIR: {
+    items: [
+      "AC deep jet wash and cleaning",
+      "split AC cooling issue repair",
+      "AC gas charging and leak fixing",
+      "refrigerator cooling repair",
+      "washing machine drum and spin fix",
+      "doorstep appliance inspection",
+      "inverter AC PCB circuit repair",
+      "single and double door fridge gas refill",
+      "prompt same-day doorstep repair",
+      "copper pipe fitting and AC reinstallation",
+    ],
+    qualities: [
+      "thorough deep jet wash restoring ice-cold cooling instantly",
+      "transparent diagnosis with exact issue explained before touching the unit",
+      "genuine replacement parts and precise pressure testing for gas refilling",
+      "fast doorstep response arriving within an hour in Kadapa",
+      "very neat work with zero wall dirt or water leakage mess",
+      "fair and honest service charges with zero inflated estimates",
+      "polite, certified technicians who tested the appliance thoroughly before leaving",
+      "reliable cooling performance with lasting peace of mind",
+    ],
+    adjectives: [
+      "prompt and skilled",
+      "honest and reasonable",
+      "neat and professional",
+      "punctual and courteous",
+      "reliable and efficient",
+      "technically sound",
+    ],
+    actions: [
+      "booked doorstep AC repair with",
+      "called for urgent refrigerator cooling fix from",
+      "availed deep jet wash AC service from",
+      "got AC gas refilling done by",
+      "reached out for washing machine repair to",
+      "scheduled appliance servicing with",
+    ],
+    occasions: [
+      "during the peak Kadapa summer heat",
+      "when our AC stopped blowing cool air suddenly",
+      "for our annual pre-summer AC servicing",
+      "when our refrigerator stopped freezing overnight",
+      "for our washing machine spin cycle issue",
+      "recently",
+      "yesterday",
+      "last week",
+    ],
+  },
+
   GENERAL: {
     items: [
       "service requirement",
@@ -679,6 +730,14 @@ export interface TagIntent {
   isCoverUp: boolean;
   isPortrait: boolean;
   isHygiene: boolean;
+  // Appliance Repair
+  isAcService: boolean;
+  isAcGasRefill: boolean;
+  isJetWash: boolean;
+  isFridgeRepair: boolean;
+  isWashingMachine: boolean;
+  isDoorstepService: boolean;
+  isFairPriceAppliance: boolean;
   rawTag: string;
 }
 
@@ -724,6 +783,14 @@ export function detectTagIntent(tags: string[], ind: IndustryType): TagIntent {
     isCoverUp: /cover-?up|re-?work|కవర్\s*అప్/i.test(combined),
     isPortrait: /portrait|realism|face|పోర్ట్రెయిట్/i.test(combined),
     isHygiene: /hygiene|sterile|needle|clean|హైజీన్|నీడిల్/i.test(combined),
+    // Appliance Repair
+    isAcService: /ac|air\s*conditioner|cooling|కూలింగ్|ఎయిర్\s*కండీషనర్/i.test(combined),
+    isAcGasRefill: /gas|refill|charging|leak|గ్యాస్/i.test(combined),
+    isJetWash: /jet\s*wash|foam|deep\s*clean|వాష్|జెట్/i.test(combined),
+    isFridgeRepair: /fridge|refrigerator|freezer|ఫ్రిజ్|రిఫ్రిజిరేటర్/i.test(combined),
+    isWashingMachine: /washing\s*machine|motor|drum|వాషింగ్\s*మెషిన్/i.test(combined),
+    isDoorstepService: /doorstep|same-?day|quick|visit|ఇంటి|డెలివరీ|ఫాస్ట్|డోర్‌స్టెప్/i.test(combined),
+    isFairPriceAppliance: /affordable|fair|rate|price|genuine|ధర|రీజనబుల్/i.test(combined),
     rawTag: tags[0] || "",
   };
 }
@@ -1047,6 +1114,67 @@ function generateShortDirect(
         `Hands down the best tattoo studio in Kadapa!`,
       ];
     }
+  } else if (ind === "APPLIANCE_REPAIR") {
+    if (intent.isJetWash) {
+      openers = [
+        `Booked AC deep jet wash service with ${bName} and the cooling difference is night and day!`,
+        `Got deep foam and jet wash done for our split AC by ${bName}.`,
+        `Thorough AC jet cleaning service at home by ${bName}.`,
+        `Called ${bName} for AC deep servicing and jet wash in Kadapa.`,
+      ];
+      closers = [
+        `All indoor dust, muck, and bad odor were completely cleared. Ice-cold airflow restored!`,
+        `Technicians used waterproof cover sheets and left zero mess on our walls or floor.`,
+        `Chilling cooling like a brand-new AC now! Highly recommended service in Kadapa.`,
+        `Super fast response and very neat jet wash work. 10/10!`,
+      ];
+    } else if (intent.isAcGasRefill) {
+      openers = [
+        `Called ${bName} when our AC stopped cooling and was just blowing normal room air.`,
+        `Prompt AC gas refilling and nitrogen leak testing by ${bName}.`,
+        `Accurate gas charging (R32/R410) done at our doorstep by ${bName}.`,
+      ];
+      closers = [
+        `They identified the micro-leak, brazed it cleanly, and refilled gas with exact pressure gauge reading.`,
+        `Instant ice-cold cooling restored within 45 minutes of their arrival.`,
+        `Honest pricing with zero unnecessary parts charged. Best AC mechanic in Kadapa!`,
+      ];
+    } else if (intent.isFridgeRepair) {
+      openers = [
+        `Our double-door refrigerator stopped cooling and called ${bName} for doorstep inspection.`,
+        `Prompt same-day fridge repair service by ${bName} in Kadapa.`,
+        `Quick doorstep visit for refrigerator cooling issue by ${bName}.`,
+      ];
+      closers = [
+        `Diagnosed the faulty sensor/defrost timer quickly and replaced with a genuine part.`,
+        `Freezer and lower cabin cooling both working perfectly now. Very fair charges!`,
+        `Courteous technician who explained the issue clearly. Dependable home service!`,
+      ];
+    } else if (intent.isWashingMachine) {
+      openers = [
+        `Contacted ${bName} for washing machine drum spin and drainage repair.`,
+        `Fast doorstep repair for our front-load washing machine by ${bName}.`,
+        `Accurate diagnosis and fix for our washing machine motor issue at ${bName}.`,
+      ];
+      closers = [
+        `The technician solved the vibration and noise issue smoothly on the first visit.`,
+        `Genuine replacement parts and very reasonable labor charges.`,
+        `Prompt, professional, and trustworthy appliance technician in Kadapa!`,
+      ];
+    } else {
+      openers = [
+        `Top-notch doorstep appliance repair service in Kadapa by ${bName}.`,
+        `Called ${bName} for urgent AC repair and they arrived at our home within an hour.`,
+        `Very reliable and professional home appliance service team at ${bName}.`,
+        `Affordable rates and expert technician support from ${bName}.`,
+      ];
+      closers = [
+        `Fast doorstep turnaround, transparent quotation, and lasting cooling performance.`,
+        `Polite technicians, clean workmanship, and genuine spare parts.`,
+        `Number one AC and appliance repair service in Kadapa!`,
+        `Completely satisfied with the prompt doorstep assistance. Highly recommend!`,
+      ];
+    }
   } else {
     openers = [
       `Neat work on the ${item}.`,
@@ -1184,6 +1312,26 @@ function generateProductQuality(
       `Hygiene and artistry speak for themselves.`,
       `Great value for the detailing provided.`,
       `A dependable tattoo and piercing studio in Kadapa.`,
+    ];
+  } else if (ind === "APPLIANCE_REPAIR") {
+    openers = [
+      `The doorstep response and technical expertise at ${bName} were ${adj}.`,
+      `Took their service for ${item} and the cooling result was ${adj}.`,
+      `Noticeable attention to clean workmanship and exact troubleshooting at ${bName}.`,
+      `Chose ${bName} specifically for their professional appliance repair and prompt doorstep visit.`,
+    ];
+    middles = [
+      `The technician arrived on time with proper pressure gauges and tools, and tested the unit thoroughly before leaving.`,
+      `They diagnosed the exact root cause without inflating the bill, and replaced faulty components with genuine parts.`,
+      `The deep jet wash cleared all choking muck and restored ice-cold airflow instantly.`,
+      `They kept the floor and walls completely clean with protective covers during the entire service.`,
+    ];
+    closers = [
+      `Reliable doorstep appliance mechanic and very fair rates.`,
+      `Very happy with the overall cooling outcome and lasting performance.`,
+      `Punctuality and genuine repair work speak for themselves.`,
+      `Great value for money with zero hidden inspection fees.`,
+      `The most dependable AC and refrigerator service team in Kadapa.`,
     ];
   } else {
     openers = [
@@ -1508,6 +1656,62 @@ function generateProblemSolution(
       }
       break;
 
+    case "APPLIANCE_REPAIR":
+      if (intent.isJetWash) {
+        problem = pickRandom([
+          `Our split AC was barely throwing cool air and had a terrible foul odor due to clogged cooling coils during the hot summer.`,
+          `Needed an expert technician in Kadapa for high-pressure jet cleaning without damaging the copper fins or making a mess indoors.`,
+        ]);
+        solution = pickRandom([
+          `The technician from ${bName} arrived promptly, wrapped waterproof cover jackets around the AC, and performed a comprehensive deep foam and jet wash.`,
+          `They flushed out months of caked dust and mold from the blower and cooling coils with high pressure, and cleared the drain line completely.`,
+        ]);
+        result = pickRandom([
+          `Cooling restored to ice-cold levels in 10 minutes and zero water drops on our wall or floor. Outstanding service!`,
+          `Airflow is super powerful, fresh, and odorless now. Best AC jet wash service in Kadapa!`,
+        ]);
+      } else if (intent.isAcGasRefill) {
+        problem = pickRandom([
+          `Our AC compressor was running continuously but there was zero cooling in the room due to gas leakage.`,
+          `Had bad experiences previously with mechanics claiming false gas leaks and charging inflated prices.`,
+        ]);
+        solution = pickRandom([
+          `The technician from ${bName} checked the pressure with a proper gauge, pinpointed the exact micro-leak in the copper flare nut, and brazed it with nitrogen testing.`,
+          `They recharged genuine refrigerant gas to the exact manufacturer specification and checked indoor temperatures thoroughly.`,
+        ]);
+        result = pickRandom([
+          `Room cooled down within 15 minutes of completion and charges were completely fair and transparent.`,
+          `Honest diagnosis, genuine gas refilling, and lasting cooling peace of mind!`,
+        ]);
+      } else if (intent.isFridgeRepair) {
+        problem = pickRandom([
+          `Our refrigerator suddenly stopped cooling overnight and all stored milk and groceries were at risk of spoiling.`,
+          `Needed an urgent same-day doorstep technician in Kadapa who could inspect and fix our double-door fridge immediately.`,
+        ]);
+        solution = pickRandom([
+          `The technician from ${bName} reached our house within 45 minutes of booking, diagnosed a faulty thermostat and defrost relay, and had genuine spares ready.`,
+          `He explained the issue clearly, installed the original replacement part, and checked compressor cycling before leaving.`,
+        ]);
+        result = pickRandom([
+          `Freezer and bottom compartments started chilling rapidly within two hours. Lifesaver doorstep service!`,
+          `Very reasonable service charges and polite technician. Highly recommended!`,
+        ]);
+      } else {
+        problem = pickRandom([
+          `Our home appliance broke down unexpectedly and we needed a reliable, experienced technician in Kadapa for quick doorstep service.`,
+          `Was looking for an appliance repair service that gives honest quotes without hidden visitation fees.`,
+        ]);
+        solution = pickRandom([
+          `The team from ${bName} dispatched a skilled technician who inspected the appliance, diagnosed the exact root cause, and resolved it neatly on the spot.`,
+          `They tested the entire machine thoroughly and gave helpful maintenance tips to extend its working life.`,
+        ]);
+        result = pickRandom([
+          `Appliance is running smoothly and quietly like brand new. Top-quality service!`,
+          `Transparent pricing, prompt doorstep response, and total peace of mind. Best appliance repair in Kadapa!`,
+        ]);
+      }
+      break;
+
     default:
       solution = pickRandom([
         `The team at ${bName} patiently understood the requirement and suggested the right options.`,
@@ -1742,6 +1946,23 @@ function generateOccasionContext(
         `Master artist in Kadapa, much appreciated!`,
       ];
     }
+  } else if (ind === "APPLIANCE_REPAIR") {
+    openers = [
+      `Booked doorstep appliance repair with ${bName} ${occasion}.`,
+      `Called ${bName} for urgent cooling assistance ${occasion}.`,
+      `Scheduled deep AC jet cleaning with ${bName} ${occasion}.`,
+    ];
+    middles = [
+      `The technician arrived promptly, diagnosed the issue with precision, and resolved it in a single visit.`,
+      `They used professional equipment, took care not to dirty the premises, and tested everything properly.`,
+      `The appliance is running ice-cold and smooth with zero noise.`,
+    ];
+    closers = [
+      `Truly grateful for the prompt doorstep service!`,
+      `Saved us from scorching Kadapa heat!`,
+      `Will surely contact them for all future appliance servicing.`,
+      `Best appliance technicians in Kadapa, much appreciated!`,
+    ];
   } else {
     openers = [
       `Got ${item} done ${occasion}.`,
@@ -1937,6 +2158,19 @@ function generateDetailedReview(
       ]);
       break;
 
+    case "APPLIANCE_REPAIR":
+      opener = pickRandom([
+        `Booked ${bName} for doorstep ${item1} in Kadapa.`,
+        `Called ${bName} when we needed fast repair for ${item1}.`,
+        `Reached out to ${bName} after neighbors praised their reliable appliance service.`,
+      ]);
+      middle = pickRandom([
+        `First, the technician arrived right on schedule with proper equipment. Second, they diagnosed and resolved ${item2} transparently on the spot.`,
+        `The ice-cold cooling restored and clean workmanship on ${item2} exceeded expectations.`,
+        `Charges were clearly broken down upfront with genuine spare parts and zero hidden inspection fees.`,
+      ]);
+      break;
+
     default:
       opener = pickRandom([
         `Coordinated with ${bName} for our ${item1}.`,
@@ -2032,6 +2266,37 @@ function generateCasualLocal(
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
   }
 
+  if (ind === "APPLIANCE_REPAIR") {
+    const applianceHighlight = intent.isJetWash
+      ? "deep AC jet wash & cleaning"
+      : intent.isAcGasRefill
+      ? "AC gas refilling & leak fixing"
+      : intent.isFridgeRepair
+      ? "refrigerator cooling repair"
+      : intent.isWashingMachine
+      ? "washing machine repair"
+      : "doorstep AC & appliance repair";
+    const openers = [
+      `One of the best home appliance repair services in Kadapa for ${applianceHighlight}.`,
+      `If you have AC or fridge cooling issues in Kadapa, ${bName} is the go-to doorstep team.`,
+      `Neighbors in Kadapa recommended ${bName} for appliance servicing and they were 100% right.`,
+      `Easily among the most skilled and prompt appliance mechanics in Rayalaseema.`,
+    ];
+    const middles = [
+      `The technician is punctual, explains the exact technical issue, and carries proper professional tools.`,
+      `Neat workmanship, zero mess left on walls, and ice-cold cooling restored immediately.`,
+      `Honest technician who gives fair estimates without pushing unnecessary parts or extra fees.`,
+    ];
+    const closers = [
+      `Check them out if you need reliable doorstep appliance repair!`,
+      `Good to have such a trustworthy AC and fridge mechanic right here in Kadapa.`,
+      `Deserves 5 stars for fast doorstep turnaround and quality repair.`,
+      `Will definitely call them again and recommend to neighbors!`,
+    ];
+    const notePart = note ? ` Handled ${note.toLowerCase()} smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `One of the better places in the area for ${item}.`,
@@ -2104,6 +2369,14 @@ function generateMinimalist(
       `Painless piercing. Fresh disposable needles. Clear healing instructions.`,
       `Spotless studio hygiene. Wireless machine. Great aftercare advice.`,
       `Master portrait detailing. Honest pricing. Best tattoo artist in Kadapa!`,
+    ];
+  } else if (ind === "APPLIANCE_REPAIR") {
+    fragments = [
+      `Deep AC jet wash. Ice-cold airflow restored. 10/10 service at ${bName}.`,
+      `Prompt doorstep visit. Genuine spares. Honest repair by ${bName}.`,
+      `AC gas refilled. Leak repaired on the spot. Chilled cooling restored!`,
+      `Fridge cooling fixed. Same-day doorstep turnaround. Polite technician.`,
+      `Fast response in Kadapa. Clean workmanship. Very fair service rates!`,
     ];
   } else {
     fragments = [
@@ -2184,6 +2457,35 @@ function generateEnthusiastic(
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
   }
 
+  if (ind === "APPLIANCE_REPAIR") {
+    const applianceHighlight = intent.isJetWash
+      ? "AC deep jet wash"
+      : intent.isAcGasRefill
+      ? "AC gas charging"
+      : intent.isFridgeRepair
+      ? "refrigerator repair"
+      : intent.isWashingMachine
+      ? "washing machine repair"
+      : "doorstep appliance repair";
+    const openers = [
+      `Absolutely delighted with the ${applianceHighlight} done by ${bName}!`,
+      `So glad we called ${bName} to fix our ${applianceHighlight}!`,
+      `Such a prompt and hassle-free repair experience with ${bName}.`,
+    ];
+    const middles = [
+      `The technician arrived within an hour, worked swiftly without any mess, and the AC is blowing icy cold air now.`,
+      `Transparent diagnosis, genuine replacement parts, and polite conduct throughout.`,
+      `They cleaned up completely after the service and verified the cooling performance before leaving.`,
+    ];
+    const closers = [
+      `Big thumbs up to the technician and the ${bName} team!`,
+      `Will definitely rely on them for all future appliance servicing!`,
+      `Thank you for restoring our comfort in this Kadapa heat!`,
+    ];
+    const notePart = note ? ` ${note} was managed smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `Absolutely loved what ${bName} did with our ${item}!`,
@@ -2252,6 +2554,26 @@ function generateFirstTime(
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
   }
 
+  if (ind === "APPLIANCE_REPAIR") {
+    const openers = [
+      `First time booking doorstep appliance service with ${bName} in Kadapa.`,
+      `Was my first time calling an AC repair service here and went with ${bName}.`,
+      `First experience with their home appliance repair and was pleasantly surprised.`,
+    ];
+    const middles = [
+      `The technician arrived within 45 minutes, inspected the cooling problem calmly, and explained what was needed without any jargon.`,
+      `The repair work was clean, transparent, and tested thoroughly with temperature gauges before wrapping up.`,
+      `They charged exactly what was quoted over the phone with zero hidden visitation fees.`,
+    ];
+    const closers = [
+      `Definitely won't be my last time calling ${bName}!`,
+      `So relieved to find a dependable appliance repair team on my very first try.`,
+      `Found our permanent go-to AC and appliance technician in Kadapa!`,
+    ];
+    const notePart = note ? ` Also managed ${note.toLowerCase()} effortlessly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
   const item = tags[0] || pickRandom(lex.items);
   const openers = [
     `First time trying ${bName} for ${item}.`,
@@ -2315,6 +2637,26 @@ function generateRepeatCustomer(
       `Always a pleasure getting inked with Karthik.`,
       `Artistic excellence and strict hygiene keep me coming back.`,
       `The most dependable tattoo studio in Kadapa!`,
+    ];
+    const notePart = note ? ` Handled ${note.toLowerCase()} with their usual care.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "APPLIANCE_REPAIR") {
+    const openers = [
+      `Have relied on ${bName} for multiple home appliance repairs now.`,
+      `Called ${bName} again for our annual AC servicing before the summer heat.`,
+      `This is our third time getting our AC and fridge serviced by them in Kadapa.`,
+    ];
+    const middles = [
+      `Their prompt response, honesty with pricing, and technical skills have never dropped.`,
+      `Technicians are always courteous, punctual, and carry original spare parts.`,
+      `Consistent ice-cold cooling and zero recurring faults every single time.`,
+    ];
+    const closers = [
+      `Always a pleasure dealing with ${bName}.`,
+      `Honesty and prompt doorstep service keep us calling them back.`,
+      `The most reliable home appliance team in Kadapa!`,
     ];
     const notePart = note ? ` Handled ${note.toLowerCase()} with their usual care.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -2437,6 +2779,22 @@ function generateRelief(
       `Exceeded my expectations in the best artistic way possible.`,
       `True professionalism and clinical hygiene standards!`,
     ];
+  } else if (ind === "APPLIANCE_REPAIR") {
+    openers = [
+      `Was initially worried about false gas leakage claims and high repair quotes before calling ${bName}.`,
+      `Had bad experiences with other local mechanics in Kadapa who made a mess with dirty water on walls.`,
+      `Was skeptical whether our old AC could ever cool properly again in the summer heat.`,
+    ];
+    middles = [
+      `Thankfully, the technician from ${bName} proved my apprehensions completely wrong.`,
+      `He diagnosed the exact fault honestly, showed me the pressure gauge readings, and performed a spotless jet wash using protective cover bags.`,
+      `The room turned ice-cold within 20 minutes and the charges were completely fair and transparent.`,
+    ];
+    closers = [
+      `Relieved, cool, and very satisfied!`,
+      `Exceeded my expectations with honest diagnosis and clean work.`,
+      `True professionalism and dependable home appliance service!`,
+    ];
   } else {
     openers = [
       `Was initially wondering about the turnaround on the ${item}.`,
@@ -2510,6 +2868,9 @@ function generateFamilyContext(
     middle = intent.isPiercing
       ? `The specialist was extremely gentle, used sterilized equipment, and made the whole piercing calm and pain-free.`
       : `Karthik customized our tattoo stencils patiently and made everyone feel relaxed in the studio.`;
+  } else if (ind === "APPLIANCE_REPAIR") {
+    opener = `Called ${bName} to repair our home AC and refrigerator for our family in Kadapa.`;
+    middle = `The technician was very polite with our family members, worked quietly and cleanly, and restored chilled cooling instantly.`;
   }
 
   const closer = pickRandom([
@@ -2566,6 +2927,26 @@ function generateStaffService(
       `True artist doing honest work in Kadapa.`,
       `Rare to find such courteous and patient tattoo artists nowadays.`,
       `Great studio culture and dependable care!`,
+    ];
+    const notePart = note ? ` They took care of ${note.toLowerCase()} smoothly.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "APPLIANCE_REPAIR") {
+    const openers = [
+      `Really appreciated the respectful and polite behavior of the technicians at ${bName}.`,
+      `The team at ${bName} are genuinely courteous, punctual, and technically sound.`,
+      `Customer service and doorstep communication here are top notch.`,
+    ];
+    const middles = [
+      `They answered our phone call promptly, arrived at the agreed time, and explained the cooling issue in simple terms.`,
+      `They handled the appliance carefully, cleaned up all dirt and water with protective covers, and tested everything before leaving.`,
+      `Zero attitude, zero inflated repair bills, just honest doorstep service and courteous hospitality throughout.`,
+    ];
+    const closers = [
+      `Good technicians doing honest business in Kadapa.`,
+      `Rare to find such well-mannered and dependable appliance mechanics nowadays.`,
+      `Great service culture and reliable support!`,
     ];
     const notePart = note ? ` They took care of ${note.toLowerCase()} smoothly.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -2634,6 +3015,26 @@ function generateValuePricing(
       `Real value for money for custom skin art.`,
       `Honest dealings and master artistry. Highly satisfied.`,
       `Would definitely recommend ${bName} to anyone wanting a tattoo in Kadapa.`,
+    ];
+    const notePart = note ? ` Addressed ${note.toLowerCase()} without extra fuss.` : "";
+    return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
+  }
+
+  if (ind === "APPLIANCE_REPAIR") {
+    const openers = [
+      `Fair pricing and honest repair charges at ${bName}.`,
+      `Got great value for money on our AC and fridge service with ${bName}.`,
+      `Compared service quotes across Kadapa and ${bName} offered the most reasonable rates for genuine doorstep repair.`,
+    ];
+    const middles = [
+      `The deep jet cleaning and cooling repair are top tier without any overpriced service markup.`,
+      `They clearly explained the part costs and service charges upfront with zero hidden fees.`,
+      `Used original manufacturer spares and tested pressure levels properly before taking payment.`,
+    ];
+    const closers = [
+      `Real value for money in doorstep home appliance services.`,
+      `Honest dealings and skilled technicians. Highly satisfied.`,
+      `Would definitely recommend ${bName} to anyone needing AC or fridge repair in Kadapa.`,
     ];
     const notePart = note ? ` Addressed ${note.toLowerCase()} without extra fuss.` : "";
     return `${pickRandom(openers)} ${pickRandom(middles)}${notePart} ${pickRandom(closers)}`;
@@ -3008,6 +3409,55 @@ function generateTeluguConversational(
           `కడపలో నంబర్ వన్ టాటూ ఆర్టిస్ట్, థాంక్యూ ${bName}!`,
           `రీజనబుల్ ప్రైస్ మరియు వరల్డ్ క్లాస్ ఆర్ట్, ఫుల్లీ శాటిస్‌ఫైడ్!`,
           `నా ఫ్రెండ్స్ అందరికీ రికమండ్ చేస్తాను, వర్త్ ఎవ్రీ రూపీ!`,
+        ]);
+      }
+      break;
+
+    case "APPLIANCE_REPAIR":
+      if (intent.isJetWash) {
+        opener = pickRandom([
+          `${bName} లో స్ప్లిట్ ఏసీ డీప్ జెట్ వాష్ సర్వీస్ చేయించుకున్నాము.`,
+          `ఏసీ కూలింగ్ తగ్గిపోవడంతో ${bName} వారికి కాల్ చేసి జెట్ సర్వీస్ చేయించాము.`,
+          `కడపలో బెస్ట్ ఏసీ జెట్ వాష్ సర్వీస్ ${bName}, సూపర్ రిజల్ట్!`,
+        ]);
+        middle = pickRandom([
+          `ప్రొఫెషనల్ జాకెట్ కవర్ వేసి జెట్ పంప్‌తో డస్ట్ మొత్తం క్లీన్ చేశారు, గోడలపై ఒక్క నీటి చుక్క కూడా పడకుండా నీట్‌గా చేశారు.`,
+          `కాయిల్స్ లోని చెత్త మొత్తం క్లియర్ అయి, ఇప్పుడు ఐస్ కూలింగ్ సూపర్బ్ గా వస్తోంది.`,
+          `చాలా ప్రొఫెషనల్ టెక్నీషియన్, పని మొత్తం చాలా జాగ్రత్తగా పూర్తి చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో బెస్ట్ ఏసీ సర్వీస్, థాంక్యూ ${bName}!`,
+          `చల్లటి కూలింగ్ మళ్లీ వచ్చింది, ఫుల్లీ శాటిస్‌ఫైడ్!`,
+          `చాలా రీజనబుల్ ప్రైస్, డెఫినెట్‌గా రికమండ్ చేస్తాను!`,
+        ]);
+      } else if (intent.isAcGasRefill) {
+        opener = pickRandom([
+          `ఏసీ లో కూలింగ్ ఆగిపోవడంతో ${bName} ని డోర్‌స్టెప్ చెకప్ కోసం పిలిచాము.`,
+          `గ్యాస్ లీకేజ్ ప్రాబ్లమ్ సాల్వ్ చేసి రీఫిల్లింగ్ చేయడానికి ${bName} టీమ్ వచ్చారు.`,
+        ]);
+        middle = pickRandom([
+          `గేజ్ మీటర్ తో ప్రెషర్ చెక్ చేసి, కచ్చితమైన లీక్ ఎక్కడుందో గుర్తించి బ్రేజింగ్ చేశారు.`,
+          `ఒరిజినల్ గ్యాస్ ని సరైన ప్రెషర్ తో నింపారు, 15 నిమిషాల్లోనే గది మొత్తం చల్లగా మారింది.`,
+          `ఎలాంటి ఫాల్స్ చార్జీలు లేకుండా నిజాయితీగా పని చేశారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో జెన్యూన్ ఏసీ మెకానిక్, చాలా నమ్మకమైన సర్వీస్!`,
+          `రీజనబుల్ చార్జెస్ మరియు సూపర్ కూలింగ్!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `మా ఇంటి ఏసీ మరియు ఫ్రిజ్ రిపేర్ కోసం ${bName} ని సంప్రదించాము.`,
+          `కడపలో నంబర్ వన్ హోమ్ అప్లయన్సెస్ రిపేర్ సర్వీస్ ${bName}.`,
+          `అర్జెంట్ గా ఫ్రిజ్ కూలింగ్ ప్రాబ్లమ్ రావడంతో వీరికి కాల్ చేశాము, గంటలోనే వచ్చారు.`,
+        ]);
+        middle = pickRandom([
+          `సమయానికి ఇంటికి వచ్చి ప్రాబ్లమ్ ఏంటో క్లియర్‌గా వివరించి జెన్యూన్ స్పేర్ పార్ట్ వేశారు.`,
+          `టెక్నీషియన్ చాలా మర్యాదగా మాట్లాడారు, పని పూర్తయ్యాక చెక్ చేసి చూపించారు.`,
+          `మార్కెట్ లో మిగతా వారికంటే చాలా రీజనబుల్ రేట్స్ కే బెస్ట్ సర్వీస్ ఇచ్చారు.`,
+        ]);
+        closer = pickRandom([
+          `కడపలో బెస్ట్ అప్లయన్స్ రిపేర్ సర్వీస్, థాంక్యూ ${bName}!`,
+          `నమ్మకమైన డోర్‌స్టెప్ సర్వీస్, అందరికీ రికమండ్ చేస్తాను!`,
         ]);
       }
       break;
@@ -3393,6 +3843,22 @@ function generateTeluguCraftsmanship(
       break;
     }
 
+    case "APPLIANCE_REPAIR": {
+      opener = pickRandom([
+        `${bName} లో ఏసీ మరియు హోమ్ అప్లయన్సెస్ సర్వీసింగ్ చాలా పర్ఫెక్ట్ గా చేశారు.`,
+        `డోర్‌స్టెప్ ఏసీ రిపేర్ కోసం ${bName} ని సంప్రదించాము, చాలా మంచి అనుభవం.`,
+      ]);
+      middle = pickRandom([
+        `సమయానికి వచ్చి జెట్ వాష్ తో ఏసీ కాయిల్స్ నీట్‌గా క్లీన్ చేశారు, కూలింగ్ సూపర్బ్ గా వస్తోంది.`,
+        `స్పేర్ పార్ట్స్ ఒరిజినల్ వేసి, ఫెయిర్ ప్రైస్ కే రిపేర్ పూర్తి చేశారు. టెక్నీషియన్ బిహేవియర్ చాలా బాగుంది.`,
+      ]);
+      closer = pickRandom([
+        `చాలా నమ్మకమైన అప్లయన్స్ సర్వీస్, థాంక్యూ ${bName}!`,
+        `కడపలో బెస్ట్ ఏసీ మెకానిక్, డెఫినెట్‌గా రికమండ్ చేస్తాను!`,
+      ]);
+      break;
+    }
+
     default:
       opener = pickRandom([
         `${item} వర్క్ చాలా neat గా చేశారు, క్వాలిటీ నంబర్ వన్.`,
@@ -3534,6 +4000,13 @@ function generateTeluguPunchy(
         `టాటూ చాలా బ్యూటిఫుల్ గా వచ్చింది, నో ఇన్ఫెక్షన్. వర్త్ ఇట్!`,
       ]);
     }
+  } else if (ind === "APPLIANCE_REPAIR") {
+    chosen = pickRandom([
+      `డీప్ ఏసీ జెట్ వాష్ చాలా నీట్‌గా చేశారు. కూలింగ్ సూపర్బ్ గా వస్తోంది, థాంక్యూ ${bName}!`,
+      `కడపలో బెస్ట్ ఏసీ మెకానిక్. గంటలోనే ఇంటికి వచ్చి గ్యాస్ రీఫిల్ చేశారు, ప్రైస్ రీజనబుల్.`,
+      `ఫ్రిజ్ కూలింగ్ సమస్య వెంటనే పరిష్కరించారు. డోర్‌స్టెప్ సర్వీస్ ఎక్సలెంట్!`,
+      `వాషింగ్ మెషిన్ మరియు ఏసీ రిపేర్ కి బెస్ట్ ప్లేస్. 10/10 రికమండెడ్!`,
+    ]);
   } else {
     chosen = pickRandom([
       `మంచి క్వాలిటీ మరియు సమయానికి సర్వీస్ ఇచ్చారు. ప్రైస్ కూడా రీజనబుల్.`,
@@ -3933,6 +4406,43 @@ function generateTeluguRoman(
       break;
     }
 
+    case "APPLIANCE_REPAIR": {
+      if (intent.isJetWash) {
+        opener = pickRandom([
+          `${bName} lo split AC deep jet wash service cheyinchukunnamu, super result.`,
+          `AC cooling taggipothe ${bName} ki call chesamu, jet pump tho coils deep clean chesaru.`,
+          `Kadapa lo best AC jet wash service ante ${bName}, ice cold cooling vachindi.`,
+        ]);
+        middle = pickRandom([
+          `Jacket cover vesi indoor wall and floor pai drop kuda padakunda chala neat ga chesaru.`,
+          `Blower and cooling coils lo unna dust antha clean aipoindi, airflow full speed lo undi.`,
+          `Technician chala professional, work complete ayyaka testing choopinchadu.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo best AC service, thanks to ${bName}!`,
+          `Chilled cooling malli vachindi, fully satisfied!`,
+          `Reasonable charges and doorstep turnaround super fast!`,
+        ]);
+      } else {
+        opener = pickRandom([
+          `Home appliances repair kosam ${bName} ni contact ayyamu in Kadapa.`,
+          `Urgent ga AC and fridge repair kavalsi oste ${bName} ki call chesamu, 1 hour lo vacharu.`,
+          `Kadapa lo number one doorstep AC & fridge repair team ${bName}.`,
+        ]);
+        middle = pickRandom([
+          `Problem ni accurate ga diagnose chesi genuine parts vesaru.`,
+          `Transparent pricing, unnecessary parts emi suggest cheyakunda honest ga repair chesaru.`,
+          `Technician polite behavior and clean workmanship chala impress chesindi.`,
+        ]);
+        closer = pickRandom([
+          `Kadapa lo trustworthy appliance service, thanks to ${bName}!`,
+          `Doorstep service super prompt ga undi, definitely recommend chesthanu!`,
+          `Worth every rupee, best AC mechanic in Kadapa!`,
+        ]);
+      }
+      break;
+    }
+
     default:
       opener = pickRandom([
         `Chala baga chesaru, ${item} work aithe super neat ga vachindi.`,
@@ -4300,6 +4810,22 @@ function generateTeluguOccasion(
       break;
     }
 
+    case "APPLIANCE_REPAIR": {
+      opener = pickRandom([
+        `మా ఇంట్లో ఏసీ కూలింగ్ ఆగిపోవడంతో ${bName} ని డోర్‌స్టెప్ రిపేర్ కోసం పిలిచాము.`,
+        `వేసవి వేడి తట్టుకోలేక ఏసీ డీప్ జెట్ సర్వీసింగ్ కోసం ${bName} కి కాల్ చేశాము.`,
+      ]);
+      middle = pickRandom([
+        `టెక్నీషియన్ సమయానికి వచ్చి వాటర్‌ప్రూఫ్ కవర్స్ వాడి చాలా జాగ్రత్తగా జెట్ వాష్ పూర్తి చేశారు.`,
+        `గ్యాస్ ప్రెషర్ కరెక్ట్ గా చెక్ చేసి, వెంటనే చల్లటి కూలింగ్ వచ్చేలా సెట్ చేశారు.`,
+      ]);
+      closer = pickRandom([
+        `డోర్‌స్టెప్ సర్వీస్ ఎక్సలెంట్, థాంక్యూ ${bName}!`,
+        `కడపలో బెస్ట్ ఏసీ మెకానిక్!`,
+      ]);
+      break;
+    }
+
     default:
       opener = pickRandom([
         `మా ఈవెంట్ రిక్వైర్మెంట్ కోసం ${bName} లో సర్వీస్ తీసుకున్నాము.`,
@@ -4387,6 +4913,13 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "అద్భుతమైన షేడింగ్ & లైన్ వర్క్",
           "నొప్పి లేని పియర్సింగ్ & సూపర్ కేర్",
         ]);
+      case "APPLIANCE_REPAIR":
+        return pickRandom([
+          "ఐస్ కోల్డ్ ఏసీ కూలింగ్ & జెట్ వాష్",
+          "కడపలో బెస్ట్ ఏసీ & ఫ్రిజ్ రిపేర్ సర్వీస్",
+          "డోర్‌స్టెప్ సర్వీస్ & రీజనబుల్ ప్రైస్",
+          "సకాలంలో సర్వీస్ & జెన్యూన్ స్పేర్ పార్ట్స్",
+        ]);
       default:
         return pickRandom([
           "చాలా మంచి అనుభవం & Super Quality",
@@ -4458,6 +4991,13 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
           "Master Linework & Smooth Shading",
           "Painless Piercing & Great Aftercare",
           "100% Sterile & Authentic Art",
+        ]);
+      case "APPLIANCE_REPAIR":
+        return pickRandom([
+          "Best AC & Appliance Repair in Kadapa",
+          "Chilled AC Cooling & Deep Jet Wash",
+          "Prompt Doorstep Service & Honest Rates",
+          "Quick Fridge & Washing Machine Fix",
         ]);
       default:
         return pickRandom([
@@ -4619,6 +5159,15 @@ export function buildDynamicHeadline(text: string, lang: string, ind: IndustryTy
         "Virtually Painless Piercing & Great Aftercare",
         "Best Custom Tattoo & Piercing Studio in Kadapa",
         "Hospital-Grade Hygiene & Precision Art",
+      ]);
+
+    case "APPLIANCE_REPAIR":
+      return pickRandom([
+        "Ice-Cold Cooling Restored & Deep Jet Wash",
+        "Top #1 AC Repair & Service in Kadapa",
+        "Prompt Same-Day Doorstep Appliance Fix",
+        "Honest Diagnosis & Fair Repair Charges",
+        "Expert Refrigerator & Washing Machine Repair",
       ]);
 
     default:
@@ -4837,6 +5386,33 @@ function generateProceduralFallback(
             `కంటి ముందే సీల్డ్ నీడిల్స్ ఓపెన్ చేసి వాడారు.`,
             `వైర్‌లెస్ మెషిన్ తో చాలా స్మూత్ గా వేశారు.`,
             `డిజైన్ కలర్స్ చాలా బ్రైట్ గా మరియు షార్ప్‌గా ఉన్నాయి.`,
+          ];
+        }
+        break;
+      }
+
+      case "APPLIANCE_REPAIR": {
+        if (intent.isJetWash) {
+          starters = [
+            `ఏసీ డీప్ జెట్ వాష్ చాలా ప్రొఫెషనల్ గా చేశారు.`,
+            `${bName} లో ఏసీ సర్వీసింగ్ చేయించాము, రిజల్ట్ సూపర్బ్.`,
+            `కడపలో బెస్ట్ ఏసీ జెట్ సర్వీస్.`,
+          ];
+          middles = [
+            `జాకెట్ కవర్ వేసి గోడలకి మరకలు పడకుండా నీట్‌గా చేశారు.`,
+            `కాయిల్స్ లోని డస్ట్ అంతా క్లీన్ అయి ఐస్ కూలింగ్ వస్తోంది.`,
+            `టెక్నీషియన్ చాలా జాగ్రత్తగా మొత్తం చెక్ చేసి చూపించారు.`,
+          ];
+        } else {
+          starters = [
+            `డోర్‌స్టెప్ అప్లయన్స్ రిపేర్ చాలా ఫాస్ట్ గా చేశారు.`,
+            `${bName} లో సర్వీస్ మరియు రెస్పాన్స్ చాలా జెన్యూన్ గా ఉంది.`,
+            `కడపలో బెస్ట్ ఏసీ & ఫ్రిజ్ టెక్నీషియన్.`,
+          ];
+          middles = [
+            `సమయానికి వచ్చి సమస్యను వెంటనే పరిష్కరించారు.`,
+            `ఒరిజినల్ స్పేర్ పార్ట్స్ వాడారు, ప్రైస్ రీజనబుల్.`,
+            `గ్యాస్ ప్రెషర్ చెక్ చేసి సూపర్ కూలింగ్ సెట్ చేశారు.`,
           ];
         }
         break;
@@ -5076,6 +5652,38 @@ function generateProceduralFallback(
           `The linework is laser-sharp and the shading has great contrast and depth.`,
           `Modern wireless tattoo machine made the session remarkably comfortable.`,
           `Clear day-by-day healing instructions ensured perfect recovery.`,
+        ];
+      }
+      break;
+    }
+
+    case "APPLIANCE_REPAIR": {
+      if (intent.isJetWash) {
+        starters = [
+          `Professional AC deep jet wash service at ${bName}.`,
+          `Got AC foam and jet cleaning done with zero indoor mess.`,
+          `Ice-cold cooling restored after jet servicing by ${bName}.`,
+          `Clean and swift AC maintenance at our home in Kadapa.`,
+        ];
+        middles = [
+          `The technician fitted waterproof jackets to protect walls and furniture.`,
+          `All muck and grime were flushed out under high pressure, restoring strong airflow.`,
+          `The unit cools rapidly now and runs smoothly with zero odor.`,
+          `Courteous technicians who cleaned up thoroughly before leaving.`,
+        ];
+      } else {
+        starters = [
+          `Prompt and dependable doorstep appliance repair at ${bName}.`,
+          `Fast AC and refrigerator repair visit in Kadapa.`,
+          `Accurate cooling troubleshooting and honest service by ${bName}.`,
+          `Genuine replacement parts and fair repair rates.`,
+          `Top #1 appliance repair team in Kadapa.`,
+        ];
+        middles = [
+          `The technician diagnosed the exact issue without inflated estimates.`,
+          `They carried genuine spares and tested temperature and gas levels properly.`,
+          `Arrived within an hour of our service call and resolved it on the spot.`,
+          `Very polite conduct and transparent billing throughout.`,
         ];
       }
       break;

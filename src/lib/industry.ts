@@ -13,6 +13,7 @@ export type IndustryType =
   | "GOLD_BUYERS"
   | "TOURS_TRAVELS"
   | "TATTOO_STUDIO"
+  | "APPLIANCE_REPAIR"
   | "GENERAL";
 
 export interface IndustryConfig {
@@ -516,6 +517,44 @@ export const INDUSTRY_CONFIGS: Record<IndustryType, IndustryConfig> = {
     },
   },
 
+  APPLIANCE_REPAIR: {
+    type: "APPLIANCE_REPAIR",
+    label: "AC, Fridge & Appliance Repair",
+    tagline: "Top #1 AC Repair, Refrigerator & Washing Machine Doorstep Services",
+    tags: [
+      "Deep AC Jet Wash",
+      "Quick Cooling Restored",
+      "Fast Doorstep Service",
+      "AC Gas Refilling",
+      "Affordable & Fair Rates",
+      "Genuine Spare Parts",
+      "Expert Fridge Repair",
+      "Washing Machine Fixed",
+      "Professional Technician",
+      "Prompt Same-Day Visit",
+    ],
+    placeholder: "Mention appliance (AC, Fridge, Washing Machine) or repair work...",
+    keywords:
+      "as refrigeration kadapa top ac repair best ac service ac gas charging r32 r410 r22 deep jet wash ac foam wash ac installation fridge repair kadapa refrigerator gas charging single door double door washing machine repair kadapa doorstep appliance repair 24 hours ac mechanic",
+    reviewDrafts: {
+      direct: {
+        headline: "Super Fast & Reliable AC Service in Kadapa!",
+        text: (name, tags, note) =>
+          `Called ${name} for our appliance service and was very impressed with their ${tags || "quick cooling restoration and prompt doorstep visit"}.${note ? ` Specifically pleased with: ${note}.` : ""} The technician arrived on time and resolved the issue efficiently. Highly recommended!`,
+      },
+      detailed: {
+        headline: "Expert Diagnosis, Genuine Spares & Honest Pricing",
+        text: (name, tags, note) =>
+          `Had an issue with our appliance and reached out to ${name}. The technician diagnosed the fault accurately, used genuine parts, and gave a very fair quote without any hidden charges. Their ${tags || "deep jet wash and clean workmanship"} restored perfect performance.${note ? ` Handled ${note} with complete expertise.` : ""} Truly the best appliance repair service in Kadapa!`,
+      },
+      enthusiastic: {
+        headline: "Top #1 AC & Appliance Technicians in Rayalaseema!",
+        text: (name, tags, note) =>
+          `Fantastic experience with ${name}! From scheduling to doorstep arrival, everything was lightning fast. They fixed our ${tags || "cooling problem and delivered great results"}.${note ? ` Special appreciation for ${note}.` : ""} 10/10 service, will definitely call them again!`,
+      },
+    },
+  },
+
   GENERAL: {
     type: "GENERAL",
     label: "General Business & Services",
@@ -776,6 +815,22 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.TATTOO_STUDIO;
   }
 
+  if (
+    hasWord(normCat, "refrigeration") ||
+    hasWord(normCat, "refrigerator") ||
+    hasWord(normCat, "fridge") ||
+    hasWord(normCat, "air conditioning") ||
+    hasWord(normCat, "ac repair") ||
+    hasWord(normCat, "ac service") ||
+    hasWord(normCat, "appliance repair") ||
+    hasWord(normCat, "washing machine") ||
+    normCat.includes("air conditioning repair") ||
+    normCat.includes("refrigerator repair") ||
+    normCat.includes("washing machine repair")
+  ) {
+    return INDUSTRY_CONFIGS.APPLIANCE_REPAIR;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 2: BUSINESS NAME MATCHING (If category was generic/unspecified)
   // ═══════════════════════════════════════════════════════════════════════
@@ -928,6 +983,20 @@ export function detectIndustry(
     return INDUSTRY_CONFIGS.TATTOO_STUDIO;
   }
 
+  if (
+    hasWord(normName, "refrigeration") ||
+    hasWord(normName, "refrigerations") ||
+    hasWord(normName, "refrigerator") ||
+    hasWord(normName, "fridge") ||
+    hasWord(normName, "appliances") ||
+    hasWord(normName, "appliance") ||
+    normName.includes("as refrigeration") ||
+    normName.includes("ac repair") ||
+    normName.includes("ac service")
+  ) {
+    return INDUSTRY_CONFIGS.APPLIANCE_REPAIR;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // STEP 3: TAGLINE CONTEXTUAL MATCHING (Precise multi-word phrases)
   // ═══════════════════════════════════════════════════════════════════════
@@ -1020,6 +1089,17 @@ export function detectIndustry(
     normTag.includes("get inked")
   ) {
     return INDUSTRY_CONFIGS.TATTOO_STUDIO;
+  }
+
+  if (
+    normTag.includes("refrigeration") ||
+    normTag.includes("ac repair") ||
+    normTag.includes("ac service") ||
+    normTag.includes("air conditioner") ||
+    normTag.includes("washing machine") ||
+    normTag.includes("fridge repair")
+  ) {
+    return INDUSTRY_CONFIGS.APPLIANCE_REPAIR;
   }
 
   return INDUSTRY_CONFIGS.GENERAL;
