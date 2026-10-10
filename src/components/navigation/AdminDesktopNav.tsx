@@ -9,6 +9,7 @@ import {
   UserCheck,
   Building2,
   IndianRupee,
+  Compass,
 } from "lucide-react";
 
 export default function AdminDesktopNav() {
@@ -20,6 +21,12 @@ export default function AdminDesktopNav() {
       href: "/admin",
       icon: LayoutDashboard,
       active: pathname === "/admin",
+    },
+    {
+      label: "Local Lead Hunter 🎯",
+      href: "/admin/leads",
+      icon: Compass,
+      active: pathname.startsWith("/admin/leads"),
     },
     {
       label: "Merchants",

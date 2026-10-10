@@ -46,6 +46,9 @@ import {
   CheckCircle,
   Clock,
   ThumbsUp,
+  Volume2,
+  VolumeX,
+  Mic,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import BrandLogo, { BrandIcon } from "@/components/brand/BrandLogo";
@@ -249,6 +252,71 @@ export default function HomePage() {
   const [mockupTheme, setMockupTheme] = useState<keyof typeof DISPLAY_THEMES>("royal-gold");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [referralPartner, setReferralPartner] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakingLang, setSpeakingLang] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setSpeakingLang(null);
+    }
+  }, [selectedLang, selectedDemoIndex]);
+
+  const handleToggleSpeakReview = (text: string, lang: LanguageKey) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      alert("Voice playback is not supported on your browser.");
+      return;
+    }
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setSpeakingLang(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    const langTagMap: Record<LanguageKey, string> = {
+      ALL: "en-IN",
+      ENGLISH: "en-IN",
+      HINDI: "hi-IN",
+      TELUGU: "te-IN",
+      TAMIL: "ta-IN",
+      KANNADA: "kn-IN",
+      MALAYALAM: "ml-IN",
+    };
+
+    utterance.lang = langTagMap[lang] || "en-IN";
+    utterance.rate = 0.95;
+
+    const voices = window.speechSynthesis.getVoices();
+    const matchedVoice = voices.find(
+      (v) => v.lang.startsWith(utterance.lang) || v.lang.includes("IN")
+    );
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+    }
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setSpeakingLang(lang);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setSpeakingLang(null);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setSpeakingLang(null);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1050,6 +1118,42 @@ export default function HomePage() {
                       <p className="text-xs text-slate-200 leading-relaxed font-normal italic bg-black/30 p-3 rounded-xl border border-white/5">
                         &quot;{activeReviewText}&quot;
                       </p>
+
+                      {/* Interactive Voice AI Speaker Demonstration */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSpeakReview(activeReviewText, selectedLang)}
+                        className={`w-full py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-2 transition active:scale-95 ${
+                          isSpeaking && speakingLang === selectedLang
+                            ? "bg-amber-500/20 border-amber-400/50 text-amber-300 ring-2 ring-amber-400/30 animate-pulse shadow-lg shadow-amber-950/40"
+                            : "bg-slate-800/80 hover:bg-slate-700/80 border-indigo-500/30 text-indigo-200 hover:text-white"
+                        }`}
+                      >
+                        {isSpeaking && speakingLang === selectedLang ? (
+                          <>
+                            <VolumeX className="w-4 h-4 text-amber-400 animate-bounce" />
+                            <span>🔊 Playing Natural Voice AI • Tap to Stop</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-4 h-4 text-amber-400" />
+                            <span>
+                              🎙️ Listen to AI Speak in{" "}
+                              {selectedLang === "TELUGU"
+                                ? "Telugu (తెలుగు)"
+                                : selectedLang === "HINDI"
+                                ? "Hindi (हिंदी)"
+                                : selectedLang === "TAMIL"
+                                ? "Tamil (தமிழ்)"
+                                : selectedLang === "KANNADA"
+                                ? "Kannada (ಕನ್ನಡ)"
+                                : selectedLang === "MALAYALAM"
+                                ? "Malayalam (മലയാളం)"
+                                : "English"}
+                            </span>
+                          </>
+                        )}
+                      </button>
 
                       <div className="flex items-center gap-2 pt-1">
                         <button

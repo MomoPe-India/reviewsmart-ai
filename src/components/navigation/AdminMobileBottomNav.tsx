@@ -9,6 +9,7 @@ import {
   UserCheck,
   IndianRupee,
   Building2,
+  Compass,
 } from "lucide-react";
 
 export default function AdminMobileBottomNav() {
@@ -20,6 +21,12 @@ export default function AdminMobileBottomNav() {
       href: "/admin",
       icon: LayoutDashboard,
       active: pathname === "/admin",
+    },
+    {
+      label: "Leads 🎯",
+      href: "/admin/leads",
+      icon: Compass,
+      active: pathname.startsWith("/admin/leads"),
     },
     {
       label: "Merchants",
@@ -38,12 +45,6 @@ export default function AdminMobileBottomNav() {
       href: "/admin/payments",
       icon: IndianRupee,
       active: pathname.startsWith("/admin/payments"),
-    },
-    {
-      label: "Businesses",
-      href: "/admin/businesses",
-      icon: Building2,
-      active: pathname.startsWith("/admin/businesses"),
     },
   ];
 
