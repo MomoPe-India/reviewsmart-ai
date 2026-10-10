@@ -24,15 +24,16 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
     id: "ONLINE_LIFETIME",
     name: "ReviewSmart AI Lifetime Pass (All India)",
     shortName: "Lifetime Pass",
-    price: 3000,
-    tagline: "100% Free For Lifetime • Zero Monthly/Yearly Fees • Free Future Updates",
-    badge: "🇮🇳 Pan-India Flagship • Lifetime Free",
+    price: 2999,
+    tagline: "100% Free For Lifetime • Zero Monthly/Yearly Fees • Free GMB Setup Included",
+    badge: "🇮🇳 Pan-India Flagship • ₹2,999 Lifetime Pass",
     isPopular: true,
     hardwareDeliverables: [
       "1x 4″×6″ Luxury Crystal Acrylic Counter Standee (Retail Showpiece)",
       "1x Dual-Sided Vertical PVC Smart NFC Card (Google Review + Digital Visiting Card)",
       "Official Google 'G' High-Precision Circular QR Badge",
       "Free Doorstep Express Courier Delivery across India",
+      "🆓 FREE Google Business Profile (GMB) Setup & Verification (if you don't have one)",
     ],
     softwareDeliverables: [
       "Gemini AI 5-Star Review Generation in 6 Indian Languages (EN, TE, HI, TA, KN, ML)",
@@ -43,12 +44,13 @@ export const HARDWARE_PACKAGES: Record<PackageTierId, HardwarePackage> = {
       "🛡️ Private WhatsApp Negative Feedback Intercept Shield",
       "📲 1-Click WhatsApp Personalized Review Inviter (?cust= & ?service=)",
       "🤖 AI Google Review Reply Copilot (SEO Ranking Booster)",
+      "📍 Complete Google Maps Category & Local SEO Keyword Optimization",
       "100% Free for Lifetime — 0 Monthly or Yearly Software Fees Forever",
       "All Future Platform Updates & New AI Features Included at No Extra Cost",
     ],
     bestFor: "Retail stores, restaurants, clinics, boutiques, salons, service businesses across India",
     salesPitch:
-      "Pay ₹3,000 once and get complete lifetime access with zero renewals. Luxury acrylic standee + PVC card delivered to your shop counter.",
+      "Pay ₹2,999 once and get complete lifetime access with zero renewals. Free Google Business Profile creation & verification included, plus Standee Studio access.",
   },
   STARTER_PVC: {
     id: "STARTER_PVC",
@@ -164,7 +166,7 @@ export function getPackageById(id?: string | null): HardwarePackage {
 }
 
 export function getPackageByPrice(price?: number | null): HardwarePackage {
-  if (!price || price === 3000) {
+  if (!price || price === 2999 || price === 3000) {
     return HARDWARE_PACKAGES.ONLINE_LIFETIME;
   }
   if (price < 2200) {

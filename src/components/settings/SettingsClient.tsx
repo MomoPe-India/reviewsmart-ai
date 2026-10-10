@@ -726,6 +726,34 @@ export default function SettingsClient({ business }: { business: BusinessData })
                   </div>
                 </div>
               )}
+
+              {/* Free Google Business Profile (GMB) Assistance Callout */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-900 block">
+                      Don&apos;t have a Google Business Profile (GMB) yet?
+                    </span>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      No problem! Our team will create, verify &amp; SEO-optimize your Google Maps listing 100% FREE with your Lifetime Pass.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={`https://wa.me/918639831132?text=${encodeURIComponent(
+                    `Hi MomoPe team! I need help setting up a new Google Business Profile (Google Maps) for my business: "${form.name}".`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition whitespace-nowrap self-start sm:self-auto shrink-0 shadow-sm"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Request Free Setup</span>
+                </a>
+              </div>
             </div>
 
             {/* 2. Brand & Card Basics */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -34,16 +34,18 @@ import {
   MapPin,
   ExternalLink,
   ShieldCheck,
-  Briefcase,
   Printer,
   FileText,
-  Layers,
   Palette,
   Coins,
   Stethoscope,
   Scissors,
   HelpCircle,
   ChevronDown,
+  Search,
+  CheckCircle,
+  Clock,
+  ThumbsUp,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import BrandLogo, { BrandIcon } from "@/components/brand/BrandLogo";
@@ -252,11 +254,15 @@ export default function HomePage() {
 
   const whatsappInquiryUrl =
     "https://wa.me/918639831132?text=" +
-    encodeURIComponent("Hi ReviewSmart AI, I saw your ad and want to get the ₹3,000 Lifetime Pass for my business across India.");
+    encodeURIComponent("Hi ReviewSmart AI, I saw your ad and want to get the ₹2,999 Lifetime Pass for my business across India.");
 
   const whatsappDirectBuyUrl =
     "https://wa.me/918639831132?text=" +
-    encodeURIComponent("Hi ReviewSmart AI! I want to activate the ₹3,000 One-Time Lifetime Pass for my business. Please send me the instant activation link.");
+    encodeURIComponent("Hi ReviewSmart AI! I want to activate the ₹2,999 One-Time Lifetime Pass for my business. Please send me the instant activation link.");
+
+  const whatsappGmbSetupUrl =
+    "https://wa.me/918639831132?text=" +
+    encodeURIComponent("Hi ReviewSmart AI team! I don't have a Google Business Profile yet. Please help me create, verify and set up my shop on Google Maps for free with the ₹2,999 Lifetime Pass.");
 
   const handleCopyReview = (text: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -276,8 +282,12 @@ export default function HomePage() {
 
   const faqs = [
     {
-      q: "Is ₹3,000 really a one-time payment for lifetime? Are there any hidden monthly charges?",
-      a: "Yes! 100% Guaranteed. For our online customers, ₹3,000 is a strictly one-time fee. There are ZERO monthly fees, ZERO yearly renewal charges, and NO transaction cuts. All upcoming features, AI improvements, and future updates are included forever at no additional cost.",
+      q: "Is ₹2,999 really a one-time payment for lifetime? Are there any hidden monthly charges?",
+      a: "Yes! 100% Guaranteed. For our online customers, ₹2,999 is a strictly one-time fee. There are ZERO monthly fees, ZERO yearly renewal charges, and NO transaction cuts. All upcoming features, AI improvements, and future updates are included forever at no additional cost.",
+    },
+    {
+      q: "What if I don't have a Google Business Profile (Google Maps listing) yet?",
+      a: "No problem at all! As part of your ₹2,999 Lifetime Pass, our dedicated verification team will create, claim, verify, and SEO-optimize your Google Business Profile completely FREE. We set up your categories, address pin, opening hours, photos, and direct review shortlink so you can start getting reviews from day one.",
     },
     {
       q: "How does the AI generate reviews in Hindi, Telugu, Tamil, Kannada, and Malayalam?",
@@ -292,16 +302,12 @@ export default function HomePage() {
       a: "When a customer rates 4 or 5 stars, they are seamlessly guided to post on Google Maps with an AI draft. If a customer rates 1, 2, or 3 stars, our intelligent shield intercepts the feedback privately to your WhatsApp desk or email. You resolve the issue with the customer immediately, while Google Maps remains 100% shielded from public negative damage.",
     },
     {
-      q: "What if a customer has an older phone without an automatic QR scanner?",
-      a: "It works on 100% of smartphones in India! If a customer's default camera doesn't auto-read QR codes, they can simply tap the Google Lens camera icon built into their Android home screen search bar, or use the scanner inside Google Pay or PhonePe. It opens in 1 second with zero app download.",
-    },
-    {
       q: "How do I get the physical Acrylic Standee or PVC Cards for my counter?",
       a: "Your merchant dashboard includes our Standee Studio with instant high-resolution 300 DPI vector PDF downloads ready for 4\"×6\" Acrylic Standees, CR80 PVC Cards, and A4 Wall Posters. You can print them locally anywhere, or contact our support team on WhatsApp to order our physical luxury crystal acrylic kits delivered straight to your doorstep.",
     },
     {
       q: "What is the difference between Online and Offline pricing?",
-      a: "Online customers purchasing directly via our website / Meta Ads get instant digital access, the complete 6-language AI review platform, and full Standee Studio PDF exports for ₹3,000 Lifetime. Offline agent customers work with regional sales partners who provide in-person onboarding, store visits, and custom physical hardware packages with flexible local pricing.",
+      a: "Online customers purchasing directly via our website / Meta Ads get instant digital access, the complete 6-language AI review platform, free GMB setup, and full Standee Studio PDF exports for ₹2,999 Lifetime. Offline agent customers work with regional sales partners who provide in-person onboarding, store visits, and custom physical hardware packages with flexible local pricing.",
     },
   ];
 
@@ -325,14 +331,16 @@ export default function HomePage() {
       </div>
 
       {/* ─── TOP NOTIFICATION BANNER (META ADS EXCLUSIVE) ─────────────────── */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white text-xs py-2 px-4 text-center font-bold tracking-wide flex items-center justify-center gap-2 shadow-md">
-        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
-        <span>PAN-INDIA LAUNCH OFFER: ₹3,000 One-Time Lifetime Pass &bull; 100% Free For Lifetime &bull; Zero Subscriptions!</span>
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white text-xs py-2.5 px-4 text-center font-bold tracking-wide flex items-center justify-center gap-2 shadow-md">
+        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping shrink-0" />
+        <span>
+          PAN-INDIA LAUNCH OFFER: ₹2,999 One-Time Lifetime Pass &bull; 100% Free For Lifetime &bull; 🆓 Free Google Business Profile Setup Included!
+        </span>
         <a
           href="#pricing"
           className="underline underline-offset-2 ml-1 text-emerald-200 hover:text-white hidden sm:inline"
         >
-          Claim Lifetime Pass &rarr;
+          Claim ₹2,999 Pass &rarr;
         </a>
       </div>
 
@@ -345,31 +353,38 @@ export default function HomePage() {
           <div className="hidden lg:flex items-center gap-1 xl:gap-2">
             <a
               href="#demo"
-              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3.5 py-1.5 rounded-full transition"
+              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition"
             >
               6-Language Demo
             </a>
             <a
-              href="#features"
-              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3.5 py-1.5 rounded-full transition"
+              href="#gmb-setup"
+              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 px-3 py-1.5 rounded-full transition flex items-center gap-1"
             >
-              Why ReviewSmart
+              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <span>Free GMB Setup</span>
+            </a>
+            <a
+              href="#ranking-boost"
+              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition"
+            >
+              Ranking Booster
             </a>
             <a
               href="#hardware"
-              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3.5 py-1.5 rounded-full transition"
+              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition"
             >
               3D Standee Studio
             </a>
             <a
               href="#pricing"
-              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3.5 py-1.5 rounded-full transition"
+              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition"
             >
               Lifetime Pricing
             </a>
             <a
               href="#faq"
-              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3.5 py-1.5 rounded-full transition"
+              className="text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition"
             >
               FAQ
             </a>
@@ -397,7 +412,7 @@ export default function HomePage() {
               className="px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-500/25 active:scale-95 flex items-center gap-1.5"
             >
               <Zap className="w-3.5 h-3.5 text-amber-300" />
-              <span>₹3,000 Lifetime</span>
+              <span>₹2,999 Lifetime</span>
             </a>
           </div>
         </div>
@@ -410,7 +425,7 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-2 mb-6 animate-fadeIn">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold backdrop-blur-md shadow-inner">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>PAN-INDIA DIRECT ACCESS</span>
+              <span>PAN-INDIA DIRECT META LAUNCH</span>
             </div>
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold backdrop-blur-md">
               <Globe className="w-3 h-3 text-emerald-400" />
@@ -418,7 +433,7 @@ export default function HomePage() {
             </div>
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold backdrop-blur-md">
               <Zap className="w-3 h-3 text-amber-400" />
-              <span>₹3,000 Lifetime Pass &bull; 0 Subscriptions</span>
+              <span>₹2,999 Lifetime Pass &bull; 0 Subscriptions</span>
             </div>
           </div>
 
@@ -432,7 +447,7 @@ export default function HomePage() {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
-              Customers scan your smart counter QR code. Gemini AI writes authentic 5-star reviews in their native language in 10 seconds. Bad reviews are shielded privately to your WhatsApp.
+              Customers scan your smart counter standee. Gemini AI writes authentic 5-star reviews in their native language in 10 seconds. Bad reviews are shielded privately to your WhatsApp.
             </p>
 
             {/* Main CTAs */}
@@ -442,7 +457,7 @@ export default function HomePage() {
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 hover:from-indigo-400 hover:to-purple-400 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-2xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <Zap className="w-4 h-4 text-amber-300" />
-                <span>Get ₹3,000 Lifetime Pass</span>
+                <span>Get ₹2,999 Lifetime Pass</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
 
@@ -462,82 +477,158 @@ export default function HomePage() {
               <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Free For Lifetime
               </span>
+              <span className="flex items-center gap-1.5 text-amber-300 font-bold">
+                <CheckCircle2 className="w-4 h-4 text-amber-400" /> 🆓 Free GMB Setup Included
+              </span>
               <span className="flex items-center gap-1.5 text-slate-300 font-medium">
                 <CheckCircle2 className="w-4 h-4 text-indigo-400" /> Zero Monthly Subscriptions
               </span>
               <span className="flex items-center gap-1.5 text-slate-300 font-medium">
                 <CheckCircle2 className="w-4 h-4 text-purple-400" /> 100% Ad-Free Experience
               </span>
-              <span className="flex items-center gap-1.5 text-slate-300 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-amber-400" /> Instant Setup &amp; PDF Downloads
-              </span>
             </div>
           </div>
 
-          {/* ─── 3D PERSPECTIVE HERO SHOWCASE CARD ──────────────────────────── */}
-          <div className="mt-14 max-w-4xl mx-auto" style={{ perspective: "1200px" }}>
-            <div
-              className="relative rounded-3xl bg-gradient-to-b from-slate-900/90 via-slate-900/80 to-slate-950/90 border border-white/15 p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(79,70,229,0.3)] backdrop-blur-2xl transition-all duration-700 hover:border-indigo-500/40"
-              style={{
-                transform: "rotateX(3deg)",
-                transformStyle: "preserve-3d",
-              }}
-            >
-              {/* Glossy Reflection Gradient */}
-              <div
-                className="absolute inset-0 rounded-3xl pointer-events-none overflow-hidden"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 40%, transparent 60%)",
-                }}
-              />
+          {/* ─── REALISTIC 3D COUNTERTOP + CAMERA SCANNER SIMULATION ────────── */}
+          <div className="mt-16 max-w-5xl mx-auto">
+            <div className="relative rounded-3xl bg-gradient-to-b from-slate-900/90 via-slate-900/80 to-slate-950/90 border border-white/15 p-6 sm:p-10 shadow-[0_25px_60px_-15px_rgba(79,70,229,0.3)] backdrop-blur-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left: Realistic 3D Crystal Acrylic Standee on Walnut Counter (7 cols) */}
+                <div className="lg:col-span-7 flex flex-col items-center justify-center">
+                  <div
+                    className="relative w-full max-w-md flex flex-col items-center justify-center py-6"
+                    style={{ perspective: "1200px" }}
+                  >
+                    {/* Realistic 3D Crystal Acrylic Standee Face */}
+                    <div
+                      className="relative w-64 sm:w-72 rounded-3xl bg-gradient-to-b from-slate-950 via-slate-900 to-black p-5 border-2 border-amber-400/80 text-center transition-all duration-500 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95)]"
+                      style={{
+                        transform: "rotateY(-7deg) rotateX(4deg)",
+                        transformStyle: "preserve-3d",
+                      }}
+                    >
+                      {/* Glass Specular Reflection Highlight */}
+                      <div
+                        className="absolute inset-0 rounded-3xl pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 30%, transparent 60%)",
+                        }}
+                      />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                {/* 1. Customer Counter QR */}
-                <div className="text-center space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mx-auto">
-                    <QrCode className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 block">
-                      Step 1 &bull; Instant Scan
-                    </span>
-                    <h4 className="text-sm font-bold text-white mt-0.5">Counter Acrylic Standee</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Works on all Android &amp; iOS cameras. Zero app download needed.
-                    </p>
+                      {/* Standee Header */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="text-[8px] font-black uppercase tracking-wider text-slate-400">
+                          SMARTREVIEW AI
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[9px] bg-amber-400 text-slate-950 font-black shadow-sm">
+                          ★ 5.0 GOOGLE
+                        </span>
+                      </div>
+
+                      {/* Official Google 'G' Circular Badge */}
+                      <div className="w-14 h-14 rounded-full bg-white border-2 border-amber-400 p-3 mx-auto mb-2 flex items-center justify-center shadow-lg ring-2 ring-amber-400/30">
+                        <svg className="w-full h-full" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
+                          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.28 21.43 7.37 24 12 24z" />
+                          <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z" />
+                          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.28 2.57 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z" />
+                        </svg>
+                      </div>
+
+                      <h4 className="text-sm font-black text-white truncate px-2">{activeDemo.name}</h4>
+                      <p className="text-[10px] text-slate-400 truncate mb-3">{activeDemo.category} &bull; Kadapa</p>
+
+                      {/* High-density QR Container with Scanner Reticle */}
+                      <div className="w-36 h-36 bg-white p-2.5 rounded-2xl mx-auto shadow-2xl flex items-center justify-center relative border border-white/20 mb-3">
+                        <QrCode className="w-full h-full text-slate-950" />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-600 border-2 border-white flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+
+                        {/* Animated Scanner Laser */}
+                        <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_rgba(52,211,153,1)] animate-pulse top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+
+                      <div className="flex items-center justify-center gap-1 text-amber-400 text-xs font-black mb-1">
+                        <span>★ ★ ★ ★ ★</span>
+                      </div>
+                      <p className="text-[11px] font-black text-white tracking-wide uppercase">
+                        POINT CAMERA TO REVIEW
+                      </p>
+                      <p className="text-[9px] text-slate-400 mt-0.5 font-medium">
+                        FAST GOOGLE MAPS REDIRECT &bull; ZERO APP INSTALL
+                      </p>
+                    </div>
+
+                    {/* Acrylic L-Stand Foot with Soft Shadow */}
+                    <div
+                      className="w-56 sm:w-64 h-5 rounded-b-2xl bg-gradient-to-r from-white/25 via-white/45 to-white/20 backdrop-blur-md border border-white/40 shadow-[0_20px_40px_rgba(0,0,0,0.8)] -mt-2.5"
+                      style={{ transform: "rotateY(-7deg) rotateX(28deg)" }}
+                    />
+
+                    {/* Realistic Polished Walnut Cash Counter Surface */}
+                    <div className="w-72 sm:w-80 h-7 rounded-2xl bg-gradient-to-r from-[#2c1a11] via-[#4a2e1d] to-[#2c1a11] border-t-2 border-amber-900/60 shadow-[0_15px_30px_rgba(0,0,0,0.9)] mt-2 flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-amber-200/50 uppercase tracking-widest">
+                        Polished Billing Counter Top
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* 2. 6-Language AI Synthesis */}
-                <div className="text-center space-y-3 p-5 rounded-2xl bg-gradient-to-b from-indigo-500/15 to-purple-500/15 border-2 border-indigo-500/40 shadow-lg scale-105">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white mx-auto shadow-md">
-                    <Sparkles className="w-6 h-6 text-amber-300" />
+                {/* Right: Camera Scanner Experience (5 cols) */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold">
+                    <Camera className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Instant Customer Experience</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 block">
-                      Step 2 &bull; 6 Indian Languages
-                    </span>
-                    <h4 className="text-base font-black text-white mt-0.5">Gemini AI Synthesis</h4>
-                    <p className="text-xs text-slate-300 mt-1">
-                      Hindi, Telugu, Tamil, Kannada, Malayalam &amp; English drafts ready in 5s.
-                    </p>
-                  </div>
-                </div>
 
-                {/* 3. Negative Feedback Shield */}
-                <div className="text-center space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
-                    <Shield className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 block">
-                      Step 3 &bull; Reputation Armor
-                    </span>
-                    <h4 className="text-sm font-bold text-white mt-0.5">Private WhatsApp Shield</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      1-3 star grievances routed privately. 100% damage prevention.
-                    </p>
+                  <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                    Customer Points Phone Camera &bull; Review Appears in 5 Seconds
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Zero friction. No app installation needed. Works natively on iPhone Camera, Android Camera, or Google Lens built into older Android home search bars.
+                  </p>
+
+                  <div className="space-y-3 pt-2">
+                    <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-white/10 flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <QrCode className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-white">1. Instant QR Scan</h5>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Camera opens directly to your customized ReviewSmart AI portal.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-white/10 flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-white">2. AI Native Language Draft</h5>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Selects 5 stars and 2 chips &bull; Gemini drafts authentic review in their mother tongue.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-white/10 flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <Star className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-white">3. Direct Google Maps Launch</h5>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          1-tap copies draft and opens the official Google Maps app to paste and post!
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -546,8 +637,243 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ─── NEW KILLER FEATURE: 100% FREE GOOGLE BUSINESS PROFILE SETUP ──── */}
+      <section id="gmb-setup" className="py-20 px-4 sm:px-6 relative scroll-mt-16 bg-gradient-to-b from-slate-950 via-emerald-950/20 to-slate-950 border-t border-white/10">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-black shadow-lg">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>SPECIAL INCLUDED SERVICE &bull; VALUE: ₹2,500 &bull; YOUR COST: ₹0</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight">
+              Don&apos;t Have a Google Business Profile?
+              <br />
+              <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                We&apos;ll Create, Verify &amp; Optimize It 100% FREE!
+              </span>
+            </h2>
+            <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
+              Never listed your shop on Google Maps before? Don&apos;t worry! Our expert team handles the entire Google verification, category setup, and pin placement at zero extra charge with your ₹2,999 Lifetime Pass.
+            </p>
+          </div>
+
+          {/* 4-Step Illustrated Roadmap Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Step 1 */}
+            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 relative overflow-hidden shadow-xl flex flex-col justify-between group hover:border-emerald-500/50 transition">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-sm flex items-center justify-center border border-emerald-500/30">
+                    01
+                  </span>
+                  <MessageCircle className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                </div>
+                <h4 className="text-base font-bold text-white">Send Shop Details on WhatsApp</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Simply share your store name, category, shop address, and 2-3 storefront photos over WhatsApp. That&apos;s all we need from you!
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/5 text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" /> Takes 2 minutes
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 relative overflow-hidden shadow-xl flex flex-col justify-between group hover:border-emerald-500/50 transition">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-sm flex items-center justify-center border border-emerald-500/30">
+                    02
+                  </span>
+                  <ShieldCheck className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                </div>
+                <h4 className="text-base font-bold text-white">Google Verification Handled</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Our verification specialists coordinate directly with Google Maps to verify your business location and claim ownership without paperwork hassles.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/5 text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" /> Official Google verification
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 relative overflow-hidden shadow-xl flex flex-col justify-between group hover:border-emerald-500/50 transition">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-sm flex items-center justify-center border border-emerald-500/30">
+                    03
+                  </span>
+                  <Search className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                </div>
+                <h4 className="text-base font-bold text-white">Local SEO Category Setup</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  We configure high-volume &quot;near me&quot; search categories, opening hours, business tags, and generate your direct 1-tap review shortlink.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/5 text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" /> Search optimized profile
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 relative overflow-hidden shadow-xl flex flex-col justify-between group hover:border-emerald-500/50 transition">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-sm flex items-center justify-center border border-emerald-500/30">
+                    04
+                  </span>
+                  <Zap className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                </div>
+                <h4 className="text-base font-bold text-white">Standee Goes Live on Counter</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Your review QR stands and PVC passes are connected. From day 1, walk-in customers tap &amp; post genuine 5-star reviews effortlessly!
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/5 text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" /> Ready for 5-star reviews
+              </div>
+            </div>
+          </div>
+
+          {/* Direct CTA for Free GMB Setup */}
+          <div className="mt-10 p-6 rounded-3xl bg-slate-900/90 border border-emerald-500/40 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+            <div className="space-y-1 text-center md:text-left">
+              <h4 className="text-lg font-black text-white">
+                Ready to Put Your Shop on Google Maps for Free?
+              </h4>
+              <p className="text-xs text-slate-300">
+                Claim your ₹2,999 Lifetime Pass now, and our team will start your Google Business Profile setup immediately!
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <a
+                href={whatsappGmbSetupUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Request Free GMB Setup on WhatsApp</span>
+              </a>
+              <Link
+                href="/dashboard/billing?plan=ONLINE_LIFETIME"
+                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/10 transition"
+              >
+                <span>Get Lifetime Pass (₹2,999)</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── BEFORE VS AFTER GOOGLE MAPS RANKING BOOSTER ───────────────────── */}
+      <section id="ranking-boost" className="py-20 px-4 sm:px-6 relative scroll-mt-16 bg-slate-900/60 border-t border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-bold">
+              <TrendingUp className="w-3.5 h-3.5 text-blue-400" /> Google Maps Local Pack Impact
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black text-white">
+              From Invisible to #1 on Google Maps in 30 Days
+            </h2>
+            <p className="text-sm sm:text-base text-slate-300">
+              See what happens when your business switches from asking customers manually to automated AI review collection:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
+            {/* Before Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-rose-500/30 space-y-5 shadow-xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 bg-rose-500/15 px-3 py-1 rounded-full border border-rose-500/30">
+                    ❌ BEFORE REVIEWSMART AI
+                  </span>
+                  <span className="text-xs text-rose-400 font-bold">Ranking #9 Local Search</span>
+                </div>
+
+                <h4 className="text-lg font-bold text-white mb-2">
+                  Struggling for Organic Walk-ins
+                </h4>
+
+                <div className="space-y-3 text-xs text-slate-300 pt-2">
+                  <div className="flex items-start gap-2.5">
+                    <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>Only 10-15 reviews collected after 3 years in business</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>Customers say &quot;I will post later&quot; but forget once they leave</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>A single 1-star complaint drops your public rating drastically</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>Competitors higher on Google Maps steal nearby customers</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-white/5 text-center">
+                <span className="text-xs text-slate-400 font-medium">Monthly Google Maps Views:</span>
+                <div className="text-2xl font-black text-slate-500 mt-0.5">~350 Views / Mo</div>
+              </div>
+            </div>
+
+            {/* After Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900 via-indigo-950/40 to-slate-900 border-2 border-emerald-500/60 space-y-5 shadow-2xl flex flex-col justify-between relative">
+              <div className="absolute -top-3 right-6 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md">
+                ★ 3.5× REVENUE GROWTH
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
+                    ✅ WITH REVIEWSMART AI
+                  </span>
+                  <span className="text-xs text-emerald-400 font-bold">🏆 Ranking #1 Local Pack</span>
+                </div>
+
+                <h4 className="text-lg font-bold text-white mb-2">
+                  Dominate Search &bull; Daily New Walk-ins
+                </h4>
+
+                <div className="space-y-3 text-xs text-slate-200 pt-2">
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">100+ new 5-star reviews</strong> added every single month</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>Gemini AI drafts reviews in <strong className="text-white">6 native Indian languages</strong></span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">100% Negative Shield</strong>: 1-3 star grievances routed to private WhatsApp</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong className="text-white">#1 on Google Maps</strong>: Nearby tourists and locals choose you first</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center">
+                <span className="text-xs text-emerald-300 font-medium">Monthly Google Maps Views:</span>
+                <div className="text-2xl font-black text-emerald-400 mt-0.5">3,200+ Views / Mo 🚀</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── LIVE 6-LANGUAGE INTERACTIVE DEMO ─────────────────────────────── */}
-      <section id="demo" className="py-20 px-4 sm:px-6 relative scroll-mt-16 bg-slate-900/60 border-y border-white/10">
+      <section id="demo" className="py-20 px-4 sm:px-6 relative scroll-mt-16 bg-slate-900/40 border-t border-white/10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-bold">
@@ -613,15 +939,13 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* 3. Interactive Split Simulator (Phone View + Engine Benefits) */}
+          {/* 3. Interactive Split Simulator */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left 3D Smartphone View (lg:col-span-6) */}
             <div className="lg:col-span-6 flex justify-center" style={{ perspective: "1000px" }}>
               <div
                 className="w-full max-w-sm rounded-[2.5rem] bg-slate-900 border-4 border-slate-700/80 p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_rgba(99,102,241,0.2)] text-center relative overflow-hidden transition-all duration-300"
-                style={{
-                  transform: "rotateY(-4deg)",
-                }}
+                style={{ transform: "rotateY(-4deg)" }}
               >
                 {/* Phone Speaker pill */}
                 <div className="w-20 h-3.5 bg-slate-800 rounded-full mx-auto mb-4 border border-slate-700 flex items-center justify-center gap-1.5">
@@ -689,7 +1013,6 @@ export default function HomePage() {
                 {/* 4-5 Stars AI Review Card */}
                 {demoStars >= 4 && (
                   <div className="space-y-3 animate-fadeIn text-left">
-                    {/* Chips */}
                     <div className="flex flex-wrap gap-1 justify-center">
                       {activeDemo.chips.map((chip) => (
                         <span
@@ -701,7 +1024,6 @@ export default function HomePage() {
                       ))}
                     </div>
 
-                    {/* AI Draft Container */}
                     <div className="p-4 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-850 border border-indigo-500/30 space-y-2.5 shadow-lg">
                       <div className="flex items-center justify-between text-[11px] font-bold">
                         <span className="flex items-center gap-1.5 text-indigo-300">
@@ -750,7 +1072,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Explanation & Pan-India Reach (lg:col-span-6) */}
+            {/* Right Explanation */}
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="text-xs font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
@@ -808,7 +1130,7 @@ export default function HomePage() {
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 transition active:scale-95"
                 >
                   <Zap className="w-4 h-4 text-amber-300" />
-                  <span>Get Started for ₹3,000 Lifetime</span>
+                  <span>Get Started for ₹2,999 Lifetime</span>
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
@@ -818,7 +1140,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── 3D HARDWARE & STANDEE STUDIO SHOWCASE ─────────────────────────── */}
-      <section id="hardware" className="py-20 px-4 sm:px-6 relative scroll-mt-16">
+      <section id="hardware" className="py-20 px-4 sm:px-6 relative scroll-mt-16 border-t border-white/10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold">
@@ -934,7 +1256,6 @@ export default function HomePage() {
                           </span>
                         </div>
 
-                        {/* Google G Badge */}
                         <div className="w-14 h-14 rounded-full bg-white border-2 border-amber-400 p-3 mx-auto mb-2 flex items-center justify-center shadow-lg">
                           <svg className="w-full h-full" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.665-5.2 3.665-9.12z" />
@@ -967,12 +1288,9 @@ export default function HomePage() {
                         </p>
                       </div>
 
-                      {/* Acrylic Base L-Stand Foot */}
                       <div
                         className="w-56 sm:w-64 h-5 rounded-b-2xl bg-gradient-to-r from-white/25 via-white/40 to-white/20 backdrop-blur-md border border-white/40 shadow-[0_20px_40px_rgba(0,0,0,0.8)] -mt-2.5"
-                        style={{
-                          transform: "rotateY(-7deg) rotateX(28deg)",
-                        }}
+                        style={{ transform: "rotateY(-7deg) rotateX(28deg)" }}
                       />
                     </div>
                   );
@@ -1072,7 +1390,7 @@ export default function HomePage() {
               })()}
             </div>
 
-            {/* Specifications & Features (lg:col-span-6) */}
+            {/* Specifications & Features */}
             <div className="lg:col-span-6 space-y-5">
               <div className="space-y-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
@@ -1145,7 +1463,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── PRICING SECTION (FLAGSHIP ₹3,000 LIFETIME) ───────────────────── */}
+      {/* ─── PRICING SECTION (FLAGSHIP ₹2,999 LIFETIME PASS) ──────────────── */}
       <section id="pricing" className="py-24 px-4 sm:px-6 relative scroll-mt-16 bg-gradient-to-b from-slate-950 via-indigo-950/40 to-slate-950 border-t border-white/10">
         <div className="max-w-5xl mx-auto">
           {/* Section Header */}
@@ -1162,7 +1480,7 @@ export default function HomePage() {
               </span>
             </h2>
             <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
-              Say goodbye to greedy software subscriptions. Pay once today, and use ReviewSmart AI forever with all upcoming updates at zero extra cost.
+              Say goodbye to greedy software subscriptions. Pay once today, and use ReviewSmart AI forever with all upcoming updates and free Google Business Profile setup.
             </p>
           </div>
 
@@ -1182,13 +1500,13 @@ export default function HomePage() {
                   Online Direct Lifetime Access
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                  Complete Google Review Engine + 6-Language AI + Standee Studio
+                  Complete Google Review Engine + 6-Language AI + Standee Studio + Free GMB
                 </p>
               </div>
 
               <div className="text-left sm:text-right">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">₹3,000</span>
+                  <span className="text-4xl sm:text-5xl font-black text-white">₹2,999</span>
                   <span className="text-xs text-slate-400 font-semibold line-through">₹7,999</span>
                 </div>
                 <span className="text-xs font-bold text-emerald-400 block mt-1">
@@ -1202,6 +1520,10 @@ export default function HomePage() {
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <span><strong className="text-white">Lifetime Free Access</strong> (Zero monthly or annual subscriptions)</span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong className="text-white">🆓 Free GMB Setup &amp; Verification</strong> (If you don&apos;t have one yet)</span>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -1227,10 +1549,6 @@ export default function HomePage() {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <span><strong className="text-white">100% Ad-Free Experience</strong> (Zero third-party ads or spam trackers)</span>
               </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong className="text-white">Direct WhatsApp Review Invites</strong> (1-Click customer outreach templates)</span>
-              </div>
             </div>
 
             {/* CTA Buttons */}
@@ -1240,7 +1558,7 @@ export default function HomePage() {
                 className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/25 transition active:scale-98"
               >
                 <Zap className="w-4 h-4" />
-                <span>Activate Lifetime Pass (₹3,000)</span>
+                <span>Activate Lifetime Pass (₹2,999)</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
@@ -1260,7 +1578,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Honest Comparison Table: ReviewSmart vs SaaS Subscriptions */}
+          {/* Honest Comparison Table */}
           <div className="mt-14 overflow-hidden rounded-3xl bg-slate-900 border border-white/10 shadow-xl">
             <div className="p-5 sm:p-6 bg-slate-850 border-b border-white/10">
               <h3 className="text-base sm:text-lg font-bold text-white text-center">
@@ -1283,16 +1601,23 @@ export default function HomePage() {
                   <tr>
                     <td className="py-3.5 px-4 font-medium">Software Cost</td>
                     <td className="py-3.5 px-4 font-black text-emerald-400 bg-emerald-500/5 border-x border-emerald-500/10">
-                      ₹3,000 One-Time (Lifetime)
+                      ₹2,999 One-Time (Lifetime)
                     </td>
                     <td className="py-3.5 px-4 text-rose-400 font-semibold">₹2,000 - ₹4,500 / Month</td>
                   </tr>
                   <tr>
                     <td className="py-3.5 px-4 font-medium">1-Year Cost</td>
                     <td className="py-3.5 px-4 font-black text-emerald-400 bg-emerald-500/5 border-x border-emerald-500/10">
-                      ₹3,000 Total
+                      ₹2,999 Total
                     </td>
                     <td className="py-3.5 px-4 text-rose-400 font-semibold">₹24,000 - ₹54,000+</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3.5 px-4 font-medium">Free GMB Creation &amp; Verification</td>
+                    <td className="py-3.5 px-4 font-black text-emerald-400 bg-emerald-500/5 border-x border-emerald-500/10">
+                      Included 100% Free
+                    </td>
+                    <td className="py-3.5 px-4 text-rose-400 font-semibold">₹2,500 - ₹5,000 Extra Charge</td>
                   </tr>
                   <tr>
                     <td className="py-3.5 px-4 font-medium">Regional Indian Languages</td>
@@ -1327,7 +1652,7 @@ export default function HomePage() {
                 <Store className="w-4 h-4" />
               </div>
               <p>
-                <strong className="text-white">Note for Offline Agent Deals:</strong> Offline clients working with our certified marketing partners in their cities receive on-site store setup and physical hardware standee packs at localized agent pricing. Online customers receive instant full-platform lifetime software access at ₹3,000!
+                <strong className="text-white">Note for Offline Agent Deals:</strong> Offline clients working with our certified marketing partners in their cities receive on-site store setup and physical hardware standee packs at localized agent pricing. Online customers receive instant full-platform lifetime software access at ₹2,999!
               </p>
             </div>
           </div>
@@ -1389,7 +1714,7 @@ export default function HomePage() {
               <TrendingUp className="w-3.5 h-3.5 text-indigo-400" /> ROI Revenue Projection
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              See How Fast You Recover ₹3,000
+              See How Fast You Recover ₹2,999
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
               Drag the slider to match your estimated daily walk-in customers:
@@ -1472,7 +1797,7 @@ export default function HomePage() {
               Everything You Need to Know
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Clear, transparent answers about our pan-India ₹3,000 Lifetime Pass:
+              Clear, transparent answers about our pan-India ₹2,999 Lifetime Pass:
             </p>
           </div>
 
@@ -1517,7 +1842,7 @@ export default function HomePage() {
             Ready to Dominate Google Maps in Your City?
           </h2>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
-            Join forward-thinking shop owners and healthcare professionals across India. Activate your ₹3,000 Lifetime Pass in 2 minutes.
+            Join forward-thinking shop owners and healthcare professionals across India. Activate your ₹2,999 Lifetime Pass in 2 minutes &bull; Free GMB Setup Included!
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
@@ -1526,7 +1851,7 @@ export default function HomePage() {
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-2xl shadow-emerald-500/30 transition active:scale-98"
             >
               <Zap className="w-4 h-4" />
-              <span>Get Lifetime Pass (₹3,000)</span>
+              <span>Get Lifetime Pass (₹2,999)</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
@@ -1571,10 +1896,10 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
           <div>
             <span className="text-[10px] font-black uppercase text-emerald-400 block tracking-wider">
-              LIFETIME PASS &bull; 0 SUBSCRIPTIONS
+              LIFETIME PASS &bull; FREE GMB SETUP
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-black text-white">₹3,000</span>
+              <span className="text-base font-black text-white">₹2,999</span>
               <span className="text-[10px] text-slate-400 line-through">₹7,999</span>
             </div>
           </div>

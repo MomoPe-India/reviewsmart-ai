@@ -75,14 +75,14 @@ export default function BillingClient({
 
   const currentAmount =
     selectedPlan === "ONLINE_LIFETIME"
-      ? 3000
+      ? 2999
       : selectedPlan === "STARTER_PVC"
       ? HARDWARE_PACKAGES.STARTER_PVC.price
       : selectedPlan === "EXECUTIVE_STANDEE"
       ? HARDWARE_PACKAGES.EXECUTIVE_STANDEE.price
       : selectedPlan === "ALL_IN_ONE_HUB"
       ? HARDWARE_PACKAGES.ALL_IN_ONE_HUB.price
-      : 3000;
+      : 2999;
 
   const transactionNote = `ReviewSmart-Lifetime-${business?.slug || "Activation"}`;
 
@@ -221,7 +221,7 @@ export default function BillingClient({
 
           {/* Plan Cards */}
           <div className="space-y-4">
-            {/* Primary Hero Plan: Online Lifetime Pass (₹3,000) */}
+            {/* Primary Hero Plan: Online Lifetime Pass (₹2,999) */}
             <div
               onClick={() => setSelectedPlan("ONLINE_LIFETIME")}
               className={`p-5 sm:p-6 rounded-3xl border-2 cursor-pointer transition-all relative ${
@@ -249,12 +249,12 @@ export default function BillingClient({
                     ReviewSmart AI Lifetime Pass (All India)
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
-                    Pay ₹3,000 once and get complete lifetime access. Zero monthly renewals, zero yearly fees. All upcoming updates and new AI capabilities included forever at no additional cost!
+                    Pay ₹2,999 once and get complete lifetime access. Zero monthly renewals, zero yearly fees. 🆓 Free Google Business Profile (GMB) creation &amp; verification included if you don&apos;t have one!
                   </p>
                 </div>
 
                 <div className="flex items-baseline gap-1.5 shrink-0 sm:text-right">
-                  <span className="text-3xl font-black text-slate-900">₹3,000</span>
+                  <span className="text-3xl font-black text-slate-900">₹2,999</span>
                   <span className="text-xs text-slate-500 font-bold">one-time / lifetime</span>
                 </div>
               </div>
@@ -272,9 +272,9 @@ export default function BillingClient({
                   <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span>6 Indian Languages AI Engine</span>
                 </div>
-                <div className="flex items-center gap-1.5 font-medium">
+                <div className="flex items-center gap-1.5 font-medium text-emerald-700 font-bold">
                   <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>Free Doorstep Express Courier</span>
+                  <span>Free GMB Setup &amp; Verification</span>
                 </div>
               </div>
             </div>
