@@ -149,6 +149,7 @@ model UpiPayment {
   commission     Float?   // Auto-calculated: 40% of amount for agent deals (on approval)
   commissionPaid Boolean  @default(false)
   packageTier    String?  @default("EXECUTIVE_STANDEE") // "STARTER_PVC" | "EXECUTIVE_STANDEE" | "ALL_IN_ONE_HUB" | "ENTERPRISE_CUSTOM"
+  screenshotUrl  String?  // Base64 or uploaded URL of payment screenshot/receipt
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

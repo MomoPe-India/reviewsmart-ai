@@ -19,6 +19,13 @@ import {
   CreditCard,
   Building2,
   Award,
+  UploadCloud,
+  Image as ImageIcon,
+  Trash2,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  MessageCircle,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -66,6 +73,13 @@ export default function BillingClient({
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [payments, setPayments] = useState(initialPayments);
+
+  // Screenshot & UTR Guide States
+  const [screenshotData, setScreenshotData] = useState<string | null>(null);
+  const [screenshotName, setScreenshotName] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [showUtrGuide, setShowUtrGuide] = useState(false);
+  const [selectedAppGuide, setSelectedAppGuide] = useState<"phonepe" | "gpay" | "paytm">("phonepe");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -122,9 +136,59 @@ export default function BillingClient({
     setTimeout(() => setCopiedUpi(false), 2500);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMsg("Please upload a valid image file (PNG, JPG, WEBP).");
+      return;
+    }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1200;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        setScreenshotData(compressedDataUrl);
+        setScreenshotName(file.name);
+        setUploadingImage(false);
+        setErrorMsg("");
+      };
+      img.onerror = () => {
+        setScreenshotData(event.target?.result as string);
+        setScreenshotName(file.name);
+        setUploadingImage(false);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmitUtr = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!utrNumber.trim()) return;
+    if (!utrNumber.trim() && !screenshotData) {
+      setErrorMsg("Please enter your 12-digit UTR or upload your payment screenshot.");
+      return;
+    }
 
     setSubmitting(true);
     setErrorMsg("");
@@ -148,6 +212,7 @@ export default function BillingClient({
           packageTier: targetTier,
           amount: currentAmount,
           utrNumber: utrNumber.trim(),
+          screenshotUrl: screenshotData,
           customerPhone,
           agentCode: referralCode ? referralCode.trim().toUpperCase() : undefined,
         }),
@@ -160,6 +225,8 @@ export default function BillingClient({
         setSuccessMsg("Payment submitted successfully! Your account will be verified shortly.");
         setPayments([data.payment, ...payments]);
         setUtrNumber("");
+        setScreenshotData(null);
+        setScreenshotName("");
       }
     } catch {
       setErrorMsg("A network error occurred. Please try again.");
@@ -459,13 +526,100 @@ export default function BillingClient({
       {/* Right Column: Step 2 UTR Submission Form & Payment History */}
       <div className="lg:col-span-5 space-y-6">
         <div className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <Send className="w-4 h-4 text-indigo-600" />
-            Step 2: Submit UTR for Instant Activation
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Send className="w-4 h-4 text-indigo-600" />
+              Step 2: Confirm Payment
+            </h3>
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-emerald-500" />
+              UTR or Screenshot
+            </span>
+          </div>
+          
           <p className="text-xs text-slate-500">
-            After paying ₹{currentAmount}, copy the 12-digit UPI Reference / UTR Number from your GPay / PhonePe / Paytm transaction receipt and enter it below.
+            Paid ₹{currentAmount}? Enter your 12-digit UTR <strong>or simply upload your payment screenshot</strong> below. Our team activates your store immediately!
           </p>
+
+          {/* Interactive Educational Guide Accordion */}
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 overflow-hidden text-xs">
+            <button
+              type="button"
+              onClick={() => setShowUtrGuide(!showUtrGuide)}
+              className="w-full p-3 flex items-center justify-between text-left text-indigo-900 font-bold hover:bg-indigo-100/60 transition"
+            >
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Don&apos;t know what UTR means? Tap for Quick Guide</span>
+              </div>
+              {showUtrGuide ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {showUtrGuide && (
+              <div className="p-3.5 pt-1 space-y-3 border-t border-indigo-100 bg-white">
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+                  {(["phonepe", "gpay", "paytm"] as const).map((app) => (
+                    <button
+                      key={app}
+                      type="button"
+                      onClick={() => setSelectedAppGuide(app)}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition ${
+                        selectedAppGuide === app
+                          ? "bg-white text-indigo-700 shadow-sm"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      {app === "phonepe" ? "PhonePe" : app === "gpay" ? "Google Pay" : "Paytm"}
+                    </button>
+                  ))}
+                </div>
+
+                {selectedAppGuide === "phonepe" && (
+                  <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-100 text-purple-950 space-y-1.5 text-[11px]">
+                    <div className="font-bold flex items-center gap-1.5 text-purple-900">
+                      <span>🟣 PhonePe: Where is the UTR?</span>
+                    </div>
+                    <ol className="list-decimal pl-4 space-y-1 text-slate-700">
+                      <li>Open <strong>PhonePe</strong> and tap <strong>History</strong> at bottom right.</li>
+                      <li>Tap the payment of <strong>₹{currentAmount}</strong> to MomoPe / Damerla Mohan.</li>
+                      <li>Look under <em>Transaction Details</em> for: <span className="font-mono font-bold text-purple-900 bg-purple-100 px-1 py-0.5 rounded">UTR: 4xxxxxxxxxxx (12 Digits)</span>.</li>
+                    </ol>
+                  </div>
+                )}
+
+                {selectedAppGuide === "gpay" && (
+                  <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-blue-950 space-y-1.5 text-[11px]">
+                    <div className="font-bold flex items-center gap-1.5 text-blue-900">
+                      <span>🔵 Google Pay: Where is the UPI ID?</span>
+                    </div>
+                    <ol className="list-decimal pl-4 space-y-1 text-slate-700">
+                      <li>Open <strong>Google Pay</strong>, scroll to the bottom &amp; tap <strong>See transaction history</strong>.</li>
+                      <li>Tap the ₹{currentAmount} payment to <strong>momopedeals@oksbi</strong>.</li>
+                      <li>Look for: <span className="font-mono font-bold text-blue-900 bg-blue-100 px-1 py-0.5 rounded">UPI transaction ID: 4xxxxxxxxxxx (12 Digits)</span>.</li>
+                    </ol>
+                  </div>
+                )}
+
+                {selectedAppGuide === "paytm" && (
+                  <div className="p-3 rounded-xl bg-sky-50/60 border border-sky-100 text-sky-950 space-y-1.5 text-[11px]">
+                    <div className="font-bold flex items-center gap-1.5 text-sky-900">
+                      <span>🔷 Paytm: Where is the Ref No?</span>
+                    </div>
+                    <ol className="list-decimal pl-4 space-y-1 text-slate-700">
+                      <li>Open <strong>Paytm</strong> and tap <strong>Balance &amp; History</strong>.</li>
+                      <li>Tap the ₹{currentAmount} transaction receipt.</li>
+                      <li>Look for: <span className="font-mono font-bold text-sky-900 bg-sky-100 px-1 py-0.5 rounded">UPI Ref No: 4xxxxxxxxxxx (12 Digits)</span>.</li>
+                    </ol>
+                  </div>
+                )}
+
+                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
+                  <span className="font-bold">✨ Tip:</span>
+                  <span>Can&apos;t find it? Don&apos;t worry! Just upload a screenshot of the green checkmark payment screen below.</span>
+                </div>
+              </div>
+            )}
+          </div>
 
           {successMsg && (
             <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
@@ -481,18 +635,95 @@ export default function BillingClient({
             </div>
           )}
 
-          <form onSubmit={handleSubmitUtr} className="space-y-3">
+          <form onSubmit={handleSubmitUtr} className="space-y-3.5">
+            {/* Screenshot Upload Dropzone */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                12-Digit UPI Reference / UTR Number *
+              <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
+                <span>Upload Payment Screenshot (Fastest!)</span>
+                <span className="text-[10px] text-indigo-600 font-semibold">Camera or Gallery</span>
               </label>
+
+              {screenshotData ? (
+                <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src={screenshotData}
+                      alt="Payment Receipt Preview"
+                      className="w-12 h-12 object-cover rounded-xl border border-emerald-300 shadow-sm shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-emerald-950 truncate flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Screenshot Attached!</span>
+                      </div>
+                      <div className="text-[10px] text-emerald-700 truncate font-mono">
+                        {screenshotName || "payment-receipt.jpg"}
+                      </div>
+                      <span className="text-[9px] text-emerald-600 font-semibold block">
+                        ✓ UTR number is now optional
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScreenshotData(null);
+                      setScreenshotName("");
+                    }}
+                    className="p-2 rounded-xl bg-white hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 transition shrink-0"
+                    title="Remove Screenshot"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer bg-slate-50/60 hover:bg-indigo-50/20 transition text-center group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 flex items-center justify-center transition">
+                    {uploadingImage ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <UploadCloud className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-indigo-700 group-hover:underline">
+                      Tap to Upload Payment Screenshot
+                    </span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      PNG, JPG, WEBP (Direct phone photo or screenshot)
+                    </span>
+                  </div>
+                </label>
+              )}
+            </div>
+
+            {/* UTR Input */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-700">
+                  12-Digit UPI Reference / UTR Number {screenshotData ? "(Optional)" : "*"}
+                </label>
+                {screenshotData && (
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
+                    Optional (Screenshot provided)
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
-                required
+                required={!screenshotData}
                 maxLength={24}
                 value={utrNumber}
                 onChange={(e) => setUtrNumber(e.target.value)}
-                placeholder="e.g. 426819283741"
+                placeholder={screenshotData ? "Optional (Leave blank if you uploaded screenshot)" : "e.g. 426819283741"}
                 className="w-full text-xs font-mono p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
             </div>
@@ -509,6 +740,9 @@ export default function BillingClient({
                 placeholder="+91 98765 43210"
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                We will send your login credentials &amp; welcome kit to this WhatsApp number.
+              </span>
             </div>
 
             {referralCode ? (
@@ -524,7 +758,7 @@ export default function BillingClient({
 
             <button
               type="submit"
-              disabled={submitting || !utrNumber.trim()}
+              disabled={submitting || (!utrNumber.trim() && !screenshotData)}
               className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-100 transition disabled:opacity-50"
             >
               {submitting ? (
@@ -532,11 +766,38 @@ export default function BillingClient({
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  Submit UTR &amp; Activate Access
+                  {screenshotData ? "Submit Screenshot & Activate Store" : "Submit UTR & Activate Access"}
                 </>
               )}
             </button>
           </form>
+
+          {/* WhatsApp Direct Help Fallback */}
+          <div className="pt-3 border-t border-slate-100">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-slate-900">
+                    Prefer sending on WhatsApp?
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    Send receipt to +91 8639831132 for instant activation
+                  </div>
+                </div>
+              </div>
+              <a
+                href={`https://wa.me/918639831132?text=${encodeURIComponent(`Hi ReviewSmart Team, I paid ₹${currentAmount} for my store ${business?.name || ""}. Here is my payment receipt screenshot:`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shrink-0 transition"
+              >
+                WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Payment Submissions List */}

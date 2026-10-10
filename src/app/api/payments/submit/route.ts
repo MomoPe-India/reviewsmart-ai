@@ -9,10 +9,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { utrNumber, amount, planType, packageTier, customerPhone, agentCode: requestedAgentCode } = await req.json();
+    const {
+      utrNumber,
+      amount,
+      planType,
+      packageTier,
+      customerPhone,
+      agentCode: requestedAgentCode,
+      screenshotUrl,
+    } = await req.json();
 
-    const cleanUtr = String(utrNumber || "").trim();
-    if (!cleanUtr || cleanUtr.length < 6) {
+    let cleanUtr = String(utrNumber || "").trim();
+    const cleanScreenshot = screenshotUrl ? String(screenshotUrl).trim() : null;
+
+    if (!cleanUtr && !cleanScreenshot) {
+      return NextResponse.json(
+        { error: "Please enter your 12-digit UPI UTR number or upload a screenshot of your payment receipt." },
+        { status: 400 }
+      );
+    }
+
+    if (!cleanUtr && cleanScreenshot) {
+      // Auto-assign a traceable provisional reference for screenshot-first verification
+      cleanUtr = `SCREENSHOT-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+    } else if (cleanUtr && cleanUtr.length < 6) {
       return NextResponse.json(
         { error: "Please enter a valid 12-digit UPI Reference / UTR Number" },
         { status: 400 }
@@ -27,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (existingPayment) {
       if (existingPayment.status === "APPROVED") {
         return NextResponse.json(
-          { error: "This UTR Number has already been verified and used. If you made a new payment, please submit the new UTR." },
+          { error: "This UTR Number has already been verified and used. If you made a new payment, please submit the new UTR or screenshot." },
           { status: 400 }
         );
       }
@@ -103,6 +123,7 @@ export async function POST(req: NextRequest) {
         amount: paymentAmount,
         utrNumber: cleanUtr,
         customerPhone: customerPhone || null,
+        screenshotUrl: cleanScreenshot,
         status: "PENDING",
       },
     });
