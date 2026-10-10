@@ -51,6 +51,8 @@ interface BusinessItem {
   minRatingForGoogle?: number;
   isPaid: boolean;
   customerType: string;
+  gmbStatus?: string | null;
+  gmbNotes?: string | null;
   demoExpiresAt?: string | null;
   demoUsed?: boolean;
   isDemoActive?: boolean;
@@ -72,7 +74,7 @@ interface MerchantItem {
 export default function AdminMerchantsPage() {
   const [merchants, setMerchants] = useState<MerchantItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState<"ALL" | "ONLINE" | "OFFLINE">("ALL");
+  const [filterType, setFilterType] = useState<"ALL" | "ONLINE" | "OFFLINE" | "GMB_PENDING" | "GMB_LIVE">("ALL");
 
   // Create Modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -112,6 +114,8 @@ export default function AdminMerchantsPage() {
     minRatingForGoogle: 4,
     logoUrl: "",
     isPaid: true,
+    gmbStatus: "NOT_REQUESTED",
+    gmbNotes: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState("");
@@ -228,6 +232,8 @@ export default function AdminMerchantsPage() {
       minRatingForGoogle: b.minRatingForGoogle ?? 4,
       logoUrl: b.logoUrl || "",
       isPaid: b.isPaid ?? true,
+      gmbStatus: b.gmbStatus || "NOT_REQUESTED",
+      gmbNotes: b.gmbNotes || "",
     });
   };
 
@@ -287,6 +293,8 @@ export default function AdminMerchantsPage() {
                         logoUrl: editForm.logoUrl || null,
                         isPaid: editForm.isPaid,
                         customerType: editForm.customerType,
+                        gmbStatus: editForm.gmbStatus,
+                        gmbNotes: editForm.gmbNotes,
                       }
                     : b
                 ),
@@ -396,9 +404,98 @@ export default function AdminMerchantsPage() {
     return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
   };
 
+  const formatGmbStatusLabel = (status?: string | null) => {
+    switch (status) {
+      case "DETAILS_SUBMITTED":
+        return "Details Submitted";
+      case "IN_PROGRESS":
+        return "SEO In Progress";
+      case "VERIFICATION_PENDING":
+        return "Verification Pending";
+      case "VERIFIED_LIVE":
+        return "100% Live on Google";
+      default:
+        return "Not Requested";
+    }
+  };
+
+  const buildGmbStatusWhatsAppUrl = (merchantName: string, phone: string, biz: BusinessItem) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    const waNumber = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const status = biz.gmbStatus || "NOT_REQUESTED";
+    const storeName = biz.name;
+    let statusMessage = "";
+
+    if (status === "DETAILS_SUBMITTED") {
+      statusMessage = `We have received your store details for *${storeName}* and initiated the Google Business Profile registration. Our team is formatting your photos and category for optimal search ranking.`;
+    } else if (status === "IN_PROGRESS") {
+      statusMessage = `Good news! Your Google Business Profile for *${storeName}* is actively being configured with high-ranking local SEO keywords, opening hours, and category tags.`;
+    } else if (status === "VERIFICATION_PENDING") {
+      statusMessage = `Your Google Business Profile for *${storeName}* has entered the *Verification Phase*! 📬 Please look out for Google's verification code (SMS/Email/Video verification). Share the code with us to activate your profile.`;
+    } else if (status === "VERIFIED_LIVE") {
+      statusMessage = `🎉 *CONGRATULATIONS!* Your official Google Business Profile for *${storeName}* is now *100% VERIFIED & LIVE on Google Maps!* 🌟 Customers can now find your shop and leave 5-star reviews.${biz.googleReviewUrl ? `\n\nDirect Review Link: ${biz.googleReviewUrl}` : ""}`;
+    } else {
+      statusMessage = `Your Google Business Profile setup for *${storeName}* is currently in progress.`;
+    }
+
+    const msg = `Hello ${merchantName}! 👋\n\n📍 *Google Business Profile (GMB) Update for ${storeName}*\n\nStatus: *${formatGmbStatusLabel(status)}*\n\n${statusMessage}\n\nReviewSmart AI Operations Team`;
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+  };
+
+  const handleUpdateGmbStatus = async (merchantId: string, businessId: string, newStatus: string) => {
+    try {
+      const res = await fetch("/api/admin/merchants", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          merchantId,
+          businessId,
+          action: "update_gmb",
+          gmbStatus: newStatus,
+        }),
+      });
+      if (res.ok) {
+        setMerchants((prev) =>
+          prev.map((m) =>
+            m.id === merchantId
+              ? {
+                  ...m,
+                  businesses: m.businesses.map((b) =>
+                    b.id === businessId ? { ...b, gmbStatus: newStatus } : b
+                  ),
+                }
+              : m
+          )
+        );
+      }
+    } catch (e) {
+      console.error("Failed to update GMB status:", e);
+    }
+  };
+
+  const gmbPendingCount = merchants.filter(
+    (m) =>
+      m.businesses[0]?.gmbStatus === "DETAILS_SUBMITTED" ||
+      m.businesses[0]?.gmbStatus === "IN_PROGRESS" ||
+      m.businesses[0]?.gmbStatus === "VERIFICATION_PENDING"
+  ).length;
+
+  const gmbLiveCount = merchants.filter(
+    (m) => m.businesses[0]?.gmbStatus === "VERIFIED_LIVE"
+  ).length;
+
   const filteredMerchants = merchants.filter((m) => {
+    const b = m.businesses[0];
     if (filterType === "ONLINE") return m.customerType === "ONLINE";
     if (filterType === "OFFLINE") return m.customerType === "OFFLINE";
+    if (filterType === "GMB_PENDING") {
+      return (
+        b?.gmbStatus === "DETAILS_SUBMITTED" ||
+        b?.gmbStatus === "IN_PROGRESS" ||
+        b?.gmbStatus === "VERIFICATION_PENDING"
+      );
+    }
+    if (filterType === "GMB_LIVE") return b?.gmbStatus === "VERIFIED_LIVE";
     return true;
   });
 
@@ -489,11 +586,11 @@ export default function AdminMerchantsPage() {
         </div>
       )}
 
-      {/* ─── CHANNEL FILTER TABS ──────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+      {/* ─── CHANNEL & GMB PIPELINE FILTER TABS ─────────────────────────── */}
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setFilterType("ALL")}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
             filterType === "ALL"
               ? "bg-indigo-600 text-white shadow-sm"
               : "bg-slate-800 text-slate-400 hover:text-white"
@@ -503,7 +600,7 @@ export default function AdminMerchantsPage() {
         </button>
         <button
           onClick={() => setFilterType("ONLINE")}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
             filterType === "ONLINE"
               ? "bg-blue-600 text-white shadow-sm"
               : "bg-slate-800 text-slate-400 hover:text-white"
@@ -514,7 +611,7 @@ export default function AdminMerchantsPage() {
         </button>
         <button
           onClick={() => setFilterType("OFFLINE")}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
             filterType === "OFFLINE"
               ? "bg-indigo-600 text-white shadow-sm"
               : "bg-slate-800 text-slate-400 hover:text-white"
@@ -522,6 +619,28 @@ export default function AdminMerchantsPage() {
         >
           <UserCheck className="w-3.5 h-3.5" />
           <span>Offline ({offlineCount})</span>
+        </button>
+        <button
+          onClick={() => setFilterType("GMB_PENDING")}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+            filterType === "GMB_PENDING"
+              ? "bg-amber-600 text-white shadow-sm"
+              : "bg-slate-800 text-amber-300 hover:text-white"
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5 text-amber-400" />
+          <span>GMB Setup Pending ({gmbPendingCount})</span>
+        </button>
+        <button
+          onClick={() => setFilterType("GMB_LIVE")}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+            filterType === "GMB_LIVE"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "bg-slate-800 text-emerald-300 hover:text-white"
+          }`}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>GMB Live ({gmbLiveCount})</span>
         </button>
       </div>
 
@@ -666,6 +785,60 @@ export default function AdminMerchantsPage() {
                       <span className="text-[10px] text-slate-400 truncate max-w-[120px]">
                         📍 {biz.googleAddress}
                       </span>
+                    )}
+                  </div>
+                )}
+
+                {/* GMB Fulfillment Pipeline Tracker */}
+                {biz && (
+                  <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/80 mb-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+                          Google Business (GMB):
+                        </span>
+                      </div>
+                      <a
+                        href={buildGmbStatusWhatsAppUrl(m.name || "Partner", m.phone || "", biz)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded-lg border border-emerald-500/20 transition"
+                        title="Send GMB progress status to merchant on WhatsApp"
+                      >
+                        <MessageSquare className="w-2.5 h-2.5" />
+                        <span>Notify WhatsApp</span>
+                      </a>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={biz.gmbStatus || "NOT_REQUESTED"}
+                        onChange={(e) => handleUpdateGmbStatus(m.id, biz.id, e.target.value)}
+                        className={`w-full text-[11px] font-bold p-1.5 rounded-xl border focus:outline-none transition ${
+                          biz.gmbStatus === "VERIFIED_LIVE"
+                            ? "bg-emerald-950/60 text-emerald-300 border-emerald-700/50"
+                            : biz.gmbStatus === "VERIFICATION_PENDING"
+                            ? "bg-purple-950/60 text-purple-300 border-purple-700/50"
+                            : biz.gmbStatus === "IN_PROGRESS"
+                            ? "bg-amber-950/60 text-amber-300 border-amber-700/50"
+                            : biz.gmbStatus === "DETAILS_SUBMITTED"
+                            ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
+                            : "bg-slate-900 text-slate-400 border-slate-800"
+                        }`}
+                      >
+                        <option value="NOT_REQUESTED">⚪ GMB: Not Requested</option>
+                        <option value="DETAILS_SUBMITTED">🔵 GMB: Details Submitted</option>
+                        <option value="IN_PROGRESS">🟡 GMB: SEO In Progress</option>
+                        <option value="VERIFICATION_PENDING">🟣 GMB: Verification Pending</option>
+                        <option value="VERIFIED_LIVE">🟢 GMB: 100% Live on Google Maps</option>
+                      </select>
+                    </div>
+
+                    {biz.gmbNotes && (
+                      <p className="text-[10px] text-slate-400 italic px-1 truncate">
+                        Note: {biz.gmbNotes}
+                      </p>
                     )}
                   </div>
                 )}
@@ -1121,6 +1294,42 @@ export default function AdminMerchantsPage() {
                         <option value="LIVE">LIVE (Verified &amp; Paid)</option>
                         <option value="PENDING">PENDING (Unpaid Watermark)</option>
                       </select>
+                    </div>
+                  </div>
+
+                  {/* GMB Setup & Verification Control in Edit Modal */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+                    <label className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Google Business Profile (GMB) Fulfillment</span>
+                    </label>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-400 mb-1">Fulfillment Status</label>
+                        <select
+                          value={editForm.gmbStatus}
+                          onChange={(e) => setEditForm({ ...editForm, gmbStatus: e.target.value })}
+                          className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="NOT_REQUESTED">⚪ Not Requested</option>
+                          <option value="DETAILS_SUBMITTED">🔵 Details Submitted</option>
+                          <option value="IN_PROGRESS">🟡 SEO In Progress</option>
+                          <option value="VERIFICATION_PENDING">🟣 Verification Pending</option>
+                          <option value="VERIFIED_LIVE">🟢 100% Live on Google Maps</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] text-slate-400 mb-1">GMB Notes</label>
+                        <input
+                          type="text"
+                          value={editForm.gmbNotes}
+                          onChange={(e) => setEditForm({ ...editForm, gmbNotes: e.target.value })}
+                          placeholder="e.g. Verification code pending"
+                          className="w-full text-xs p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
                     </div>
                   </div>
 

@@ -48,6 +48,8 @@ export async function GET() {
             keywords: true,
             isPaid: true,
             customerType: true,
+            gmbStatus: true,
+            gmbNotes: true,
             demoExpiresAt: true,
             demoUsed: true,
             createdAt: true,
@@ -215,6 +217,8 @@ export async function PUT(req: NextRequest) {
       website,
       minRatingForGoogle,
       isPaid,
+      gmbStatus,
+      gmbNotes,
     } = body;
 
     if (!merchantId) {
@@ -304,6 +308,8 @@ export async function PUT(req: NextRequest) {
           ...(logoUrl !== undefined && { logoUrl: logoUrl ? String(logoUrl).trim() : null }),
           ...(isPaid !== undefined && { isPaid }),
           ...(customerType !== undefined && { customerType }),
+          ...(gmbStatus !== undefined && { gmbStatus }),
+          ...(gmbNotes !== undefined && { gmbNotes }),
         },
       });
     }
@@ -319,7 +325,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// ─── PATCH: Suspend/Activate or Reset PIN ─────────────────────────────────────
+// ─── PATCH: Suspend/Activate, Reset PIN, or Update GMB Status ──────────────────
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getSessionUser();
@@ -327,10 +333,33 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { merchantId, action } = await req.json();
+    const body = await req.json();
+    const { merchantId, action, businessId, gmbStatus, gmbNotes } = body;
 
     if (!merchantId || !action) {
       return NextResponse.json({ error: "merchantId and action are required." }, { status: 400 });
+    }
+
+    if (action === "update_gmb") {
+      const targetBiz = businessId
+        ? await prisma.business.findUnique({ where: { id: businessId } })
+        : await prisma.business.findFirst({ where: { userId: merchantId } });
+
+      if (!targetBiz) return NextResponse.json({ error: "Business not found." }, { status: 404 });
+
+      const updated = await prisma.business.update({
+        where: { id: targetBiz.id },
+        data: {
+          ...(gmbStatus ? { gmbStatus } : {}),
+          ...(gmbNotes !== undefined ? { gmbNotes } : {}),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        business: updated,
+        message: `GMB status updated to ${updated.gmbStatus}.`,
+      });
     }
 
     if (action === "toggle_active") {

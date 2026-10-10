@@ -21,8 +21,10 @@ export default async function AdminPaymentsPage({
             select: {
               name: true,
               email: true,
+              phone: true,
+              userIdTag: true,
               businesses: {
-                select: { name: true, slug: true },
+                select: { name: true, slug: true, gmbStatus: true },
               },
             },
           },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -248,6 +248,20 @@ export default function HomePage() {
   const [mockupFormat, setMockupFormat] = useState<"stand" | "pvc-vertical" | "poster-a4">("stand");
   const [mockupTheme, setMockupTheme] = useState<keyof typeof DISPLAY_THEMES>("royal-gold");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [referralPartner, setReferralPartner] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref") || params.get("agent") || localStorage.getItem("reviewsmart_ref");
+      if (ref) {
+        const clean = ref.trim().toUpperCase();
+        setReferralPartner(clean);
+        localStorage.setItem("reviewsmart_ref", clean);
+        document.cookie = `reviewsmart_ref=${encodeURIComponent(clean)}; path=/; max-age=2592000; SameSite=Lax`;
+      }
+    }
+  }, []);
 
   const activeDemo = DEMO_PRESETS[selectedDemoIndex];
   const activeReviewText = activeDemo.reviews[selectedLang] || activeDemo.reviews.ENGLISH;

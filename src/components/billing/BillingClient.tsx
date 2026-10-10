@@ -61,10 +61,23 @@ export default function BillingClient({
   // Form
   const [utrNumber, setUtrNumber] = useState("");
   const [customerPhone, setCustomerPhone] = useState(business?.phone || "");
+  const [referralCode, setReferralCode] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [payments, setPayments] = useState(initialPayments);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref") || params.get("agent") || localStorage.getItem("reviewsmart_ref");
+      if (ref) {
+        const clean = ref.trim().toUpperCase();
+        setReferralCode(clean);
+        localStorage.setItem("reviewsmart_ref", clean);
+      }
+    }
+  }, []);
 
   const upiId = settings?.upiId || "momopedeals@oksbi";
   const upiPayee = settings?.upiPayeeName || "Damerla Mohan";
@@ -136,6 +149,7 @@ export default function BillingClient({
           amount: currentAmount,
           utrNumber: utrNumber.trim(),
           customerPhone,
+          agentCode: referralCode ? referralCode.trim().toUpperCase() : undefined,
         }),
       });
 
@@ -496,6 +510,17 @@ export default function BillingClient({
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
             </div>
+
+            {referralCode ? (
+              <div className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-900 flex items-center justify-between">
+                <span className="font-medium">
+                  Partner Referral Code: <strong className="font-mono text-indigo-700">{referralCode}</strong>
+                </span>
+                <span className="text-[10px] bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full font-bold">
+                  ✓ Attributed
+                </span>
+              </div>
+            ) : null}
 
             <button
               type="submit"

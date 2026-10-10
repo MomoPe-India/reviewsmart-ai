@@ -41,6 +41,8 @@ interface AgentItem {
   totalRevenue: number;
   totalCommission: number;
   commissionEarned: number;
+  commissionPaid?: number;
+  commissionPending?: number;
   pendingDeals: number;
   createdAt: string;
 }
@@ -84,6 +86,18 @@ export default function AdminAgentsPage() {
   const [deletingAgent, setDeletingAgent] = useState<AgentItem | null>(null);
   const [submittingDelete, setSubmittingDelete] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // Settle Commission Payout State
+  const [settlingAgent, setSettlingAgent] = useState<AgentItem | null>(null);
+  const [payoutUtr, setPayoutUtr] = useState("");
+  const [submittingPayout, setSubmittingPayout] = useState(false);
+  const [payoutError, setPayoutError] = useState("");
+  const [payoutReceipt, setPayoutReceipt] = useState<{
+    agentName: string;
+    phone: string | null;
+    amount: number;
+    payoutUtr: string;
+  } | null>(null);
 
   // Reset PIN State
   const [actionLoading, setActionLoading] = useState<Record<string, string>>({});
@@ -335,6 +349,53 @@ export default function AdminAgentsPage() {
       navigator.clipboard.writeText(pin);
       setCopiedPinId(agentId);
       setTimeout(() => setCopiedPinId(null), 2000);
+    }
+  };
+
+  // ── Settle Payout Handlers ──────────────────────────────────────────────────
+  const buildPayoutReceiptWhatsAppUrl = (name: string, phone: string | null, amount: number, utr: string) => {
+    const cleanPhone = String(phone || "").replace(/[^0-9]/g, "");
+    const waNumber = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const msg = `Hi ${name}! 🎉\n\nYour ReviewSmart AI Marketing Commission Payout has been successfully processed & transferred! 💳\n\n💰 *Amount Credited*: ₹${amount.toLocaleString("en-IN")}\n🔖 *Bank/UPI Transfer Reference (UTR)*: ${utr}\n📅 *Date*: ${new Date().toLocaleDateString("en-IN")}\n\nThank you for driving growth across your merchant network! 🚀`;
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+  };
+
+  const handleSettlePayout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!settlingAgent || !payoutUtr.trim()) return;
+    setPayoutError("");
+    setSubmittingPayout(true);
+
+    try {
+      const res = await fetch("/api/admin/agents", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agentId: settlingAgent.id,
+          action: "settle_payout",
+          payoutUtr: payoutUtr.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPayoutError(data.error || "Failed to settle payout.");
+        return;
+      }
+
+      setPayoutReceipt({
+        agentName: settlingAgent.name,
+        phone: settlingAgent.phone,
+        amount: data.totalSettled,
+        payoutUtr: data.payoutUtr,
+      });
+
+      fetchAgents();
+      setPayoutUtr("");
+    } catch (err: any) {
+      setPayoutError(err?.message || "Network error while settling payout.");
+    } finally {
+      setSubmittingPayout(false);
     }
   };
 
@@ -615,6 +676,49 @@ export default function AdminAgentsPage() {
                     <span className="text-sm font-black text-amber-400">
                       ₹{(agt.commissionEarned ?? agt.totalCommission ?? 0).toLocaleString("en-IN")}
                     </span>
+                  </div>
+                </div>
+
+                {/* ── Commission Settlement Ledger ── */}
+                <div className="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1">
+                      <IndianRupee className="w-3 h-3 text-emerald-400" />
+                      Commission Ledger
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-semibold">
+                      Paid: ₹{(agt.commissionPaid || 0).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">Pending Payout Balance:</span>
+                      <span className={`text-sm font-black ${
+                        (agt.commissionPending || 0) > 0 ? "text-amber-400" : "text-slate-400"
+                      }`}>
+                        ₹{(agt.commissionPending || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {(agt.commissionPending || 0) > 0 ? (
+                      <button
+                        onClick={() => {
+                          setSettlingAgent(agt);
+                          setPayoutUtr("");
+                          setPayoutError("");
+                          setPayoutReceipt(null);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-md transition active:scale-95"
+                      >
+                        <IndianRupee className="w-3.5 h-3.5" />
+                        <span>Settle Payout</span>
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-xl border border-emerald-500/20">
+                        ✓ All Settled
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -1074,6 +1178,146 @@ export default function AdminAgentsPage() {
                 Delete Agent
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. SETTLE COMMISSION PAYOUT MODAL ── */}
+      {settlingAgent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-slate-900 border border-amber-500/40 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <IndianRupee className="w-4 h-4 text-amber-400" />
+                Settle Commission Payout: {settlingAgent.name}
+              </h2>
+              <button
+                onClick={() => setSettlingAgent(null)}
+                className="text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {payoutReceipt ? (
+              /* Receipt View with 1-Click WhatsApp Button */
+              <div className="space-y-4 py-2 text-center animate-fadeIn">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Payout Successfully Settled!</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    All pending deals for {payoutReceipt.agentName} marked as paid.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-left space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Total Settled Amount:</span>
+                    <span className="font-black text-emerald-400 text-base">
+                      ₹{payoutReceipt.amount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Bank Transfer / UPI UTR:</span>
+                    <span className="font-mono font-bold text-amber-300">
+                      {payoutReceipt.payoutUtr}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 1-Click WhatsApp Receipt Dispatcher */}
+                <a
+                  href={buildPayoutReceiptWhatsAppUrl(
+                    payoutReceipt.agentName,
+                    payoutReceipt.phone,
+                    payoutReceipt.amount,
+                    payoutReceipt.payoutUtr
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg transition"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>📲 Send Payout Receipt via WhatsApp</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setSettlingAgent(null)}
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              /* Settlement Form */
+              <form onSubmit={handleSettlePayout} className="space-y-4">
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Agent Code:</span>
+                    <span className="font-mono font-bold text-indigo-400">{settlingAgent.agentCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Total Revenue Generated:</span>
+                    <span className="font-semibold text-white">₹{(settlingAgent.totalRevenue || 0).toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Previously Paid:</span>
+                    <span className="font-semibold text-emerald-400">₹{(settlingAgent.commissionPaid || 0).toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between pt-1 border-t border-slate-800">
+                    <span className="font-bold text-white">Pending Balance to Pay:</span>
+                    <span className="font-black text-amber-400 text-sm">
+                      ₹{(settlingAgent.commissionPending || 0).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </div>
+
+                {payoutError && (
+                  <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-semibold flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    {payoutError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    Bank / UPI Transfer Reference (UTR) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={payoutUtr}
+                    onChange={(e) => setPayoutUtr(e.target.value)}
+                    placeholder="Enter 12-digit Bank/UPI payment UTR"
+                    className="w-full text-xs p-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Enter the UTR reference number from your bank or UPI transfer to the agent.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setSettlingAgent(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingPayout || !payoutUtr.trim()}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-black transition flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-md shadow-amber-950/40"
+                  >
+                    {submittingPayout ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <IndianRupee className="w-3.5 h-3.5" />}
+                    Confirm Settlement
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

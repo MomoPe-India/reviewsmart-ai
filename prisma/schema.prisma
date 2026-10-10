@@ -94,6 +94,8 @@ model Business {
   visitingCardAddress  String?
   visitingCardImageUrl String?
   isPaid             Boolean           @default(false) // false until admin explicitly approves payment
+  gmbStatus          String            @default("NOT_REQUESTED") // "NOT_REQUESTED" | "DETAILS_SUBMITTED" | "IN_PROGRESS" | "VERIFICATION_PENDING" | "VERIFIED_LIVE"
+  gmbNotes           String?           // Super Admin or Agent notes on GMB optimization & verification
   demoExpiresAt      DateTime?         // If set and in future, card is temporarily active for evaluation
   demoActivatedAt    DateTime?         // Timestamp when demo was started
   demoActivatedBy    String?           // User ID of agent or admin who activated the demo

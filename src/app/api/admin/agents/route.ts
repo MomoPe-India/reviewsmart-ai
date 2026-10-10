@@ -39,7 +39,7 @@ export async function GET() {
               ...(agt.userIdTag ? [{ agentCode: agt.userIdTag }] : []),
             ],
           },
-          select: { amount: true, status: true, commission: true },
+          select: { amount: true, status: true, commission: true, commissionPaid: true },
         });
 
         const dealsClosed = payments.filter((p) => p.status === "APPROVED").length;
@@ -49,6 +49,10 @@ export async function GET() {
         const totalCommission = payments
           .filter((p) => p.status === "APPROVED")
           .reduce((sum, p) => sum + (p.commission || 0), 0);
+        const commissionPaid = payments
+          .filter((p) => p.status === "APPROVED" && p.commissionPaid)
+          .reduce((sum, p) => sum + (p.commission || 0), 0);
+        const commissionPending = Math.max(0, Math.round((totalCommission - commissionPaid) * 100) / 100);
         const pendingDeals = payments.filter((p) => p.status === "PENDING").length;
 
         return {
@@ -57,6 +61,8 @@ export async function GET() {
           totalRevenue: totalRevenue || 0,
           totalCommission: totalCommission || 0,
           commissionEarned: totalCommission || 0,
+          commissionPaid: Math.round(commissionPaid * 100) / 100,
+          commissionPending,
           pendingDeals: pendingDeals || 0,
         };
       })
@@ -318,6 +324,50 @@ export async function PATCH(req: NextRequest) {
         success: true,
         agent: updated,
         message: `Agent ${updated.name} updated successfully and deals synchronized.`,
+      });
+    }
+
+    // 4. Settle Commission Payout
+    if (action === "settle_payout") {
+      const { payoutUtr } = body;
+      const cleanUtr = String(payoutUtr || "").trim();
+      if (!cleanUtr) {
+        return NextResponse.json({ error: "Payout Transfer Reference / UTR is required." }, { status: 400 });
+      }
+
+      // Find all unpaid approved payments for this agent
+      const unpaidPayments = await prisma.upiPayment.findMany({
+        where: {
+          OR: [
+            { agentId },
+            ...(agent.agentCode ? [{ agentCode: agent.agentCode }] : []),
+            ...(agent.userIdTag ? [{ agentCode: agent.userIdTag }] : []),
+          ],
+          status: "APPROVED",
+          commissionPaid: false,
+        },
+      });
+
+      if (unpaidPayments.length === 0) {
+        return NextResponse.json({ error: "No pending unpaid commissions found for this agent." }, { status: 400 });
+      }
+
+      const totalSettled = unpaidPayments.reduce((sum, p) => sum + (p.commission || 0), 0);
+      const paymentIds = unpaidPayments.map((p) => p.id);
+
+      await prisma.upiPayment.updateMany({
+        where: { id: { in: paymentIds } },
+        data: {
+          commissionPaid: true,
+          notes: `Payout settled on ${new Date().toLocaleDateString("en-IN")}. Payout UTR: ${cleanUtr}`,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Settled ₹${totalSettled.toFixed(2)} in commissions for ${agent.name} (Payout UTR: ${cleanUtr}).`,
+        totalSettled,
+        payoutUtr: cleanUtr,
       });
     }
 

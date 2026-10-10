@@ -14,6 +14,9 @@ import {
   IndianRupee,
   UserCheck,
   Globe,
+  MessageSquare,
+  Copy,
+  Sparkles,
 } from "lucide-react";
 import { getPackageById, getPackageByPrice } from "@/lib/packages";
 
@@ -22,6 +25,44 @@ interface AdminPaymentsProps {
   initialSettings: any;
   initialStatus?: string;
   initialChannel?: string;
+}
+
+function buildWelcomeKitWhatsAppUrl(payment: any) {
+  const storeName = payment.user?.businesses?.[0]?.name || "Your Store";
+  const storeSlug = payment.user?.businesses?.[0]?.slug || "";
+  const phone = payment.customerPhone || payment.user?.phone || payment.user?.userIdTag || "";
+  const cleanPhone = String(phone).replace(/[^0-9]/g, "");
+  const waNumber = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+  const merchantName = payment.user?.name || "Merchant Partner";
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://www.reviewsmart.online";
+
+  const msg = `🎉 *Welcome to ReviewSmart AI, ${merchantName}!*
+
+Your payment for *${storeName}* has been verified & approved. Your Lifetime Account is now *LIVE & ACTIVE*! 🚀
+
+📋 *YOUR INSTANT STORE CREDENTIALS & ACCESS KIT*:
+━━━━━━━━━━━━━━━━━━━━
+📱 *Login Dashboard*: ${appUrl}/login
+👤 *User ID (Mobile)*: ${cleanPhone || "Your registered mobile"}
+🔑 *Security PIN*: (Use the 4-digit PIN set up during onboarding)
+
+🌟 *Your Official Google Review Card*:
+🔗 ${storeSlug ? `${appUrl}/r/${storeSlug}` : `${appUrl}/dashboard`}
+
+🎨 *Standee Studio & QR Counter Downloads*:
+🔗 ${appUrl}/dashboard/studio
+(Download your ready-to-print 4″×6″ Luxury Acrylic Standees and Counter Posters directly from your studio)
+
+${payment.packageTier ? `📦 *Hardware Tier*: ${getPackageById(payment.packageTier).name}` : ""}
+${payment.utrNumber ? `💳 *Verified UTR*: ${payment.utrNumber}` : ""}
+
+🆓 *Free Google Business Profile (GMB) Setup*:
+If you requested a new Google Business Profile creation or verification, our SEO team has queued your profile. We will notify you once live!
+
+Need help? Reply to this message anytime!
+Welcome aboard! 🇮🇳`;
+
+  return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
 }
 
 export default function AdminPaymentsClient({
@@ -43,7 +84,7 @@ export default function AdminPaymentsClient({
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [approvalMsg, setApprovalMsg] = useState<{ id: string; msg: string; commission?: number } | null>(null);
+  const [approvalMsg, setApprovalMsg] = useState<{ id: string; msg: string; commission?: number; payment?: any } | null>(null);
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +125,7 @@ export default function AdminPaymentsClient({
       }
 
       if (res.ok) {
+        const targetPayment = payments.find((p) => p.id === paymentId);
         setPayments((prev) =>
           prev.map((p) =>
             p.id === paymentId
@@ -91,7 +133,12 @@ export default function AdminPaymentsClient({
               : p
           )
         );
-        setApprovalMsg({ id: paymentId, msg: data?.message || "Payment processed.", commission: data?.commission });
+        setApprovalMsg({
+          id: paymentId,
+          msg: data?.message || "Payment processed.",
+          commission: data?.commission,
+          payment: targetPayment ? { ...targetPayment, status: action === "APPROVE" ? "APPROVED" : "REJECTED" } : null,
+        });
       } else {
         alert(data?.error || `Action failed (Server status: ${res.status}).`);
       }
@@ -141,19 +188,47 @@ export default function AdminPaymentsClient({
 
   return (
     <div className="space-y-8">
-      {/* Approval success message */}
+      {/* Approval success message with 1-Click WhatsApp Welcome Kit */}
       {approvalMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-start justify-between gap-3">
-          <div>
-            <CheckCircle2 className="w-4 h-4 inline-block mr-1.5" />
-            {approvalMsg.msg}
-            {approvalMsg.commission && approvalMsg.commission > 0 && (
-              <span className="ml-2 font-black text-amber-400">
-                Agent Commission: ₹{approvalMsg.commission.toFixed(2)}
-              </span>
-            )}
+        <div className="p-4 rounded-3xl bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-200 text-xs shadow-xl space-y-3 animate-fadeIn">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div>
+                <span className="font-bold text-white text-sm">
+                  {approvalMsg.msg}
+                </span>
+                {approvalMsg.commission && approvalMsg.commission > 0 && (
+                  <span className="ml-2 font-black text-amber-300">
+                    Agent Commission: ₹{approvalMsg.commission.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button onClick={() => setApprovalMsg(null)} className="text-emerald-400 hover:text-white font-bold p-1">✕</button>
           </div>
-          <button onClick={() => setApprovalMsg(null)} className="text-emerald-400 hover:text-white font-bold">✕</button>
+
+          {approvalMsg.payment && (
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-3.5 rounded-2xl border border-slate-700/80">
+              <div className="text-slate-300">
+                <span className="font-bold text-white block">
+                  {approvalMsg.payment.user?.businesses?.[0]?.name || "Store"} is now LIVE!
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Send the instant onboarding &amp; credentials kit via WhatsApp to the merchant:
+                </span>
+              </div>
+              <a
+                href={buildWelcomeKitWhatsAppUrl(approvalMsg.payment)}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg transition active:scale-95"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>📲 Dispatch WhatsApp Welcome Kit Now</span>
+              </a>
+            </div>
+          )}
         </div>
       )}
 
@@ -390,6 +465,19 @@ export default function AdminPaymentsClient({
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
+                          </div>
+                        ) : isApproved ? (
+                          <div className="flex items-center justify-end">
+                            <a
+                              href={buildWelcomeKitWhatsAppUrl(p)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition active:scale-95"
+                              title="Send Welcome Kit with login credentials & Standee Studio link"
+                            >
+                              <MessageSquare className="w-3 h-3" />
+                              <span>📲 Welcome Kit</span>
+                            </a>
                           </div>
                         ) : (
                           <span className="text-[11px] text-slate-500">—</span>
