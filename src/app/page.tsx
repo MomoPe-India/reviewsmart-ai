@@ -505,39 +505,97 @@ export default function HomePage() {
       <section className="pt-12 sm:pt-16 pb-20 px-4 sm:px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           {/* Top Floating Badge Bar */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-8 animate-fadeIn">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold backdrop-blur-md shadow-inner">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-6 sm:mb-8 animate-fadeIn">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold backdrop-blur-md shadow-inner">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>PAN-INDIA DIRECT META LAUNCH</span>
+              <span>PAN-INDIA LAUNCH</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold backdrop-blur-md">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold backdrop-blur-md">
               <Globe className="w-3 h-3 text-emerald-400" />
-              <span>6 Indian Languages: Hindi, Telugu, Tamil, Kannada, Malayalam, English</span>
+              <span>6 Indian Languages &bull; Hindi, Telugu, Tamil +3</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold backdrop-blur-md">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold backdrop-blur-md">
               <Zap className="w-3 h-3 text-amber-400" />
-              <span>₹2,999 Lifetime Pass &bull; 0 Subscriptions</span>
+              <span>₹2,999 Lifetime Pass</span>
             </div>
           </div>
 
           {/* Hero Grid: Value Prop (Left) + Floating Hero Presenter (Right) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-            {/* Left Column: Headline, Description & CTAs */}
-            <div className="lg:col-span-7 text-center lg:text-left space-y-6">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.08]">
-                Collect 100+ Genuine 5-Star
-                <br />
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
+            {/* Left Column on Desktop / Main Flow on Mobile */}
+            <div className="lg:col-span-7 text-center lg:text-left space-y-5">
+              {/* Responsive Fitted Heading: Never splits 5-Star across lines */}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-black tracking-tight text-white leading-[1.12] sm:leading-[1.1] hyphens-none">
+                <span className="block">
+                  Collect 100+ Genuine{" "}
+                  <span className="inline-block whitespace-nowrap text-amber-300">5-Star</span>
+                </span>
+                <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm block mt-1 sm:mt-1.5">
                   Google Reviews Every Month
                 </span>
               </h1>
 
-              <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
                 Customers tap your smart NFC card or scan your crystal counter standee. Gemini AI writes authentic 5-star reviews in their native language in 10 seconds. Bad reviews are shielded privately to your WhatsApp.
               </p>
 
+              {/* ─── MOBILE-ONLY HERO PRESENTER SHOWCASE (Visible on mobile, hidden on lg) ─── */}
+              <div className="lg:hidden py-2 flex flex-col items-center">
+                {/* Hero Card for Mobile */}
+                <div className="relative w-full max-w-sm mx-auto">
+                  <div className="absolute -inset-2 bg-gradient-to-tr from-indigo-600/30 via-purple-600/25 to-pink-500/20 rounded-3xl blur-xl -z-10" />
+                  <div className="relative rounded-3xl overflow-hidden border border-white/20 bg-slate-900/90 shadow-2xl">
+                    <Image
+                      src="/images/hero-presenter.jpg"
+                      alt="ReviewSmart AI - 5-Star Google Reviews NFC Tap Card and QR Acrylic Standee"
+                      width={600}
+                      height={600}
+                      priority
+                      className="w-full h-auto object-cover"
+                    />
+
+                    {/* Top Badges */}
+                    <div className="absolute top-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md border border-amber-400/60 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span className="text-[10px] font-black text-amber-300 uppercase">NFC Tap & QR Standee</span>
+                    </div>
+
+                    <div className="absolute top-2.5 right-2.5 bg-slate-950/90 backdrop-blur-md border border-emerald-400/60 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                      <span className="text-amber-400 text-[10px]">★★★★★</span>
+                      <span className="text-[10px] font-black text-emerald-400">5.0 Official</span>
+                    </div>
+
+                    {/* Bottom Info Pill */}
+                    <div className="absolute inset-x-2.5 bottom-2.5 p-2.5 rounded-2xl bg-slate-950/92 backdrop-blur-xl border border-white/20 flex items-center justify-between gap-2 shadow-2xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+                          <Zap className="w-3.5 h-3.5 text-amber-300" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-[11px] font-black text-white leading-tight">AI Instant Reviews</p>
+                          <p className="text-[9px] text-slate-300">Telugu &bull; Hindi &bull; Tamil &bull; English</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-black text-emerald-400">₹2,999</span>
+                        <p className="text-[8px] text-slate-400">Lifetime</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Business Tag Chips */}
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-[10px] font-bold text-slate-300">
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">🍽️ Dining</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">👗 Boutiques</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">💇 Salons</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">🏥 Clinics</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">💎 Jewellery</span>
+                </div>
+              </div>
+
               {/* Main CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-1">
                 <a
                   href="#pricing"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 hover:from-indigo-400 hover:to-purple-400 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-2xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
@@ -559,7 +617,7 @@ export default function HomePage() {
               </div>
 
               {/* Quick Trust Badges Strip */}
-              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-slate-400">
+              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3.5 sm:gap-6 text-xs text-slate-400">
                 <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Free For Lifetime
                 </span>
@@ -575,11 +633,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Column: Floating Presenter Hero Card */}
-            <div className="lg:col-span-5 flex justify-center">
+            {/* Right Column: Desktop Hero Presenter (Hidden on mobile, flex on lg) */}
+            <div className="hidden lg:flex lg:col-span-5 flex-col items-center justify-center">
               <div className="relative w-full max-w-md lg:max-w-none">
                 {/* Radiant Ambient Glow Behind Image */}
-                <div className="absolute -inset-3 bg-gradient-to-tr from-indigo-600/30 via-purple-600/25 to-amber-500/20 rounded-3xl blur-2xl -z-10" />
+                <div className="absolute -inset-3 bg-gradient-to-tr from-indigo-600/30 via-purple-600/25 to-pink-500/20 rounded-3xl blur-2xl -z-10" />
 
                 {/* Main Image Frame with Floating Badges */}
                 <div className="relative rounded-3xl overflow-hidden border border-white/20 bg-slate-900/90 shadow-[0_25px_60px_-15px_rgba(79,70,229,0.4)] backdrop-blur-2xl group">
@@ -607,14 +665,14 @@ export default function HomePage() {
                   </div>
 
                   {/* Floating Info Banner Bottom */}
-                  <div className="absolute inset-x-3 bottom-3 p-3 rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-white/15 flex items-center justify-between gap-2 shadow-2xl">
+                  <div className="absolute inset-x-3 bottom-3 p-3 rounded-2xl bg-slate-950/92 backdrop-blur-xl border border-white/15 flex items-center justify-between gap-2 shadow-2xl">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-md">
-                        <Zap className="w-4 h-4 text-white" />
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-md">
+                        <Zap className="w-4 h-4 text-amber-300" />
                       </div>
                       <div>
                         <p className="text-xs font-black text-white">AI Instant Reviews</p>
-                        <p className="text-[10px] text-slate-300">Hindi &bull; Telugu &bull; Tamil &bull; English</p>
+                        <p className="text-[10px] text-slate-300">Telugu &bull; Hindi &bull; Tamil &bull; English</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -622,6 +680,15 @@ export default function HomePage() {
                       <p className="text-[9px] text-slate-400">Lifetime Pass</p>
                     </div>
                   </div>
+                </div>
+
+                {/* Desktop Business Category Tags */}
+                <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-slate-300">
+                  <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/40 transition">🍽️ Cafes & Dining</span>
+                  <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 hover:border-indigo-400/40 transition">👗 Boutiques & Retail</span>
+                  <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 hover:border-pink-400/40 transition">💇 Salons & Spas</span>
+                  <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 hover:border-emerald-400/40 transition">🏥 Clinics & Doctors</span>
+                  <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/40 transition">💎 Jewellery</span>
                 </div>
               </div>
             </div>
