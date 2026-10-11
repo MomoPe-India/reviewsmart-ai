@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sparkles,
   Star,
@@ -501,10 +502,10 @@ export default function HomePage() {
       </nav>
 
       {/* ─── 3D HERO SECTION ──────────────────────────────────────────────── */}
-      <section className="pt-16 pb-20 px-4 sm:px-6 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto">
+      <section className="pt-12 sm:pt-16 pb-20 px-4 sm:px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
           {/* Top Floating Badge Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-6 animate-fadeIn">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-8 animate-fadeIn">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold backdrop-blur-md shadow-inner">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>PAN-INDIA DIRECT META LAUNCH</span>
@@ -519,55 +520,110 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="text-center max-w-4xl mx-auto space-y-6">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.08]">
-              Collect 100+ Genuine 5-Star
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
-                Google Reviews Every Month
-              </span>
-            </h1>
+          {/* Hero Grid: Value Prop (Left) + Floating Hero Presenter (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+            {/* Left Column: Headline, Description & CTAs */}
+            <div className="lg:col-span-7 text-center lg:text-left space-y-6">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.08]">
+                Collect 100+ Genuine 5-Star
+                <br />
+                <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
+                  Google Reviews Every Month
+                </span>
+              </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
-              Customers scan your smart counter standee. Gemini AI writes authentic 5-star reviews in their native language in 10 seconds. Bad reviews are shielded privately to your WhatsApp.
-            </p>
+              <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+                Customers tap your smart NFC card or scan your crystal counter standee. Gemini AI writes authentic 5-star reviews in their native language in 10 seconds. Bad reviews are shielded privately to your WhatsApp.
+              </p>
 
-            {/* Main CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
-              <a
-                href="#pricing"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 hover:from-indigo-400 hover:to-purple-400 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-2xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              >
-                <Zap className="w-4 h-4 text-amber-300" />
-                <span>Get ₹2,999 Lifetime Pass</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
+              {/* Main CTAs */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+                <a
+                  href="#pricing"
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 hover:from-indigo-400 hover:to-purple-400 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-2xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <Zap className="w-4 h-4 text-amber-300" />
+                  <span>Get ₹2,999 Lifetime Pass</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
 
-              <a
-                href={whatsappInquiryUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-white/15 text-white font-bold text-sm flex items-center justify-center gap-2 backdrop-blur-xl shadow-xl transition-all"
-              >
-                <MessageCircle className="w-4 h-4 text-emerald-400" />
-                <span>Chat on WhatsApp</span>
-              </a>
+                <a
+                  href={whatsappInquiryUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-white/15 text-white font-bold text-sm flex items-center justify-center gap-2 backdrop-blur-xl shadow-xl transition-all"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  <span>Chat on WhatsApp</span>
+                </a>
+              </div>
+
+              {/* Quick Trust Badges Strip */}
+              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-slate-400">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Free For Lifetime
+                </span>
+                <span className="flex items-center gap-1.5 text-amber-300 font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-amber-400" /> 🆓 Free GMB Setup Included
+                </span>
+                <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-400" /> Zero Monthly Subscriptions
+                </span>
+                <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-purple-400" /> 100% Ad-Free Experience
+                </span>
+              </div>
             </div>
 
-            {/* Quick Trust Badges Strip */}
-            <div className="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Free For Lifetime
-              </span>
-              <span className="flex items-center gap-1.5 text-amber-300 font-bold">
-                <CheckCircle2 className="w-4 h-4 text-amber-400" /> 🆓 Free GMB Setup Included
-              </span>
-              <span className="flex items-center gap-1.5 text-slate-300 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-indigo-400" /> Zero Monthly Subscriptions
-              </span>
-              <span className="flex items-center gap-1.5 text-slate-300 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-purple-400" /> 100% Ad-Free Experience
-              </span>
+            {/* Right Column: Floating Presenter Hero Card */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative w-full max-w-md lg:max-w-none">
+                {/* Radiant Ambient Glow Behind Image */}
+                <div className="absolute -inset-3 bg-gradient-to-tr from-indigo-600/30 via-purple-600/25 to-amber-500/20 rounded-3xl blur-2xl -z-10" />
+
+                {/* Main Image Frame with Floating Badges */}
+                <div className="relative rounded-3xl overflow-hidden border border-white/20 bg-slate-900/90 shadow-[0_25px_60px_-15px_rgba(79,70,229,0.4)] backdrop-blur-2xl group">
+                  <Image
+                    src="/images/hero-presenter.jpg"
+                    alt="ReviewSmart AI - 5-Star Google Reviews NFC Tap Card and QR Acrylic Standee"
+                    width={700}
+                    height={700}
+                    priority
+                    className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
+                  />
+
+                  {/* Floating Micro-Badge Top Left */}
+                  <div className="absolute top-3.5 left-3.5 bg-slate-950/85 backdrop-blur-md border border-amber-400/50 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-[11px] font-black text-amber-300 uppercase tracking-wide">
+                      NFC Tap & QR Standee
+                    </span>
+                  </div>
+
+                  {/* Floating Micro-Badge Top Right */}
+                  <div className="absolute top-3.5 right-3.5 bg-slate-950/85 backdrop-blur-md border border-emerald-400/50 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl">
+                    <span className="text-amber-400 text-xs">★★★★★</span>
+                    <span className="text-[11px] font-black text-emerald-400">5.0 Official</span>
+                  </div>
+
+                  {/* Floating Info Banner Bottom */}
+                  <div className="absolute inset-x-3 bottom-3 p-3 rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-white/15 flex items-center justify-between gap-2 shadow-2xl">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-md">
+                        <Zap className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-white">AI Instant Reviews</p>
+                        <p className="text-[10px] text-slate-300">Hindi &bull; Telugu &bull; Tamil &bull; English</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-black text-emerald-400">₹2,999</span>
+                      <p className="text-[9px] text-slate-400">Lifetime Pass</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
