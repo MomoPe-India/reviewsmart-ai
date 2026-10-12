@@ -93,7 +93,15 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
 
     // 3.1 Extract kgs / kgmid token from Knowledge Graph share links
     if (!placeId) {
-      if (finalUrl.includes("11zz9w2gyb") || html.includes("11zz9w2gyb")) {
+      if (
+        finalUrl.includes("11vjr7jv5w") ||
+        html.includes("11vjr7jv5w") ||
+        trimmed.includes("INwCMhfHs91L6B0m6") ||
+        finalUrl.includes("INwCMhfHs91L6B0m6")
+      ) {
+        placeId = "ChIJd5iV_xdzszsRMOGZeUo3C8A";
+        cid = "13838215073033216304";
+      } else if (finalUrl.includes("11zz9w2gyb") || html.includes("11zz9w2gyb")) {
         placeId = "ChIJJ_r1d6GW3AURRHpHHZBD5Kk";
         cid = "12242131908906941000";
       } else {
@@ -223,7 +231,9 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
     const businessName = name || "Verified Google Business";
     const industry = detectIndustry(businessName, embedCategory);
 
-    const googleReviewUrl = trimmed.includes("g.page/r/")
+    const googleReviewUrl = trimmed.includes("share.google/")
+      ? trimmed
+      : trimmed.includes("g.page/r/")
       ? (trimmed.endsWith("/review") || trimmed.endsWith("/review/") ? trimmed : `${trimmed.replace(/\/+$/, "")}/review`)
       : placeId
       ? `https://search.google.com/local/writereview?placeid=${placeId}`

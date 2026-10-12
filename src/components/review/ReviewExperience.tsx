@@ -157,9 +157,13 @@ export default function ReviewExperience({
     let rawUrl = (business.googleReviewUrl || "").trim();
     let placeId = (business.googlePlaceId || "").trim();
 
-    // 0. Official Google short review links (g.page/r/.../review) take absolute top priority
+    // 0. Official Google short review links (g.page/r/.../review or share.google/...) take absolute top priority
     if (business.slug === "momo-it-technologies") {
-      return "https://g.page/r/CUR6Rx2QQ-SpECE/review";
+      return "https://share.google/INwCMhfHs91L6B0m6";
+    }
+
+    if (rawUrl && rawUrl.includes("share.google/")) {
+      return rawUrl;
     }
 
     if (rawUrl && rawUrl.includes("g.page/r/")) {
@@ -169,7 +173,9 @@ export default function ReviewExperience({
     }
 
     // Known merchants Place ID fallbacks if not yet present
-    if (business.slug === "as-refrigeration" && !placeId) {
+    if (business.slug === "momo-it-technologies" && !placeId) {
+      placeId = "ChIJd5iV_xdzszsRMOGZeUo3C8A";
+    } else if (business.slug === "as-refrigeration" && !placeId) {
       placeId = "ChIJuX7dAX5zszsROYSpGZLNNfw";
     } else if (business.slug === "sushmas-fashion-beauty" && !placeId) {
       placeId = "ChIJbzsJc9NzszsRtBUfS0gXCHk";

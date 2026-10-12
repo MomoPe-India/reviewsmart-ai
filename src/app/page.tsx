@@ -190,9 +190,9 @@ const DEMO_PRESETS: DemoPreset[] = [
   },
   {
     id: "tech",
-    name: "Momo IT Technologies",
+    name: "MOMO IT Technologies",
     category: "Software & AI Solutions",
-    location: "Krishnapuram, Kadapa",
+    location: "Krishnapuram, Andhra Pradesh",
     icon: Laptop,
     color: "#4f46e5",
     slug: "momo-it-technologies",

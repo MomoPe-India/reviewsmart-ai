@@ -149,16 +149,16 @@ Respond strictly in pure JSON without markdown quotes:
 
   const lower = cleanQuery.toLowerCase();
   
-  // Special recognition for Momo IT Technologies
+  // Special recognition for Momo IT Technologies (Official Verified GMB Profile ID: 13838215073033216304)
   if (lower.includes("momo it") || (lower.includes("momo") && lower.includes("tech"))) {
     const momoResult = {
-      name: "Momo IT Technologies",
+      name: "MOMO IT Technologies",
       branchName: "Krishnapuram, Kadapa (HQ)",
-      address: "4/106, Road, Krishnapuram, Kadapa, Andhra Pradesh 516003",
-      category: "Software Development & IT Solutions",
-      googlePlaceId: "ChIJJ_r1d6GW3AURRHpHHZBD5Kk",
-      placeId: "ChIJJ_r1d6GW3AURRHpHHZBD5Kk",
-      googleReviewUrl: "https://g.page/r/CUR6Rx2QQ-SpECE/review",
+      address: "4/106, Road, Krishnapuram, Andhra Pradesh 516005",
+      category: "Software Company & IT Solutions",
+      googlePlaceId: "ChIJd5iV_xdzszsRMOGZeUo3C8A",
+      placeId: "ChIJd5iV_xdzszsRMOGZeUo3C8A",
+      googleReviewUrl: "https://share.google/INwCMhfHs91L6B0m6",
       suggestedTags: [
         "Expert Developers",
         "Robust Software",
@@ -166,8 +166,8 @@ Respond strictly in pure JSON without markdown quotes:
         "Clean UI/UX Design",
         "Timely Delivery",
       ],
-      rating: 4.9,
-      reviewCount: "120+ reviews",
+      rating: 4.6,
+      reviewCount: "17 reviews",
       logoUrl: "/images/momo-it-logo.png",
       website: "https://www.momoittechnologies.com/",
     };
