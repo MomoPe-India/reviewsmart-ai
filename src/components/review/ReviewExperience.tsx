@@ -12,6 +12,7 @@ import {
   Send,
   Globe,
   Instagram,
+  Facebook,
   ShieldCheck,
   Heart,
   Loader2,
@@ -717,7 +718,7 @@ export default function ReviewExperience({
           </div>
 
           {/* Quick Contact Buttons */}
-          {(whatsappUrl || phoneUrl || business.website || business.instagram) && (
+          {(whatsappUrl || phoneUrl || business.website || business.instagram || business.facebook) && (
             <div className="flex items-center justify-center gap-2 mt-4 pt-3.5 border-t border-slate-800">
               {whatsappUrl && (
                 <a
@@ -752,13 +753,32 @@ export default function ReviewExperience({
               )}
               {business.instagram && (
                 <a
-                  href={`https://instagram.com/${business.instagram.replace("@", "")}`}
+                  href={
+                    business.instagram.startsWith("http")
+                      ? business.instagram
+                      : `https://instagram.com/${business.instagram.replace("@", "")}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
                 >
                   <Instagram className="w-3.5 h-3.5" />
                   <span>Instagram</span>
+                </a>
+              )}
+              {business.facebook && (
+                <a
+                  href={
+                    business.facebook.startsWith("http")
+                      ? business.facebook
+                      : `https://facebook.com/${business.facebook.trim()}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                >
+                  <Facebook className="w-3.5 h-3.5" />
+                  <span>Facebook</span>
                 </a>
               )}
               <button

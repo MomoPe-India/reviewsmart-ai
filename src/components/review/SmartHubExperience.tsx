@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Phone,
   Instagram,
+  Facebook,
   Globe,
   UtensilsCrossed,
   MapPin,
@@ -79,6 +80,12 @@ export default function SmartHubExperience({
   if (instaUrl && !instaUrl.startsWith("http")) {
     const handle = instaUrl.replace("@", "").trim();
     instaUrl = `https://instagram.com/${handle}`;
+  }
+
+  // Clean Facebook URL
+  let fbUrl = business.facebook || null;
+  if (fbUrl && !fbUrl.startsWith("http")) {
+    fbUrl = `https://facebook.com/${fbUrl.trim()}`;
   }
 
   // Clean Website URL
@@ -364,7 +371,32 @@ export default function SmartHubExperience({
           </a>
         )}
 
-        {/* 5. Official Website */}
+        {/* 5. Facebook Page */}
+        {fbUrl && (
+          <a
+            href={fbUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-blue-500/30 hover:border-blue-500/60 shadow-lg flex items-center justify-between gap-3 transition group transform active:scale-98"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30 group-hover:scale-105 transition">
+                <Facebook className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-bold text-white group-hover:text-blue-300 transition block">
+                  Follow on Facebook
+                </span>
+                <span className="text-[11px] text-slate-400 block">
+                  Official page, photos &amp; announcements
+                </span>
+              </div>
+            </div>
+            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition shrink-0" />
+          </a>
+        )}
+
+        {/* 6. Official Website */}
         {siteUrl && (
           <a
             href={siteUrl}

@@ -17,7 +17,8 @@ const NEGOTIATED_PRICE = 3000;
 const PRIMARY_COLOR    = "#d97706";      // Premium Gold Accent
 const SLUG             = "vrgold";
 const WEBSITE          = "https://www.vrgold.co/";
-const INSTAGRAM        = "https://www.instagram.com/vrgoldbuyers2026/";
+const INSTAGRAM        = "https://www.instagram.com/vrgold.marketing/";
+const FACEBOOK         = "https://www.facebook.com/profile.php?id=61595371645687";
 const WHATSAPP         = "918978973576";
 const LOGO_URL         = "/images/vr-gold-logo.png";
 const GOOGLE_SHARE_URL = "https://share.google/0O9MGGGeBpWUVTnZH";
@@ -104,6 +105,7 @@ async function main() {
         whatsapp: WHATSAPP,
         website: WEBSITE,
         instagram: INSTAGRAM,
+        facebook: FACEBOOK,
         tagChips: TAG_CHIPS,
         keywords: KEYWORDS,
         minRatingForGoogle: 4,
@@ -131,6 +133,7 @@ async function main() {
         whatsapp: WHATSAPP,
         website: WEBSITE,
         instagram: INSTAGRAM,
+        facebook: FACEBOOK,
         tagChips: TAG_CHIPS,
         keywords: KEYWORDS,
         isPaid: true, // Immediately activated!
