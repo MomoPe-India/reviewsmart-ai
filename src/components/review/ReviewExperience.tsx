@@ -73,11 +73,13 @@ export default function ReviewExperience({
   staff,
   customerName: incomingCustomerName,
   serviceName: incomingServiceName,
+  embedded = false,
 }: {
   business: BusinessData;
   staff?: string | null;
   customerName?: string | null;
   serviceName?: string | null;
+  embedded?: boolean;
 }) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -102,8 +104,8 @@ export default function ReviewExperience({
   const [isEditingDraft, setIsEditingDraft] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Express 1-Tap & Automation state
-  const [isStudioExpanded, setIsStudioExpanded] = useState(false);
+  // Express 1-Tap & Automation state (default expanded for zero-friction mobile access)
+  const [isStudioExpanded, setIsStudioExpanded] = useState(true);
   const [hasOpenedGoogle, setHasOpenedGoogle] = useState(false);
   const [showRewardCard, setShowRewardCard] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -153,27 +155,10 @@ export default function ReviewExperience({
     }
   }, []);
 
-  // Resolved Direct GMB Review URL - ALWAYS opens the Google Review Popup Screen directly!
-  const getResolvedGoogleUrl = () => {
-    let rawUrl = (business.googleReviewUrl || "").trim();
+  const getResolvedPlaceId = (): string => {
     let placeId = (business.googlePlaceId || "").trim();
+    const rawUrl = (business.googleReviewUrl || "").trim();
 
-    // 0. Official Google short review links (g.page/r/.../review or share.google/...) take absolute top priority
-    if (business.slug === "momo-it-technologies") {
-      return "https://share.google/INwCMhfHs91L6B0m6";
-    }
-
-    if (rawUrl && rawUrl.includes("share.google/")) {
-      return rawUrl;
-    }
-
-    if (rawUrl && rawUrl.includes("g.page/r/")) {
-      return rawUrl.endsWith("/review") || rawUrl.endsWith("/review/")
-        ? rawUrl
-        : `${rawUrl.replace(/\/+$/, "")}/review`;
-    }
-
-    // Known merchants Place ID fallbacks if not yet present
     if (business.slug === "momo-it-technologies" && !placeId) {
       placeId = "ChIJd5iV_xdzszsRMOGZeUo3C8A";
     } else if (business.slug === "as-refrigeration" && !placeId) {
@@ -188,41 +173,67 @@ export default function ReviewExperience({
       placeId = "ChIJs4-kUhJzszsRAk8ObSZuam4";
     } else if (business.slug === "sri-guru-fashions-393a" && !placeId) {
       placeId = "ChIJ-_3HayRzszsRhE95URiMOqc";
+    } else if (business.slug === "mana-tours-travels" && !placeId) {
+      placeId = "ChIJz-6hOcbQVaYRELARxZjPbrE";
+    } else if (business.slug === "karthik-tattoo-studio" && !placeId) {
+      placeId = "ChIJk9Nc0StzszsRzi_A87Em9Kw";
     }
 
-    // 0. Known coordinate / non-writereview place IDs fallback to clean Google Maps search
-    if (placeId === "ChIJfx1E9GgPujkRcPNEzcyHcJI" || business.slug.includes("vijaya")) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Vijaya's Yummy Food Kadugodi Bengaluru")}`;
-    }
-
-    // 1. If we have a verified Place ID, ALWAYS return the official direct 5-star write-review popup link
-    if (placeId && placeId !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
-      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
-    }
-
-    // 2. If rawUrl explicitly points to writereview, use it directly
-    if (rawUrl && rawUrl.includes("search.google.com/local/writereview")) {
-      return rawUrl;
-    }
-
-    // 3. Extract place ID from raw URL if present (placeid=, place_id=, query_place_id=, or ChIJ...)
-    if (rawUrl) {
+    if (!placeId && rawUrl) {
       const match =
         rawUrl.match(/[?&](?:place(?:_)?id|query_place_id)=([^&#]+)/i) ||
         rawUrl.match(/(ChIJ[A-Za-z0-9_-]{20,})/);
-      if (match && match[1] && match[1] !== "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
-        return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(match[1])}`;
+      if (match && match[1]) {
+        placeId = match[1];
       }
+    }
 
-      // Check for CID parameter
+    if (placeId === "ChIJfx1E9GgPujkRcPNEzcyHcJI") {
+      return "";
+    }
+
+    return placeId;
+  };
+
+  // Resolved Direct GMB Review URL - ALWAYS opens the Google Review Popup Screen directly via clean HTTPS!
+  const getResolvedGoogleUrl = () => {
+    const rawUrl = (business.googleReviewUrl || "").trim();
+    const placeId = getResolvedPlaceId();
+
+    // 0. Known coordinate / non-writereview place IDs fallback to clean Google Maps search
+    if (business.slug.includes("vijaya")) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Vijaya's Yummy Food Kadugodi Bengaluru")}`;
+    }
+
+    // 1. Official g.page/r/.../review shortlink opens the write-review dialog directly
+    if (rawUrl && rawUrl.includes("g.page/r/")) {
+      return rawUrl.endsWith("/review") || rawUrl.endsWith("/review/")
+        ? rawUrl
+        : `${rawUrl.replace(/\/+$/, "")}/review`;
+    }
+
+    // 2. If we have a verified Place ID, ALWAYS return the official direct 5-star write-review popup link
+    // (Clean HTTPS — never wrap in intent://package=com.google.android.apps.maps which triggers Play Store!)
+    if (placeId) {
+      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
+    }
+
+    // 3. If rawUrl explicitly points to writereview or share.google, use it directly
+    if (
+      rawUrl &&
+      (rawUrl.includes("search.google.com/local/writereview") ||
+        rawUrl.includes("share.google/"))
+    ) {
+      return rawUrl;
+    }
+
+    // 4. Check for CID parameter in rawUrl
+    if (rawUrl) {
       const cidMatch = rawUrl.match(/[?&]cid=([0-9]+)/i);
       if (cidMatch && cidMatch[1]) {
         return `https://search.google.com/local/writereview?cid=${encodeURIComponent(cidMatch[1])}`;
       }
-    }
 
-    // 4. If rawUrl exists, clean any broken query_place_id before fallback
-    if (rawUrl) {
       let cleaned = rawUrl;
       if (cleaned.includes("query_place_id=")) {
         cleaned = cleaned.replace(/([?&])query_place_id=[^&]+(&|$)/, "$1").replace(/[?&]$/, "");
@@ -234,13 +245,15 @@ export default function ReviewExperience({
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}`;
   };
 
-  const getAndroidIntentUrl = (targetUrl: string) => {
-    const clean = targetUrl.replace(/^https?:\/\//, "");
-    return `intent://${clean}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-  };
-
+  // Universal HTTPS Google Maps Profile Link (opens Maps app naturally via Android/iOS App Links without Play Store fallback)
   const getMapsAppUrl = () => {
-    // Keep aligned with direct review popup URL so user is never redirected to profile overview
+    if (business.slug === "momo-it-technologies") {
+      return "https://share.google/INwCMhfHs91L6B0m6";
+    }
+    const placeId = getResolvedPlaceId();
+    if (placeId) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name)}&query_place_id=${encodeURIComponent(placeId)}`;
+    }
     return getResolvedGoogleUrl();
   };
 
@@ -340,53 +353,7 @@ export default function ReviewExperience({
   }, [hasOpenedGoogle]);
 
   const handleExpressPostGoogle = async () => {
-    const textToCopy =
-      editableDraftText ||
-      (reviewOptions[0] ? reviewOptions[0].text : `Great experience at ${business.name}! Highly recommended.`);
-
-    // 1. Copy synchronously (critical for Safari/iOS gesture compliance)
-    await copyToClipboard(textToCopy);
-
-    // 2. Haptic vibration
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      navigator.vibrate([35, 25, 45]);
-    }
-
-    setHasOpenedGoogle(true);
-    setCopied(true);
-    setExpressToast("⚡ Review Copied! Opening Google Review...");
-
-    // 3. Track analytics
-    fetch("/api/analytics/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-      body: JSON.stringify({
-        slug: business.slug,
-        businessId: business.id,
-        eventType: "GOOGLE_REDIRECT",
-        rating: rating || 5,
-      }),
-    }).catch(() => {});
-
-    // 4. Confetti burst
-    try {
-      confetti({
-        particleCount: 85,
-        spread: 65,
-        origin: { y: 0.6 },
-        colors: ["#f59e0b", "#4f46e5", "#10b981", "#3b82f6"],
-      });
-    } catch {}
-
-    // 5. Open target Google review directly
-    const ua = navigator.userAgent || "";
-    const isAndroid = /Android/i.test(ua);
-    const targetUrl = isAndroid ? getAndroidIntentUrl(googleUrl) : googleUrl;
-
-    setTimeout(() => {
-      window.location.href = targetUrl;
-    }, 120);
+    await handleOpenCopyModal(editableDraftText);
   };
 
   const handleVoiceTranscript = (spokenText: string) => {
@@ -556,12 +523,17 @@ export default function ReviewExperience({
     const textToCopy =
       customText || editableDraftText || (selected ? selected.text : "Great experience at " + business.name + "! Highly recommended.");
 
-    // Native clipboard write FIRST before state updates (iOS requirement)
+    // Native clipboard write FIRST before state updates (iOS & Android gesture compliance)
     await copyToClipboard(textToCopy);
+
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([35, 25, 45]);
+    }
 
     if (optId !== undefined) {
       setSelectedOptionId(optId);
     }
+    setHasOpenedGoogle(true);
     setModalCopiedText(textToCopy);
     setShowCopyModal(true);
     setCopied(true);
@@ -591,20 +563,18 @@ export default function ReviewExperience({
       }),
     }).catch(() => {});
 
-    // START 2-1 COUNTDOWN (snappier, faster redirect)
+    // Snappy 1-second countdown then clean HTTPS redirect (never uses broken intent:// package wrapper)
     if (countdownRef.current) clearTimeout(countdownRef.current);
-    setModalCountdown(2);
+    setModalCountdown(1);
     countdownRef.current = setTimeout(() => {
-      setModalCountdown(1);
-      countdownRef.current = setTimeout(() => {
-        setModalCountdown(0);
-        googleLinkRef.current?.click();
-      }, 1000);
-    }, 1000);
+      setModalCountdown(0);
+      window.location.assign(googleUrl);
+    }, 900);
   };
 
   const handleCopyAndRedirect = async (targetUrl: string) => {
     if (countdownRef.current) clearTimeout(countdownRef.current);
+    setHasOpenedGoogle(true);
     setIsRedirecting(true);
     await copyToClipboard(modalCopiedText);
 
@@ -620,7 +590,7 @@ export default function ReviewExperience({
       }),
     }).catch(() => {});
 
-    window.open(targetUrl, '_self');
+    window.location.assign(targetUrl);
   };
 
   const handleCloseCopyModal = () => {
@@ -659,140 +629,150 @@ export default function ReviewExperience({
   const phoneUrl = getPhoneUrl();
 
   return (
-    <div className="w-full max-w-lg mx-auto min-h-screen sm:min-h-0 text-slate-100 flex flex-col justify-between p-3.5 sm:p-6 pb-16 transition-all relative">
+    <div
+      className={
+        embedded
+          ? "w-full mx-auto text-slate-100 flex flex-col justify-between transition-all relative"
+          : "w-full max-w-lg mx-auto min-h-screen sm:min-h-0 text-slate-100 flex flex-col justify-between p-3.5 sm:p-6 pb-16 transition-all relative"
+      }
+    >
       {/* Ambient Top Glow */}
-      <div
-        className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none"
-        style={{ backgroundColor: business.primaryColor || "#4f46e5" }}
-      />
+      {!embedded && (
+        <div
+          className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none"
+          style={{ backgroundColor: business.primaryColor || "#4f46e5" }}
+        />
+      )}
 
       <div className="space-y-4 sm:space-y-5 relative z-10">
-        {/* ─── STORE PROFILE CARD ───────────────────────────────────────────── */}
-        <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl text-center">
-          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 mb-3">
-            <div
-              className="w-full h-full rounded-2xl bg-white border-2 flex items-center justify-center p-2 overflow-hidden shadow-lg"
-              style={{ borderColor: business.primaryColor || "#4f46e5" }}
-            >
-              {business.logoUrl ? (
-                <img
-                  src={business.logoUrl}
-                  alt={business.name}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <span
-                  className="text-2xl sm:text-3xl font-black"
-                  style={{ color: business.primaryColor || "#4f46e5" }}
-                >
-                  {business.name.slice(0, 2).toUpperCase()}
+        {/* ─── STORE PROFILE CARD (Standalone Mode Only) ─────────────────────── */}
+        {!embedded && (
+          <div className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl text-center">
+            <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 mb-3">
+              <div
+                className="w-full h-full rounded-2xl bg-white border-2 flex items-center justify-center p-2 overflow-hidden shadow-lg"
+                style={{ borderColor: business.primaryColor || "#4f46e5" }}
+              >
+                {business.logoUrl ? (
+                  <img
+                    src={business.logoUrl}
+                    alt={business.name}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span
+                    className="text-2xl sm:text-3xl font-black"
+                    style={{ color: business.primaryColor || "#4f46e5" }}
+                  >
+                    {business.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-slate-950 p-1 rounded-full shadow border-2 border-slate-900">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              {business.name}
+            </h1>
+
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-sm mx-auto font-medium leading-relaxed">
+              {business.tagline || "Review our service & share your honest experience!"}
+            </p>
+
+            {/* Address & Category Pill */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2.5">
+              {business.category && (
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                  {business.category}
+                </span>
+              )}
+              {business.googleAddress && (
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span className="truncate max-w-[200px]">{business.googleAddress}</span>
                 </span>
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-slate-950 p-1 rounded-full shadow border-2 border-slate-900">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
 
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            {business.name}
-          </h1>
-
-          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-sm mx-auto font-medium leading-relaxed">
-            {business.tagline || "Review our service & share your honest experience!"}
-          </p>
-
-          {/* Address & Category Pill */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2.5">
-            {business.category && (
-              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                {business.category}
-              </span>
+            {/* Quick Contact Buttons */}
+            {(whatsappUrl || phoneUrl || business.website || business.instagram || business.facebook) && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-4 pt-3.5 border-t border-slate-800">
+                {whatsappUrl && (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                )}
+                {phoneUrl && (
+                  <a
+                    href={phoneUrl}
+                    className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call Store</span>
+                  </a>
+                )}
+                {business.website && (
+                  <a
+                    href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>Website</span>
+                  </a>
+                )}
+                {business.instagram && (
+                  <a
+                    href={
+                      business.instagram.startsWith("http")
+                        ? business.instagram
+                        : `https://instagram.com/${business.instagram.replace("@", "")}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                  >
+                    <Instagram className="w-3.5 h-3.5" />
+                    <span>Instagram</span>
+                  </a>
+                )}
+                {business.facebook && (
+                  <a
+                    href={
+                      business.facebook.startsWith("http")
+                        ? business.facebook
+                        : `https://facebook.com/${business.facebook.trim()}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                  >
+                    <Facebook className="w-3.5 h-3.5" />
+                    <span>Facebook</span>
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(true)}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
+                  title="Create personalized WhatsApp review invite link"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Invite</span>
+                </button>
+              </div>
             )}
-            {business.googleAddress && (
-              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
-                <span className="truncate max-w-[200px]">{business.googleAddress}</span>
-              </span>
-            )}
           </div>
-
-          {/* Quick Contact Buttons */}
-          {(whatsappUrl || phoneUrl || business.website || business.instagram || business.facebook) && (
-            <div className="flex items-center justify-center gap-2 mt-4 pt-3.5 border-t border-slate-800">
-              {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
-                </a>
-              )}
-              {phoneUrl && (
-                <a
-                  href={phoneUrl}
-                  className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Call Store</span>
-                </a>
-              )}
-              {business.website && (
-                <a
-                  href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>Website</span>
-                </a>
-              )}
-              {business.instagram && (
-                <a
-                  href={
-                    business.instagram.startsWith("http")
-                      ? business.instagram
-                      : `https://instagram.com/${business.instagram.replace("@", "")}`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
-                >
-                  <Instagram className="w-3.5 h-3.5" />
-                  <span>Instagram</span>
-                </a>
-              )}
-              {business.facebook && (
-                <a
-                  href={
-                    business.facebook.startsWith("http")
-                      ? business.facebook
-                      : `https://facebook.com/${business.facebook.trim()}`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
-                >
-                  <Facebook className="w-3.5 h-3.5" />
-                  <span>Facebook</span>
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowInviteModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
-                title="Create personalized WhatsApp review invite link"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Invite</span>
-              </button>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* In-App Browser Warning Banner */}
         {isInAppBrowser && (
@@ -1312,11 +1292,13 @@ export default function ReviewExperience({
         Open Google
       </a>
 
-      {/* ─── FOOTER BRANDING ──────────────────────────────────────────────── */}
-      <div className="mt-8 text-center text-xs text-slate-500 flex items-center justify-center gap-1 relative z-10">
-        Powered by <span className="font-bold text-slate-300">ReviewSmart AI</span>
-        <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
-      </div>
+      {/* ─── FOOTER BRANDING (Standalone Mode Only) ───────────────────────── */}
+      {!embedded && (
+        <div className="mt-8 text-center text-xs text-slate-500 flex items-center justify-center gap-1 relative z-10">
+          Powered by <span className="font-bold text-slate-300">ReviewSmart AI</span>
+          <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
+        </div>
+      )}
 
       {/* ─── CELEBRATION MODAL ────────────────────────────────────────────── */}
       {showCopyModal && (
@@ -1432,8 +1414,9 @@ export default function ReviewExperience({
               onClick={async (e) => {
                 e.preventDefault();
                 if (countdownRef.current) clearTimeout(countdownRef.current);
+                setHasOpenedGoogle(true);
                 await copyToClipboard(modalCopiedText);
-                window.open(googleUrl, '_self');
+                window.location.assign(googleUrl);
               }}
               className="w-full py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition transform active:scale-98 cursor-pointer"
             >
@@ -1445,20 +1428,20 @@ export default function ReviewExperience({
               </svg>
               <span>
                 {modalCountdown > 0
-                  ? `Opening Google in ${modalCountdown}...`
-                  : 'Tap Here → Open Google & Paste Review'}
+                  ? `Opening Google in ${modalCountdown}s...`
+                  : "Tap Here → Open Google & Paste Review"}
               </span>
               <ExternalLink className="w-4 h-4 text-slate-500" />
             </a>
 
-            {/* Direct Google Review Screen Backup Option */}
-            {googleUrl && (
+            {/* Universal Google Maps Profile Link (No Play Store Detour) */}
+            {mapsAppUrl && (
               <button
                 type="button"
-                onClick={() => handleCopyAndRedirect(googleUrl)}
+                onClick={() => handleCopyAndRedirect(mapsAppUrl)}
                 className="w-full mt-2.5 text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center justify-center gap-1"
               >
-                <span>Direct Review popup didn&apos;t open? Tap here &rarr;</span>
+                <span>Or open Store Profile in Google Maps &rarr;</span>
               </button>
             )}
 

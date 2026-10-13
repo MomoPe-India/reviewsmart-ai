@@ -59,7 +59,7 @@ export default function SmartHubExperience({
   customerName?: string | null;
   serviceName?: string | null;
 }) {
-  const [showReviewBooster, setShowReviewBooster] = useState(false);
+  const [showReviewBooster, setShowReviewBooster] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
 
   // Clean WhatsApp number
@@ -257,12 +257,13 @@ export default function SmartHubExperience({
 
           {/* Embedded Full Review Experience */}
           {showReviewBooster && (
-            <div className="mt-4 pt-4 border-t border-white/10 animate-fadeIn">
+            <div className="mt-3 pt-3 border-t border-white/10 animate-fadeIn">
               <ReviewExperience
                 business={business}
                 staff={staff}
                 customerName={customerName}
                 serviceName={serviceName}
+                embedded={true}
               />
             </div>
           )}

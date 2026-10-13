@@ -231,9 +231,7 @@ export async function resolveGoogleMapsUrl(inputUrl: string): Promise<ResolvedGo
     const businessName = name || "Verified Google Business";
     const industry = detectIndustry(businessName, embedCategory);
 
-    const googleReviewUrl = trimmed.includes("share.google/")
-      ? trimmed
-      : trimmed.includes("g.page/r/")
+    const googleReviewUrl = trimmed.includes("g.page/r/")
       ? (trimmed.endsWith("/review") || trimmed.endsWith("/review/") ? trimmed : `${trimmed.replace(/\/+$/, "")}/review`)
       : placeId
       ? `https://search.google.com/local/writereview?placeid=${placeId}`
