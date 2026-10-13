@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
       languageMode = "AUTO",
       location: directLocation,
       tagChips: directTagChips,
+      imageBase64,
+      imageMimeType,
+      spokenLanguage,
+      isVoiceInput,
     } = body;
 
     let businessName = directName || "Our Store";
@@ -62,6 +66,10 @@ export async function POST(req: NextRequest) {
       customNote,
       category,
       languageMode,
+      imageBase64,
+      imageMimeType,
+      spokenLanguage,
+      isVoiceInput: Boolean(isVoiceInput),
     });
 
     // Log analytics in the background if business exists

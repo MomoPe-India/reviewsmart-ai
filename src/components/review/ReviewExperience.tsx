@@ -32,7 +32,14 @@ import {
 import { detectIndustry } from "@/lib/industry";
 import { copyToClipboard } from "@/lib/clipboard";
 import { synthesizeUniqueReviews, LanguageMode } from "@/lib/review-synthesizer";
-import VoiceReviewInput from "./VoiceReviewInput";
+import {
+  detectScriptLanguage,
+  hasNonLatinScript,
+  translateSpokenRegionalToEnglish,
+  getIndustryPhotoObservation,
+} from "@/lib/vision-voice-translator";
+import VoiceReviewInput, { SupportedSpeechLang } from "./VoiceReviewInput";
+import PhotoVisionInput from "./PhotoVisionInput";
 import ScratchRewardCard from "./ScratchRewardCard";
 import WhatsAppInviteGenerator from "./WhatsAppInviteGenerator";
 
@@ -103,6 +110,15 @@ export default function ReviewExperience({
   const [editableDraftText, setEditableDraftText] = useState<string>("");
   const [isEditingDraft, setIsEditingDraft] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Futuristic Feature 1: AI Photo-to-Review Vision Engine state
+  const [snappedPhotoBase64, setSnappedPhotoBase64] = useState<string | null>(null);
+  const [snappedPhotoMimeType, setSnappedPhotoMimeType] = useState<string>("image/jpeg");
+  const [snappedPhotoPreview, setSnappedPhotoPreview] = useState<string | null>(null);
+
+  // Futuristic Feature 6: Regional Voice-to-Polished-English/Native Translator state
+  const [spokenDialectCode, setSpokenDialectCode] = useState<SupportedSpeechLang | undefined>(undefined);
+  const [isVoiceTranslated, setIsVoiceTranslated] = useState<boolean>(false);
 
   // Express 1-Tap & Automation state (default expanded for zero-friction mobile access)
   const [isStudioExpanded, setIsStudioExpanded] = useState(true);
@@ -274,14 +290,23 @@ export default function ReviewExperience({
     }).catch(() => {});
   }, [business.id, business.slug]);
 
-  // Dynamic client-side synthesis: zero hardcoded templates, non-repeating
+  // Dynamic client-side synthesis: zero hardcoded templates, non-repeating, supports Photo Vision & Voice Translation
   const buildInstantDrafts = (
     tags: string[] = selectedTags,
     note: string = customNote,
-    lang: LanguageMode = languageMode
+    lang: LanguageMode = languageMode,
+    hasPhoto: boolean = Boolean(snappedPhotoBase64),
+    spokenLang: SupportedSpeechLang | undefined = spokenDialectCode,
+    voiceFlag: boolean = isVoiceTranslated
   ): ReviewOption[] => {
     const staffMention = staff ? ` Special thanks to ${staff} for the attentive service!` : "";
-    const combinedNote = note ? `${note} ${staffMention}`.trim() : staffMention.trim();
+    const detectedDialect = detectScriptLanguage(note || "", spokenLang);
+    const englishSafeNote = note
+      ? translateSpokenRegionalToEnglish(note, spokenLang)
+      : "";
+    const combinedEnglishNote = englishSafeNote
+      ? `${englishSafeNote} ${staffMention}`.trim()
+      : staffMention.trim();
 
     const synthesized = synthesizeUniqueReviews({
       businessName: business.name,
@@ -291,10 +316,63 @@ export default function ReviewExperience({
       keywords: business.keywords || undefined,
       tagChips: business.tagChips || undefined,
       selectedTags: tags,
-      customNote: combinedNote || undefined,
+      customNote: combinedEnglishNote || undefined,
       tone: business.reviewPromptTone || "friendly",
       languageMode: lang,
     });
+
+    // If customer spoke in a regional dialect, provide both Polished English (Option 1) and Native Script (Option 2)
+    if ((voiceFlag || (note && hasNonLatinScript(note))) && detectedDialect) {
+      const nativeNote = hasNonLatinScript(note) ? note : undefined;
+      const nativeSynthesized = synthesizeUniqueReviews({
+        businessName: business.name,
+        category: business.category || industry.label,
+        tagline: business.tagline,
+        location: business.googleAddress || undefined,
+        keywords: business.keywords || undefined,
+        tagChips: business.tagChips || undefined,
+        selectedTags: tags,
+        customNote: nativeNote,
+        tone: business.reviewPromptTone || "friendly",
+        languageMode: detectedDialect,
+      });
+
+      if (synthesized[0]) {
+        synthesized[0].headline = "🇬🇧 Polished English";
+        synthesized[0].languageMix = "ENGLISH";
+      }
+      if (nativeSynthesized[0] && synthesized.length >= 2) {
+        synthesized[1] = {
+          ...nativeSynthesized[0],
+          id: 2,
+          headline:
+            detectedDialect === "HINDI"
+              ? "🇮🇳 हिंदी (Native)"
+              : detectedDialect === "TAMIL"
+              ? "🇮🇳 தமிழ் (Native)"
+              : detectedDialect === "KANNADA"
+              ? "🇮🇳 ಕನ್ನಡ (Native)"
+              : detectedDialect === "MALAYALAM"
+              ? "🇮🇳 മലയാളം (Native)"
+              : "🇮🇳 తెలుగు (Native)",
+          languageMix: detectedDialect,
+        };
+      }
+    }
+
+    // If a photo was snapped, weave industry-specific visual observation at 0ms
+    if (hasPhoto) {
+      for (let i = 0; i < synthesized.length; i++) {
+        const langMix = (synthesized[i].languageMix || "ENGLISH") as LanguageMode;
+        const obs = getIndustryPhotoObservation(industry.type, langMix);
+        if (!synthesized[i].text.includes(obs)) {
+          synthesized[i].text = `${synthesized[i].text} ${obs}`;
+        }
+        if (i === 0 && !synthesized[i].headline.startsWith("📸")) {
+          synthesized[i].headline = `📸 ${synthesized[i].headline}`;
+        }
+      }
+    }
 
     return synthesized.map((s) => ({
       id: s.id,
@@ -356,16 +434,84 @@ export default function ReviewExperience({
     await handleOpenCopyModal(editableDraftText);
   };
 
-  const handleVoiceTranscript = (spokenText: string) => {
+  const handleVoiceTranscript = (spokenText: string, spokenLang?: SupportedSpeechLang) => {
     const combined = customNote ? `${customNote} ${spokenText}`.trim() : spokenText.trim();
     setCustomNote(combined);
-    const updated = buildInstantDrafts(selectedTags, combined, languageMode);
+    setSpokenDialectCode(spokenLang);
+    setIsVoiceTranslated(true);
+
+    const updated = buildInstantDrafts(
+      selectedTags,
+      combined,
+      languageMode,
+      Boolean(snappedPhotoBase64),
+      spokenLang,
+      true
+    );
     setReviewOptions(updated);
+    setSelectedOptionId(1);
     if (updated[0]) {
       setEditableDraftText(updated[0].text);
       copyToClipboard(updated[0].text);
     }
-    triggerAiGeneration(selectedTags, combined, languageMode);
+    triggerAiGeneration(
+      selectedTags,
+      combined,
+      languageMode,
+      snappedPhotoBase64,
+      snappedPhotoMimeType,
+      spokenLang,
+      true
+    );
+  };
+
+  const handlePhotoCaptured = (base64Data: string, mimeType: string, previewUrl: string) => {
+    setSnappedPhotoBase64(base64Data);
+    setSnappedPhotoMimeType(mimeType);
+    setSnappedPhotoPreview(previewUrl);
+
+    const updated = buildInstantDrafts(
+      selectedTags,
+      customNote,
+      languageMode,
+      true,
+      spokenDialectCode,
+      isVoiceTranslated
+    );
+    setReviewOptions(updated);
+    setSelectedOptionId(1);
+    if (updated[0]) {
+      setEditableDraftText(updated[0].text);
+      copyToClipboard(updated[0].text);
+    }
+    triggerAiGeneration(
+      selectedTags,
+      customNote,
+      languageMode,
+      base64Data,
+      mimeType,
+      spokenDialectCode,
+      isVoiceTranslated
+    );
+  };
+
+  const handlePhotoRemoved = () => {
+    setSnappedPhotoBase64(null);
+    setSnappedPhotoPreview(null);
+    const updated = buildInstantDrafts(
+      selectedTags,
+      customNote,
+      languageMode,
+      false,
+      spokenDialectCode,
+      isVoiceTranslated
+    );
+    setReviewOptions(updated);
+    setSelectedOptionId(1);
+    if (updated[0]) {
+      setEditableDraftText(updated[0].text);
+      copyToClipboard(updated[0].text);
+    }
   };
 
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -439,15 +585,19 @@ export default function ReviewExperience({
     triggerAiGeneration(selectedTags, customNote, newMode);
   };
 
-  // AI generation from server with memory check and fallback
+  // AI generation from server with memory check, Gemini Vision, and Regional Voice Translation
   const triggerAiGeneration = async (
     tags: string[] = selectedTags,
     note: string = customNote,
-    lang: LanguageMode = languageMode
+    lang: LanguageMode = languageMode,
+    photoBase64: string | null = snappedPhotoBase64,
+    photoMime: string = snappedPhotoMimeType,
+    spokenLang: SupportedSpeechLang | undefined = spokenDialectCode,
+    voiceFlag: boolean = isVoiceTranslated
   ) => {
     setIsGenerating(true);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
 
     try {
       const res = await fetch("/api/ai/generate-review", {
@@ -467,6 +617,10 @@ export default function ReviewExperience({
           rating,
           tone: business.reviewPromptTone || "friendly",
           languageMode: lang,
+          imageBase64: photoBase64 || undefined,
+          imageMimeType: photoBase64 ? photoMime : undefined,
+          spokenLanguage: spokenLang,
+          isVoiceInput: voiceFlag,
         }),
       });
 
@@ -1165,11 +1319,16 @@ export default function ReviewExperience({
               </div>
             </div>
 
-            {/* Optional Specific Note & Voice Dictation */}
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-slate-300 block">
-                Add a specific note or speak feedback:
-              </span>
+            {/* Futuristic Feature 1: AI Photo-to-Review Vision Engine */}
+            <PhotoVisionInput
+              businessName={business.name}
+              isAnalyzing={isGenerating}
+              onPhotoCaptured={handlePhotoCaptured}
+              onPhotoRemoved={handlePhotoRemoved}
+            />
+
+            {/* Futuristic Feature 6: Regional Voice-to-Polished-English/Native Translator & Custom Note */}
+            <div className="space-y-2">
               <VoiceReviewInput
                 onTranscript={handleVoiceTranscript}
                 languageMode={languageMode}
@@ -1193,7 +1352,11 @@ export default function ReviewExperience({
                 <div className="p-8 text-center space-y-2 bg-slate-800/80 rounded-2xl border border-slate-700">
                   <Loader2 className="w-6 h-6 text-amber-400 animate-spin mx-auto" />
                   <p className="text-xs text-slate-300 font-medium">
-                    Gemini AI is crafting authentic review variations...
+                    {snappedPhotoBase64
+                      ? "Gemini Vision is analyzing your photo & crafting reviews..."
+                      : isVoiceTranslated
+                      ? "Gemini AI is translating your voice into English & Native reviews..."
+                      : "Gemini AI is crafting authentic review variations..."}
                   </p>
                 </div>
               ) : (
@@ -1212,6 +1375,9 @@ export default function ReviewExperience({
                         }`}
                       >
                         <span className="text-[10px] block truncate font-bold">{opt.headline || opt.tone}</span>
+                        {opt.languageMix === "ENGLISH" && isVoiceTranslated && (
+                          <span className="text-[8px] text-emerald-400 block font-semibold">English</span>
+                        )}
                         {opt.languageMix === "TELUGU_SCRIPT" && (
                           <span className="text-[8px] text-amber-400 block font-semibold">తెలుగు</span>
                         )}
@@ -1404,6 +1570,18 @@ export default function ReviewExperience({
                       </p>
                     </div>
                   </div>
+                  {snappedPhotoPreview && (
+                    <div className="w-full bg-emerald-500/15 border border-emerald-500/40 rounded-xl px-2.5 py-2 flex items-center gap-2.5">
+                      <img
+                        src={snappedPhotoPreview}
+                        alt="Photo to attach"
+                        className="w-9 h-9 rounded-lg object-cover border border-emerald-400/50 shrink-0"
+                      />
+                      <p className="text-[10px] text-emerald-300 font-bold leading-snug">
+                        📸 Tap <strong className="text-white">&ldquo;Add Photos&rdquo;</strong> in Google to attach your photo!
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

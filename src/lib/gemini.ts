@@ -16,6 +16,12 @@ import {
   DOMAIN_FENCES,
   BusinessProfile,
 } from "./domain-fences";
+import {
+  detectScriptLanguage,
+  hasNonLatinScript,
+  translateSpokenRegionalToEnglish,
+  getIndustryPhotoObservation,
+} from "./vision-voice-translator";
 
 interface GenerateReviewParams {
   businessId?: string;
@@ -29,6 +35,10 @@ interface GenerateReviewParams {
   customNote?: string;
   category?: string;
   languageMode?: LanguageMode;
+  imageBase64?: string;
+  imageMimeType?: string;
+  spokenLanguage?: string;
+  isVoiceInput?: boolean;
 }
 
 export interface ReviewOption {
@@ -54,6 +64,10 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
     customNote,
     category,
     languageMode = "AUTO",
+    imageBase64,
+    imageMimeType,
+    spokenLanguage,
+    isVoiceInput = false,
   } = params;
 
   // 1. Fetch recent review memory from database to enforce zero-repetition
@@ -73,6 +87,11 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
   }
   const tagsString = activeTags.join(", ");
 
+  const detectedDialect = detectScriptLanguage(customNote || "", spokenLanguage);
+  const englishSafeNote = customNote
+    ? translateSpokenRegionalToEnglish(customNote, spokenLanguage)
+    : undefined;
+
   const profile: BusinessProfile = {
     name: businessName,
     category: category || industry.label,
@@ -81,21 +100,40 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
     keywords,
     tagChips,
     selectedTags: activeTags,
-    customNote,
+    customNote: englishSafeNote || customNote,
   };
 
   const detectedCity = extractBusinessLocation(profile);
   const apiKey = process.env.GEMINI_API_KEY;
 
-  // 2. Try Gemini AI if API Key is configured
+  // 2. Try Gemini AI (Gemini 3.8 Flash & 3.5 Flash-Lite) if API Key is configured
   if (apiKey && apiKey.trim().length > 5) {
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.5-flash"];
+    const modelsToTry = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
 
     const forbiddenList = fence.forbiddenKeywords.slice(0, 15).join(", ");
 
-    // Determine language guidance
+    // Determine language & regional voice translation guidance
     let languageInstruction = "";
-    if (languageMode === "TELUGU_SCRIPT") {
+    if (isVoiceInput || (customNote && detectedDialect)) {
+      const dialectLabel =
+        detectedDialect === "HINDI"
+          ? "Hindi (हिंदी)"
+          : detectedDialect === "TAMIL"
+          ? "Tamil (தமிழ்)"
+          : detectedDialect === "KANNADA"
+          ? "Kannada (ಕನ್ನಡ)"
+          : detectedDialect === "MALAYALAM"
+          ? "Malayalam (മലയാളം)"
+          : "Telugu (తెలుగు)";
+      const dialectCode = detectedDialect || "TELUGU_SCRIPT";
+
+      languageInstruction = `CRITICAL REGIONAL VOICE-TO-REVIEW TRANSLATION REQUIREMENT:
+The customer spoke their review feedback in ${dialectLabel}: "${customNote}".
+Translate and expand their exact spoken thoughts into 3 ready-to-post 5-star reviews so they can choose either Polished English or their Native Script:
+- Review 1 (set "headline": "🇬🇧 Polished English", "languageMix": "ENGLISH"): Translate their spoken feedback into natural, grammatical, SEO-friendly Indian English.
+- Review 2 (set "headline": "🇮🇳 Native ${dialectLabel.split(" ")[0]}", "languageMix": "${dialectCode}"): Write the review in authentic, natural ${dialectLabel} script capturing their spoken sentiment.
+- Review 3 (set "headline": "💬 Conversational", "languageMix": "ENGLISH"): Write a short, punchy 2-sentence conversational review.`;
+    } else if (languageMode === "TELUGU_SCRIPT") {
       languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic, natural TELUGU SCRIPT (తెలుగు), as written by local customers on mobile.`;
     } else if (languageMode === "TELUGU_ROMAN" || languageMode === "TELUGU_ENGLISH") {
       languageInstruction = `CRITICAL LANGUAGE REQUIREMENT: Write ALL 3 reviews in authentic TANGLISH (conversational Telugu typed in English script, e.g., 'Chala baga chesaru, super quality and fast service. Staff kuda friendly ga unaru.').`;
@@ -120,6 +158,15 @@ export async function generateAiReviews(params: GenerateReviewParams): Promise<R
         languageInstruction = `LANGUAGE REQUIREMENT: Write all 3 reviews in authentic, human-sounding English.`;
       }
     }
+
+    const photoVisionInstruction = imageBase64
+      ? `
+CRITICAL PHOTO VISION ANALYSIS INSTRUCTION:
+The customer has attached a real photo taken during their visit/service at "${businessName}" (${industry.label}).
+1. Inspect the attached image carefully and identify specific, genuine visual details relevant to ${industry.label} (for example: clean appliance servicing/jet wash, jewellery finish/purity testing, food presentation, sharp print/design quality, clean salon/tattoo work, neat vehicle interior, or welcoming store ambiance).
+2. Naturally weave 1-2 specific observations from the photo into each of the 3 review variations so the review reads like an authentic customer describing the exact photo they are posting on Google Maps!
+`
+      : "";
 
     const goldBuyerInstruction = industry.type === "GOLD_BUYERS" ? `
 CRITICAL POSITIONING (GOLD BUYING & PLEDGED GOLD SERVICE):
@@ -156,10 +203,11 @@ ${detectedCity ? `Location / City: ${detectedCity}` : ""}
 ${tagline ? `Tagline: "${tagline}"` : ""}
 Things the customer liked: ${tagsString}
 ${keywords ? `Natural business services/context: ${keywords}` : ""}
-${customNote ? `Specific customer comment/note: "${customNote}"` : ""}
+${customNote ? `Specific customer comment/voice note: "${customNote}"` : ""}
 Desired tone: ${tone}
 
 ${languageInstruction}
+${photoVisionInstruction}
 ${goldBuyerInstruction}
 ${toursTravelsInstruction}
 ${tattooStudioInstruction}
@@ -169,13 +217,11 @@ CRITICAL BUSINESS-SPECIFIC & ZERO-POLLUTION RULES:
 1. STRICT FOCUS ON SELECTED SERVICES:
    - Ground the review STRICTLY in what the customer experienced / selected (${tagsString}).
    - DO NOT invent unselected services or facilities.
-   - For example: if the customer selected "Gold Purity Testing", review MUST focus on purity testing and NOT mention releasing pledged bank loans or doorstep evaluation unless explicitly selected.
-   - If the customer selected "Release Pledged Gold", review MUST focus on gold loan release and pledged gold settlement.
 2. ABSOLUTELY DO NOT mention concepts, products, or services from other industries.
    FORBIDDEN CONCEPTS (DO NOT USE): ${forbiddenList}.
 3. RELEVANCE > CREATIVITY: Keep reviews simple, authentic, and accurate rather than elaborately inventing unverified claims.
 4. Sound like a REAL LOCAL CUSTOMER — NOT a marketing bot.
-4. ABSOLUTELY DO NOT use generic clichés such as:
+5. ABSOLUTELY DO NOT use generic clichés such as:
    - "Had a wonderful experience with..."
    - "Great experience..."
    - "Excellent service..."
@@ -185,27 +231,36 @@ CRITICAL BUSINESS-SPECIFIC & ZERO-POLLUTION RULES:
    - "Good quality and service..."
    - "made our memories truly special"
    - "exemplary", "testament to", "transcends expectations", "a game changer".
-5. DO NOT repeat any of these previously used openings:
+6. DO NOT repeat any of these previously used openings:
 ${pastOpenings.length > 0 ? pastOpenings.map((op) => `   - "${op}..."`).join("\n") : "   (None yet)"}
-6. Provide 3 completely distinct reviews with different lengths, different structures, and different openings:
-   - Review 1: Very short (1-2 punchy, human-typed sentences).
-   - Review 2: Medium product/service quality observation.
-   - Review 3: Detailed conversational review with specific observations.
+7. Provide 3 completely distinct reviews with different lengths, different structures, and different openings.
 
 Output strictly a JSON array without markdown formatting:
 [
-  { "id": 1, "headline": "...", "text": "...", "tone": "..." },
-  { "id": 2, "headline": "...", "text": "...", "tone": "..." },
-  { "id": 3, "headline": "...", "text": "...", "tone": "..." }
+  { "id": 1, "headline": "...", "text": "...", "tone": "...", "languageMix": "..." },
+  { "id": 2, "headline": "...", "text": "...", "tone": "...", "languageMix": "..." },
+  { "id": 3, "headline": "...", "text": "...", "tone": "...", "languageMix": "..." }
 ]`;
 
     for (const model of modelsToTry) {
       try {
         const client = new GoogleGenAI({ apiKey });
 
+        const contents = imageBase64
+          ? [
+              {
+                inlineData: {
+                  mimeType: imageMimeType || "image/jpeg",
+                  data: imageBase64,
+                },
+              },
+              { text: prompt },
+            ]
+          : prompt;
+
         const response = await client.models.generateContent({
           model,
-          contents: prompt,
+          contents,
           config: {
             temperature: 0.95,
             responseMimeType: "application/json",
@@ -235,16 +290,15 @@ Output strictly a JSON array without markdown formatting:
             acceptedTexts.push(candidateText);
             validatedReviews.push({
               id: validatedReviews.length + 1,
-              headline: item.headline || "Authentic Review",
+              headline: item.headline || (imageBase64 ? "📸 Photo Review" : "Authentic Review"),
               text: candidateText,
               tone: item.tone || "Customer Experience",
               structureTag: `GEMINI_SLOT_${i + 1}`,
-              writingStyle: "gemini_generative",
-              languageMix: languageMode,
+              writingStyle: imageBase64 ? "gemini_vision" : "gemini_generative",
+              languageMix: item.languageMix || languageMode,
             });
           }
 
-          // If at least 3 passed both uniqueness AND domain relevance checks, record and return!
           if (validatedReviews.length >= 3) {
             recordGeneratedReviews(
               validatedReviews.map((r) => ({
@@ -268,8 +322,8 @@ Output strictly a JSON array without markdown formatting:
     }
   }
 
-  // 3. High-entropy, Domain-Fenced Combinatorial Synthesizer
-  // Guarantees zero cross-contamination, zero duplicates, authentic Telugu/Tanglish, and 100% domain relevance
+  // 3. High-entropy, Domain-Fenced Combinatorial Synthesizer Fallback
+  // Handles Regional Voice Translation (Polished English + Native Script) & Photo Vision Observations
   const synthesized = synthesizeUniqueReviews({
     businessName,
     category: category || industry.label,
@@ -278,11 +332,64 @@ Output strictly a JSON array without markdown formatting:
     keywords,
     tagChips,
     selectedTags: activeTags,
-    customNote,
+    customNote: englishSafeNote,
     tone,
     languageMode,
     history,
   });
+
+  // If Regional Voice Translation was used, ensure Option 1 is Polished English and Option 2 is Native Regional Script
+  if ((isVoiceInput || (customNote && hasNonLatinScript(customNote))) && detectedDialect) {
+    const nativeSynthesized = synthesizeUniqueReviews({
+      businessName,
+      category: category || industry.label,
+      tagline,
+      location,
+      keywords,
+      tagChips,
+      selectedTags: activeTags,
+      customNote: hasNonLatinScript(customNote || "") ? customNote : undefined,
+      tone,
+      languageMode: detectedDialect,
+      history,
+    });
+
+    if (synthesized[0]) {
+      synthesized[0].headline = "🇬🇧 Polished English";
+      synthesized[0].languageMix = "ENGLISH";
+    }
+    if (nativeSynthesized[0] && synthesized.length >= 2) {
+      synthesized[1] = {
+        ...nativeSynthesized[0],
+        id: 2,
+        headline:
+          detectedDialect === "HINDI"
+            ? "🇮🇳 हिंदी (Native)"
+            : detectedDialect === "TAMIL"
+            ? "🇮🇳 தமிழ் (Native)"
+            : detectedDialect === "KANNADA"
+            ? "🇮🇳 ಕನ್ನಡ (Native)"
+            : detectedDialect === "MALAYALAM"
+            ? "🇮🇳 മലയാളം (Native)"
+            : "🇮🇳 తెలుగు (Native)",
+        languageMix: detectedDialect,
+      };
+    }
+  }
+
+  // If a photo was snapped, weave industry-specific visual observation into the synthesized reviews
+  if (imageBase64) {
+    for (let i = 0; i < synthesized.length; i++) {
+      const langMix = (synthesized[i].languageMix || "ENGLISH") as LanguageMode;
+      const obs = getIndustryPhotoObservation(industry.type, langMix);
+      if (!synthesized[i].text.includes(obs)) {
+        synthesized[i].text = `${synthesized[i].text} ${obs}`;
+      }
+      if (i === 0 && !synthesized[i].headline.startsWith("📸")) {
+        synthesized[i].headline = `📸 ${synthesized[i].headline}`;
+      }
+    }
+  }
 
   // Record newly synthesized reviews to database memory in the background
   recordGeneratedReviews(
@@ -313,7 +420,7 @@ export async function generateReviewReply(
   const nameGreeting = reviewerName ? ` ${reviewerName}` : "";
 
   if (apiKey && apiKey.trim().length > 5) {
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.5-flash"];
+    const modelsToTry = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
     for (const model of modelsToTry) {
       try {
         const client = new GoogleGenAI({ apiKey });
