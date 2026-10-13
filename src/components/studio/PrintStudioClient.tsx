@@ -180,6 +180,210 @@ const drawGoogleGBadgeOnCanvas = async (
   ctx.restore();
 };
 
+interface TextFitResult {
+  lines: string[];
+  fontSize: number;
+  lineHeight: number;
+  totalHeight: number;
+}
+
+const fitAndWrapText = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxFontSize: number,
+  minFontSize: number,
+  fontWeight: string | number = "bold",
+  fontFamily: string = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  maxLines: number = 2,
+  lineHeightMultiplier: number = 1.2
+): TextFitResult => {
+  const cleanText = text.trim().replace(/\s+/g, " ");
+  if (!cleanText) {
+    return {
+      lines: [],
+      fontSize: minFontSize,
+      lineHeight: Math.round(minFontSize * lineHeightMultiplier),
+      totalHeight: 0,
+    };
+  }
+
+  const words = cleanText.split(" ");
+  let bestFontSize = minFontSize;
+  let bestLines: string[] = [];
+
+  for (let fs = maxFontSize; fs >= minFontSize; fs -= 2) {
+    ctx.font = `${fontWeight} ${fs}px ${fontFamily}`;
+    const lines: string[] = [];
+    let currentLine = "";
+    let fits = true;
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const testWidth = ctx.measureText(testLine).width;
+
+      if (testWidth <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (!currentLine) {
+          fits = false;
+          break;
+        }
+        lines.push(currentLine);
+        currentLine = word;
+        if (lines.length >= maxLines) {
+          fits = false;
+          break;
+        }
+      }
+    }
+
+    if (fits) {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      if (lines.length <= maxLines) {
+        bestFontSize = fs;
+        bestLines = lines;
+        break;
+      }
+    }
+  }
+
+  if (bestLines.length === 0) {
+    bestFontSize = minFontSize;
+    ctx.font = `${fontWeight} ${minFontSize}px ${fontFamily}`;
+    const lines: string[] = [];
+    let currentLine = "";
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const testWidth = ctx.measureText(testLine).width;
+
+      if (testWidth <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (!currentLine) {
+          currentLine = word;
+        }
+        lines.push(currentLine);
+        currentLine = word;
+        if (lines.length === maxLines) {
+          break;
+        }
+      }
+    }
+
+    if (currentLine && lines.length < maxLines) {
+      lines.push(currentLine);
+    }
+
+    const lastIndex = lines.length - 1;
+    if (lastIndex >= 0) {
+      let lastLine = lines[lastIndex];
+      while (ctx.measureText(lastLine + "…").width > maxWidth && lastLine.length > 3) {
+        lastLine = lastLine.slice(0, -1).trimEnd();
+      }
+      const totalWordsCovered =
+        lines.slice(0, lastIndex).join(" ").split(" ").filter(Boolean).length +
+        lastLine.split(" ").filter(Boolean).length;
+      if (totalWordsCovered < words.length || lastLine !== lines[lastIndex]) {
+        lines[lastIndex] = lastLine + "…";
+      }
+    }
+    bestLines = lines;
+  }
+
+  const lineHeight = Math.round(bestFontSize * lineHeightMultiplier);
+  return {
+    lines: bestLines,
+    fontSize: bestFontSize,
+    lineHeight,
+    totalHeight: bestLines.length > 0 ? bestFontSize + (bestLines.length - 1) * lineHeight : 0,
+  };
+};
+
+const drawCenteredWrappedLines = (
+  ctx: CanvasRenderingContext2D,
+  lines: string[],
+  centerX: number,
+  startY: number,
+  lineHeight: number,
+  color: string,
+  fontSize: number,
+  fontWeight: string | number = "bold",
+  fontFamily: string = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+): number => {
+  if (lines.length === 0) return startY;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+
+  let currentY = startY;
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillText(lines[i], centerX, currentY);
+    if (i < lines.length - 1) {
+      currentY += lineHeight;
+    }
+  }
+  ctx.restore();
+  return currentY;
+};
+
+const drawUnifiedStarBadge = (
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  options: {
+    starFontSize?: number;
+    textFontSize?: number;
+    ratingText?: string;
+    textColor?: string;
+    starColor?: string;
+    gap?: number;
+    fontFamily?: string;
+  } = {}
+) => {
+  const {
+    starFontSize = 34,
+    textFontSize = 26,
+    ratingText = "5.0 on Google",
+    textColor = "#ffffff",
+    starColor = "#fbbf24",
+    gap = 14,
+    fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  } = options;
+
+  const stars = "★★★★★";
+  ctx.save();
+  ctx.font = `bold ${starFontSize}px sans-serif`;
+  const starsWidth = ctx.measureText(stars).width;
+
+  ctx.font = `800 ${textFontSize}px ${fontFamily}`;
+  const textWidth = ctx.measureText(ratingText).width;
+
+  const totalWidth = starsWidth + gap + textWidth;
+  const startX = centerX - totalWidth / 2;
+
+  ctx.fillStyle = starColor;
+  ctx.font = `bold ${starFontSize}px sans-serif`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(stars, startX, centerY);
+
+  ctx.fillStyle = textColor;
+  ctx.font = `800 ${textFontSize}px ${fontFamily}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(ratingText, startX + starsWidth + gap, centerY);
+
+  ctx.restore();
+};
+
 export default function PrintStudioClient({
   business,
   reviewUrl,
@@ -548,45 +752,105 @@ export default function PrintStudioClient({
 
         // Brand Logo or Official Google "G" Badge
         if (badgeType === "GOOGLE_G") {
-          await drawGoogleGBadgeOnCanvas(ctx, 600, 260, 160, activeTheme.accent);
+          await drawGoogleGBadgeOnCanvas(ctx, 600, 245, 148, activeTheme.accent);
         } else {
           await drawAdaptiveLogoOnCanvas(
             ctx,
             logoUrl,
             business.name,
             600,
-            260,
+            245,
             480,
-            150,
+            136,
             logoStyle,
             logoPlate,
             activeTheme.accent
           );
         }
 
-        // Business Name
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "900 54px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText(business.name, 600, 395);
+        // Dynamic Middle Block: Business Name + Address + Unified Star Rating
+        const standSafeWidth = 920;
+        const nameRes = fitAndWrapText(
+          ctx,
+          business.name,
+          standSafeWidth,
+          48,
+          28,
+          "900",
+          "-apple-system, BlinkMacSystemFont, sans-serif",
+          2,
+          1.18
+        );
 
-        // Branch Locality Address
-        if (business.googleAddress) {
-          ctx.fillStyle = activeTheme.subtext;
-          ctx.font = "600 28px -apple-system, BlinkMacSystemFont, sans-serif";
-          ctx.fillText(`📍 ${business.googleAddress}`, 600, 440);
+        const addrRes = business.googleAddress
+          ? fitAndWrapText(
+              ctx,
+              `📍 ${business.googleAddress}`,
+              standSafeWidth,
+              24,
+              16,
+              "600",
+              "-apple-system, BlinkMacSystemFont, sans-serif",
+              2,
+              1.22
+            )
+          : null;
+
+        const standStarSize = 36;
+        const standRatingTextSize = 28;
+        const gapNameAddr = addrRes && addrRes.lines.length > 0 ? 10 : 0;
+        const gapToStars = 14;
+        const totalMiddleHeight =
+          nameRes.totalHeight +
+          gapNameAddr +
+          (addrRes ? addrRes.totalHeight : 0) +
+          gapToStars +
+          standStarSize;
+
+        const windowTop = 320;
+        const windowBottom = 544;
+        const middleStartY =
+          windowTop + Math.max(6, Math.round((windowBottom - windowTop - totalMiddleHeight) / 2));
+
+        let cursorY = middleStartY;
+        const nameFirstBaseline = cursorY + Math.round(nameRes.fontSize * 0.85);
+        drawCenteredWrappedLines(
+          ctx,
+          nameRes.lines,
+          600,
+          nameFirstBaseline,
+          nameRes.lineHeight,
+          activeTheme.text,
+          nameRes.fontSize,
+          "900"
+        );
+        cursorY += nameRes.totalHeight;
+
+        if (addrRes && addrRes.lines.length > 0) {
+          cursorY += gapNameAddr;
+          const addrFirstBaseline = cursorY + Math.round(addrRes.fontSize * 0.85);
+          drawCenteredWrappedLines(
+            ctx,
+            addrRes.lines,
+            600,
+            addrFirstBaseline,
+            addrRes.lineHeight,
+            activeTheme.subtext,
+            addrRes.fontSize,
+            "600"
+          );
+          cursorY += addrRes.totalHeight;
         }
 
-        // Star Rating & Badge
-        ctx.fillStyle = "#fbbf24";
-        ctx.font = "bold 44px sans-serif";
-        ctx.fillText("★★★★★", 510, 495);
-
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "800 32px -apple-system, sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText("5.0 on Google", 620, 495);
+        cursorY += gapToStars;
+        drawUnifiedStarBadge(ctx, 600, cursorY + Math.round(standStarSize / 2), {
+          starFontSize: standStarSize,
+          textFontSize: standRatingTextSize,
+          ratingText: "5.0 on Google",
+          textColor: activeTheme.text,
+          starColor: "#fbbf24",
+          gap: 14,
+        });
 
         // Center QR Code in Luxury Box
         if (qrDataUrl) {
@@ -599,7 +863,7 @@ export default function PrintStudioClient({
           // QR White Container
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
-          ctx.roundRect(310, 540, 580, 580, 40);
+          ctx.roundRect(310, 550, 580, 580, 40);
           ctx.fill();
 
           // Gold Frame around QR Box
@@ -608,39 +872,86 @@ export default function PrintStudioClient({
           ctx.stroke();
 
           // Draw QR Code
-          ctx.drawImage(qrImg, 350, 580, 500, 500);
+          ctx.drawImage(qrImg, 350, 590, 500, 500);
         }
 
         // 3-Step Instruction Pill
         ctx.fillStyle = activeTheme.id === "pearl-gold" ? "#f1f5f9" : "rgba(0, 0, 0, 0.4)";
         ctx.beginPath();
-        ctx.roundRect(160, 1160, 880, 72, 36);
+        ctx.roundRect(160, 1168, 880, 72, 36);
         ctx.fill();
         ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
+        const standPillText =
+          "① Scan QR with Camera  •  ② Pick Instant Compliments  •  ③ Post in 5 Sec";
+        let standPillFontSize = 24;
+        ctx.font = `bold ${standPillFontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        while (ctx.measureText(standPillText).width > 820 && standPillFontSize > 15) {
+          standPillFontSize -= 1;
+          ctx.font = `bold ${standPillFontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        }
         ctx.fillStyle = activeTheme.text;
-        ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("① Scan QR with Camera  •  ② Pick Instant Compliments  •  ③ Post in 5 Sec", 600, 1196);
+        ctx.fillText(standPillText, 600, 1204);
 
-        // Callout Title
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "900 48px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText(calloutTitle, 600, 1310);
+        // Callout Title & Subtitle (Auto-fitted)
+        const titleRes = fitAndWrapText(
+          ctx,
+          calloutTitle,
+          standSafeWidth,
+          46,
+          28,
+          "900",
+          "-apple-system, BlinkMacSystemFont, sans-serif",
+          2,
+          1.18
+        );
+        const subRes = fitAndWrapText(
+          ctx,
+          calloutSubtitle,
+          standSafeWidth,
+          30,
+          20,
+          "500",
+          "-apple-system, BlinkMacSystemFont, sans-serif",
+          2,
+          1.22
+        );
 
-        // Subtitle
-        ctx.fillStyle = activeTheme.subtext;
-        ctx.font = "500 32px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(calloutSubtitle, 600, 1370);
+        let bottomCursorY = 1280;
+        const titleBaseline = bottomCursorY + Math.round(titleRes.fontSize * 0.85);
+        drawCenteredWrappedLines(
+          ctx,
+          titleRes.lines,
+          600,
+          titleBaseline,
+          titleRes.lineHeight,
+          activeTheme.text,
+          titleRes.fontSize,
+          "900"
+        );
+        bottomCursorY += titleRes.totalHeight + 16;
+
+        const subBaseline = bottomCursorY + Math.round(subRes.fontSize * 0.85);
+        drawCenteredWrappedLines(
+          ctx,
+          subRes.lines,
+          600,
+          subBaseline,
+          subRes.lineHeight,
+          activeTheme.subtext,
+          subRes.fontSize,
+          "500"
+        );
 
         // Verified Partner Footer
         ctx.fillStyle = activeTheme.accent;
         ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
         ctx.fillText("✨ ReviewSmart AI • Verified Google Partner", 600, 1660);
 
         // Optional crop border
@@ -708,41 +1019,79 @@ export default function PrintStudioClient({
           ctx.roundRect(160, 95, 365, 46, 23);
           ctx.fill();
 
+          let pvcRibbonFontSize = 17;
+          ctx.font = `bold ${pvcRibbonFontSize}px -apple-system, sans-serif`;
+          while (ctx.measureText(ribbonText).width > 335 && pvcRibbonFontSize > 11) {
+            pvcRibbonFontSize -= 1;
+            ctx.font = `bold ${pvcRibbonFontSize}px -apple-system, sans-serif`;
+          }
           ctx.fillStyle = "#0b0f19";
-          ctx.font = "bold 17px -apple-system, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(ribbonText, 342, 118);
 
           // Brand Logo or Official Google "G" Badge
           if (badgeType === "GOOGLE_G") {
-            await drawGoogleGBadgeOnCanvas(ctx, 342, 195, 100, activeTheme.accent);
+            await drawGoogleGBadgeOnCanvas(ctx, 342, 190, 92, activeTheme.accent);
           } else {
             await drawAdaptiveLogoOnCanvas(
               ctx,
               logoUrl,
               business.name,
               342,
-              195,
+              190,
               300,
-              84,
+              78,
               logoStyle,
               logoPlate,
               activeTheme.accent
             );
           }
 
-          // Business Name
-          ctx.fillStyle = activeTheme.text;
-          ctx.font = "900 28px -apple-system, sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "alphabetic";
-          ctx.fillText(business.name, 342, 275);
+          // Dynamic Business Name + Star Badge between Logo (bottom ~236) and QR (top 345)
+          const pvcSafeWidth = 540;
+          const pvcNameRes = fitAndWrapText(
+            ctx,
+            business.name,
+            pvcSafeWidth,
+            26,
+            17,
+            "900",
+            "-apple-system, sans-serif",
+            2,
+            1.18
+          );
+          const pvcStarSize = 22;
+          const pvcGapToStars = 10;
+          const pvcMiddleHeight = pvcNameRes.totalHeight + pvcGapToStars + pvcStarSize;
+          const pvcWindowTop = 236;
+          const pvcWindowBottom = 342;
+          const pvcStartY =
+            pvcWindowTop +
+            Math.max(4, Math.round((pvcWindowBottom - pvcWindowTop - pvcMiddleHeight) / 2));
 
-          // 5-Star Rating
-          ctx.fillStyle = "#fbbf24";
-          ctx.font = "bold 24px sans-serif";
-          ctx.fillText("★★★★★", 342, 312);
+          const pvcNameBaseline = pvcStartY + Math.round(pvcNameRes.fontSize * 0.85);
+          drawCenteredWrappedLines(
+            ctx,
+            pvcNameRes.lines,
+            342,
+            pvcNameBaseline,
+            pvcNameRes.lineHeight,
+            activeTheme.text,
+            pvcNameRes.fontSize,
+            "900"
+          );
+
+          const pvcStarsCenterY =
+            pvcStartY + pvcNameRes.totalHeight + pvcGapToStars + Math.round(pvcStarSize / 2);
+          drawUnifiedStarBadge(ctx, 342, pvcStarsCenterY, {
+            starFontSize: pvcStarSize,
+            textFontSize: 16,
+            ratingText: "5.0 on Google",
+            textColor: activeTheme.text,
+            starColor: "#fbbf24",
+            gap: 8,
+          });
 
           // Dynamic QR Code Container
           if (qrDataUrl) {
@@ -767,6 +1116,7 @@ export default function PrintStudioClient({
           ctx.fillStyle = activeTheme.text;
           ctx.font = "bold 26px -apple-system, sans-serif";
           ctx.textAlign = "center";
+          ctx.textBaseline = "alphabetic";
           ctx.fillText("Scan QR to Review Us", 342, 750);
 
           ctx.fillStyle = activeTheme.subtext;
@@ -784,6 +1134,7 @@ export default function PrintStudioClient({
           ctx.fillText("✨ ReviewSmart AI • Smart Business Card", 342, 980);
         } else {
           // BACK SIDE
+          const pvcBackSafeWidth = 520;
           if (pvcBackMode === "business-card") {
             // Top Ribbon Badge
             const ribbonGrad = ctx.createLinearGradient(160, 95, 525, 95);
@@ -802,15 +1153,55 @@ export default function PrintStudioClient({
             ctx.fillText("★ OFFICIAL BUSINESS IDENTITY ★", 342, 116);
             ctx.textBaseline = "alphabetic";
 
-            // Store Name
-            ctx.fillStyle = activeTheme.text;
-            ctx.font = "900 32px -apple-system, sans-serif";
-            ctx.fillText(business.name, 342, 205);
+            // Store Name & Tagline (Auto-fitted between Y=148 and Y=272)
+            const backNameRes = fitAndWrapText(
+              ctx,
+              business.name,
+              pvcBackSafeWidth,
+              28,
+              18,
+              "900",
+              "-apple-system, sans-serif",
+              2,
+              1.18
+            );
+            const backTaglineRes = fitAndWrapText(
+              ctx,
+              business.tagline || "Verified Local Merchant",
+              pvcBackSafeWidth,
+              17,
+              13,
+              "bold",
+              "-apple-system, sans-serif",
+              1,
+              1.2
+            );
+            const backHeaderHeight = backNameRes.totalHeight + 8 + backTaglineRes.totalHeight;
+            const backHeaderStartY = 148 + Math.max(4, Math.round((122 - backHeaderHeight) / 2));
 
-            // Store Tagline / Category
-            ctx.fillStyle = activeTheme.accent;
-            ctx.font = "bold 18px -apple-system, sans-serif";
-            ctx.fillText(business.tagline || "Verified Local Merchant", 342, 240);
+            drawCenteredWrappedLines(
+              ctx,
+              backNameRes.lines,
+              342,
+              backHeaderStartY + Math.round(backNameRes.fontSize * 0.85),
+              backNameRes.lineHeight,
+              activeTheme.text,
+              backNameRes.fontSize,
+              "900"
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              backTaglineRes.lines,
+              342,
+              backHeaderStartY +
+                backNameRes.totalHeight +
+                8 +
+                Math.round(backTaglineRes.fontSize * 0.85),
+              backTaglineRes.lineHeight,
+              activeTheme.accent,
+              backTaglineRes.fontSize,
+              "bold"
+            );
 
             // Center: Owner / Executive Box
             ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
@@ -838,17 +1229,52 @@ export default function PrintStudioClient({
               .toUpperCase();
             ctx.fillStyle = activeTheme.accent;
             ctx.font = "900 28px -apple-system, sans-serif";
+            ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(initials || "★", 342, 350);
             ctx.textBaseline = "alphabetic";
 
-            ctx.fillStyle = activeTheme.text;
-            ctx.font = "900 28px -apple-system, sans-serif";
-            ctx.fillText(visitingOwnerName.trim() || "Store Proprietor", 342, 440);
+            const ownerNameRes = fitAndWrapText(
+              ctx,
+              visitingOwnerName.trim() || "Store Proprietor",
+              485,
+              26,
+              18,
+              "900",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              ownerNameRes.lines,
+              342,
+              440,
+              ownerNameRes.lineHeight,
+              activeTheme.text,
+              ownerNameRes.fontSize,
+              "900"
+            );
 
-            ctx.fillStyle = activeTheme.accent;
-            ctx.font = "bold 18px -apple-system, sans-serif";
-            ctx.fillText(visitingOwnerTitle.trim() || "Founder & Managing Director", 342, 475);
+            const ownerTitleRes = fitAndWrapText(
+              ctx,
+              visitingOwnerTitle.trim() || "Founder & Managing Director",
+              485,
+              18,
+              13,
+              "bold",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              ownerTitleRes.lines,
+              342,
+              475,
+              ownerTitleRes.lineHeight,
+              activeTheme.accent,
+              ownerTitleRes.fontSize,
+              "bold"
+            );
 
             // Bottom: Contact Details Box
             ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
@@ -859,21 +1285,76 @@ export default function PrintStudioClient({
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            ctx.font = "bold 20px -apple-system, sans-serif";
-            ctx.fillStyle = activeTheme.text;
-            ctx.textAlign = "center";
-            ctx.fillText(`📞 VIP Direct: ${visitingPhone || business.phone || "Available on request"}`, 342, 605);
+            const phoneRes = fitAndWrapText(
+              ctx,
+              `📞 VIP Direct: ${visitingPhone || business.phone || "Available on request"}`,
+              485,
+              20,
+              14,
+              "bold",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              phoneRes.lines,
+              342,
+              600,
+              phoneRes.lineHeight,
+              activeTheme.text,
+              phoneRes.fontSize,
+              "bold"
+            );
 
             if (visitingEmail) {
-              ctx.fillText(`✉️ Email: ${visitingEmail}`, 342, 650);
+              const emailRes = fitAndWrapText(
+                ctx,
+                `✉️ Email: ${visitingEmail}`,
+                485,
+                17,
+                12,
+                "bold",
+                "-apple-system, sans-serif",
+                1
+              );
+              drawCenteredWrappedLines(
+                ctx,
+                emailRes.lines,
+                342,
+                640,
+                emailRes.lineHeight,
+                activeTheme.text,
+                emailRes.fontSize,
+                "bold"
+              );
             }
 
-            ctx.fillStyle = activeTheme.subtext;
-            ctx.font = "16px -apple-system, sans-serif";
-            ctx.fillText(`📍 ${visitingAddress || business.googleAddress || "Kadapa • Andhra Pradesh"}`, 342, visitingEmail ? 705 : 665);
+            const cardAddrRes = fitAndWrapText(
+              ctx,
+              `📍 ${visitingAddress || business.googleAddress || "Kadapa • Andhra Pradesh"}`,
+              485,
+              16,
+              12,
+              "500",
+              "-apple-system, sans-serif",
+              2,
+              1.25
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              cardAddrRes.lines,
+              342,
+              visitingEmail ? 682 : 655,
+              cardAddrRes.lineHeight,
+              activeTheme.subtext,
+              cardAddrRes.fontSize,
+              "500"
+            );
 
             ctx.fillStyle = "#fbbf24";
             ctx.font = "bold 22px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "alphabetic";
             ctx.fillText("★★★★★", 342, 800);
             ctx.fillStyle = activeTheme.subtext;
             ctx.font = "14px -apple-system, sans-serif";
@@ -925,20 +1406,64 @@ export default function PrintStudioClient({
             drawStepBox(ctx, 100, 350, "2", "⭐ Tap 5 Stars & Compliments", "ReviewSmart AI generates genuine draft", activeTheme.accent, activeTheme.innerBorder, activeTheme.text, activeTheme.subtext);
             drawStepBox(ctx, 100, 485, "3", "📋 Tap Copy & Post on Google", "Review fills in clipboard automatically", activeTheme.accent, activeTheme.innerBorder, activeTheme.text, activeTheme.subtext);
 
-            ctx.fillStyle = activeTheme.text;
-            ctx.font = "bold 20px -apple-system, sans-serif";
-            ctx.fillText(business.name, 342, 720);
+            const guideNameRes = fitAndWrapText(
+              ctx,
+              business.name,
+              pvcBackSafeWidth,
+              20,
+              15,
+              "bold",
+              "-apple-system, sans-serif",
+              2,
+              1.2
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              guideNameRes.lines,
+              342,
+              710,
+              guideNameRes.lineHeight,
+              activeTheme.text,
+              guideNameRes.fontSize,
+              "bold"
+            );
 
-            ctx.fillStyle = activeTheme.subtext;
-            ctx.font = "16px -apple-system, sans-serif";
-            ctx.fillText(business.googleAddress || "Kadapa • Bengaluru", 342, 755);
+            const guideAddrRes = fitAndWrapText(
+              ctx,
+              business.googleAddress || "Kadapa • Bengaluru",
+              pvcBackSafeWidth,
+              15,
+              12,
+              "500",
+              "-apple-system, sans-serif",
+              2,
+              1.22
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              guideAddrRes.lines,
+              342,
+              710 + guideNameRes.totalHeight + 12,
+              guideAddrRes.lineHeight,
+              activeTheme.subtext,
+              guideAddrRes.fontSize,
+              "500"
+            );
 
             if (business.phone) {
-              ctx.fillText(`Phone: ${business.phone}`, 342, 785);
+              ctx.fillStyle = activeTheme.subtext;
+              ctx.font = "15px -apple-system, sans-serif";
+              ctx.textAlign = "center";
+              ctx.fillText(
+                `Phone: ${business.phone}`,
+                342,
+                710 + guideNameRes.totalHeight + 12 + guideAddrRes.totalHeight + 16
+              );
             }
 
             ctx.fillStyle = activeTheme.accent;
             ctx.font = "bold 18px -apple-system, sans-serif";
+            ctx.textAlign = "center";
             ctx.fillText("✨ Official ReviewSmart Partner Card", 342, 980);
           } else if (pvcBackMode === "staff") {
             ctx.fillStyle = activeTheme.accent;
@@ -946,9 +1471,26 @@ export default function PrintStudioClient({
             ctx.textAlign = "center";
             ctx.fillText("★ OFFICIAL SERVICE BADGE ★", 342, 130);
 
-            ctx.fillStyle = activeTheme.text;
-            ctx.font = "bold 22px -apple-system, sans-serif";
-            ctx.fillText(business.name, 342, 170);
+            const staffBizRes = fitAndWrapText(
+              ctx,
+              business.name,
+              pvcBackSafeWidth,
+              22,
+              15,
+              "bold",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              staffBizRes.lines,
+              342,
+              170,
+              staffBizRes.lineHeight,
+              activeTheme.text,
+              staffBizRes.fontSize,
+              "bold"
+            );
 
             // Avatar Circle
             ctx.beginPath();
@@ -961,17 +1503,52 @@ export default function PrintStudioClient({
 
             ctx.fillStyle = "#0f172a";
             ctx.font = "bold 56px -apple-system, sans-serif";
+            ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText("👤", 342, 270);
             ctx.textBaseline = "alphabetic";
 
-            ctx.fillStyle = activeTheme.text;
-            ctx.font = "900 36px -apple-system, sans-serif";
-            ctx.fillText(staffName.trim() || "Team Member", 342, 385);
+            const staffNameRes = fitAndWrapText(
+              ctx,
+              staffName.trim() || "Team Member",
+              pvcBackSafeWidth,
+              34,
+              20,
+              "900",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              staffNameRes.lines,
+              342,
+              385,
+              staffNameRes.lineHeight,
+              activeTheme.text,
+              staffNameRes.fontSize,
+              "900"
+            );
 
-            ctx.fillStyle = activeTheme.accent;
-            ctx.font = "bold 22px -apple-system, sans-serif";
-            ctx.fillText(staffId.trim() || "Official Service Staff", 342, 425);
+            const staffRoleRes = fitAndWrapText(
+              ctx,
+              staffId.trim() || "Official Service Staff",
+              pvcBackSafeWidth,
+              22,
+              15,
+              "bold",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              staffRoleRes.lines,
+              342,
+              425,
+              staffRoleRes.lineHeight,
+              activeTheme.accent,
+              staffRoleRes.fontSize,
+              "bold"
+            );
 
             // Quote Box
             ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
@@ -984,6 +1561,7 @@ export default function PrintStudioClient({
 
             ctx.fillStyle = activeTheme.text;
             ctx.font = "bold 22px -apple-system, sans-serif";
+            ctx.textAlign = "center";
             ctx.fillText("“Loved our service today?", 342, 535);
             ctx.fillText("Please scan my badge with your camera", 342, 575);
             ctx.fillText("to leave a 5-star Google review!”", 342, 615);
@@ -1006,9 +1584,26 @@ export default function PrintStudioClient({
             ctx.textAlign = "center";
             ctx.fillText("★ SCAN TO PAY & REVIEW ★", 342, 125);
 
-            ctx.fillStyle = activeTheme.text;
-            ctx.font = "bold 20px -apple-system, sans-serif";
-            ctx.fillText(business.name, 342, 160);
+            const dualNameRes = fitAndWrapText(
+              ctx,
+              business.name,
+              pvcBackSafeWidth,
+              20,
+              14,
+              "bold",
+              "-apple-system, sans-serif",
+              1
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              dualNameRes.lines,
+              342,
+              160,
+              dualNameRes.lineHeight,
+              activeTheme.text,
+              dualNameRes.fontSize,
+              "bold"
+            );
 
             // Left: UPI QR
             if (upiQrDataUrl) {
@@ -1030,6 +1625,7 @@ export default function PrintStudioClient({
 
               ctx.fillStyle = activeTheme.text;
               ctx.font = "bold 18px -apple-system, sans-serif";
+              ctx.textAlign = "center";
               ctx.fillText("₹ Pay with UPI", 195, 475);
               ctx.fillStyle = activeTheme.subtext;
               ctx.font = "14px -apple-system, sans-serif";
@@ -1056,6 +1652,7 @@ export default function PrintStudioClient({
 
               ctx.fillStyle = activeTheme.text;
               ctx.font = "bold 18px -apple-system, sans-serif";
+              ctx.textAlign = "center";
               ctx.fillText("⭐ Rate on Google", 490, 475);
               ctx.fillStyle = activeTheme.subtext;
               ctx.font = "14px -apple-system, sans-serif";
@@ -1073,17 +1670,37 @@ export default function PrintStudioClient({
 
             ctx.fillStyle = activeTheme.text;
             ctx.font = "bold 20px -apple-system, sans-serif";
+            ctx.textAlign = "center";
             ctx.fillText("Instant Billing & 5-Star Feedback", 342, 595);
             ctx.fillStyle = activeTheme.accent;
             ctx.font = "bold 16px -apple-system, sans-serif";
             ctx.fillText("Fast • 100% Secure • Contactless", 342, 630);
 
-            ctx.fillStyle = activeTheme.subtext;
-            ctx.font = "16px -apple-system, sans-serif";
-            ctx.fillText(business.googleAddress || "Kadapa • Bengaluru", 342, 740);
+            const dualAddrRes = fitAndWrapText(
+              ctx,
+              business.googleAddress || "Kadapa • Bengaluru",
+              pvcBackSafeWidth,
+              15,
+              12,
+              "500",
+              "-apple-system, sans-serif",
+              2,
+              1.22
+            );
+            drawCenteredWrappedLines(
+              ctx,
+              dualAddrRes.lines,
+              342,
+              735,
+              dualAddrRes.lineHeight,
+              activeTheme.subtext,
+              dualAddrRes.fontSize,
+              "500"
+            );
 
             ctx.fillStyle = activeTheme.accent;
             ctx.font = "bold 18px -apple-system, sans-serif";
+            ctx.textAlign = "center";
             ctx.fillText("✨ ReviewSmart AI Dual Counter Card", 342, 980);
           }
         }
@@ -1138,40 +1755,106 @@ export default function PrintStudioClient({
 
         // Brand Logo or Official Google "G" Badge
         if (badgeType === "GOOGLE_G") {
-          await drawGoogleGBadgeOnCanvas(ctx, 1240, 480, 280, activeTheme.accent);
+          await drawGoogleGBadgeOnCanvas(ctx, 1240, 460, 260, activeTheme.accent);
         } else {
           await drawAdaptiveLogoOnCanvas(
             ctx,
             logoUrl,
             business.name,
             1240,
-            480,
+            460,
             900,
-            240,
+            230,
             logoStyle,
             logoPlate,
             activeTheme.accent
           );
         }
 
-        // Business Name
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "900 96px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText(business.name, 1240, 780);
+        // Dynamic Middle Block: Business Name + Address + Unified Star Rating
+        const posterSafeWidth = 1920;
+        const posterNameRes = fitAndWrapText(
+          ctx,
+          business.name,
+          posterSafeWidth,
+          88,
+          50,
+          "900",
+          "-apple-system, BlinkMacSystemFont, sans-serif",
+          2,
+          1.18
+        );
 
-        // Branch Locality Address
-        if (business.googleAddress) {
-          ctx.fillStyle = activeTheme.subtext;
-          ctx.font = "600 48px -apple-system, BlinkMacSystemFont, sans-serif";
-          ctx.fillText(`📍 ${business.googleAddress}`, 1240, 860);
+        const posterAddrRes = business.googleAddress
+          ? fitAndWrapText(
+              ctx,
+              `📍 ${business.googleAddress}`,
+              posterSafeWidth,
+              44,
+              28,
+              "600",
+              "-apple-system, BlinkMacSystemFont, sans-serif",
+              2,
+              1.22
+            )
+          : null;
+
+        const posterStarSize = 58;
+        const posterRatingTextSize = 44;
+        const posterGapNameAddr = posterAddrRes && posterAddrRes.lines.length > 0 ? 18 : 0;
+        const posterGapToStars = 24;
+        const posterTotalMiddleHeight =
+          posterNameRes.totalHeight +
+          posterGapNameAddr +
+          (posterAddrRes ? posterAddrRes.totalHeight : 0) +
+          posterGapToStars +
+          posterStarSize;
+
+        const posterWindowTop = 590;
+        const posterWindowBottom = 1045;
+        const posterMiddleStartY =
+          posterWindowTop +
+          Math.max(12, Math.round((posterWindowBottom - posterWindowTop - posterTotalMiddleHeight) / 2));
+
+        let posterCursorY = posterMiddleStartY;
+        const posterNameBaseline = posterCursorY + Math.round(posterNameRes.fontSize * 0.85);
+        drawCenteredWrappedLines(
+          ctx,
+          posterNameRes.lines,
+          1240,
+          posterNameBaseline,
+          posterNameRes.lineHeight,
+          activeTheme.text,
+          posterNameRes.fontSize,
+          "900"
+        );
+        posterCursorY += posterNameRes.totalHeight;
+
+        if (posterAddrRes && posterAddrRes.lines.length > 0) {
+          posterCursorY += posterGapNameAddr;
+          const posterAddrBaseline = posterCursorY + Math.round(posterAddrRes.fontSize * 0.85);
+          drawCenteredWrappedLines(
+            ctx,
+            posterAddrRes.lines,
+            1240,
+            posterAddrBaseline,
+            posterAddrRes.lineHeight,
+            activeTheme.subtext,
+            posterAddrRes.fontSize,
+            "600"
+          );
+          posterCursorY += posterAddrRes.totalHeight;
         }
 
-        // Star Rating & Badge
-        ctx.fillStyle = "#fbbf24";
-        ctx.font = "bold 64px sans-serif";
-        ctx.fillText("★★★★★  5.0 on Google Maps", 1240, 960);
+        posterCursorY += posterGapToStars;
+        drawUnifiedStarBadge(ctx, 1240, posterCursorY + Math.round(posterStarSize / 2), {
+          starFontSize: posterStarSize,
+          textFontSize: posterRatingTextSize,
+          ratingText: "5.0 on Google Maps",
+          textColor: activeTheme.text,
+          starColor: "#fbbf24",
+          gap: 24,
+        });
 
         // Giant Center QR Code
         if (qrDataUrl) {
@@ -1196,35 +1879,86 @@ export default function PrintStudioClient({
           ctx.drawImage(qrImg, 650, 1120, 1180, 1180);
         }
 
-        // Callout Title
-        ctx.fillStyle = activeTheme.text;
-        ctx.font = "900 84px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(calloutTitle, 1240, 2520);
+        // Callout Title & Subtitle (Auto-fitted)
+        const posterTitleRes = fitAndWrapText(
+          ctx,
+          calloutTitle,
+          posterSafeWidth,
+          84,
+          52,
+          "900",
+          "-apple-system, BlinkMacSystemFont, sans-serif",
+          2,
+          1.18
+        );
+        const posterSubRes = fitAndWrapText(
+          ctx,
+          calloutSubtitle,
+          posterSafeWidth,
+          52,
+          34,
+          "500",
+          "-apple-system, BlinkMacSystemFont, sans-serif",
+          2,
+          1.22
+        );
 
-        // Subtitle
-        ctx.fillStyle = activeTheme.subtext;
-        ctx.font = "500 52px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(calloutSubtitle, 1240, 2620);
+        let posterBottomY = 2440;
+        const posterTitleBaseline = posterBottomY + Math.round(posterTitleRes.fontSize * 0.85);
+        drawCenteredWrappedLines(
+          ctx,
+          posterTitleRes.lines,
+          1240,
+          posterTitleBaseline,
+          posterTitleRes.lineHeight,
+          activeTheme.text,
+          posterTitleRes.fontSize,
+          "900"
+        );
+        posterBottomY += posterTitleRes.totalHeight + 24;
+
+        const posterSubBaseline = posterBottomY + Math.round(posterSubRes.fontSize * 0.85);
+        drawCenteredWrappedLines(
+          ctx,
+          posterSubRes.lines,
+          1240,
+          posterSubBaseline,
+          posterSubRes.lineHeight,
+          activeTheme.subtext,
+          posterSubRes.fontSize,
+          "500"
+        );
+        posterBottomY += posterSubRes.totalHeight + 48;
+
+        const pillTopY = Math.max(2720, posterBottomY);
 
         // 3-Step Instruction Pill
         ctx.fillStyle = activeTheme.id === "pearl-gold" ? "#f1f5f9" : "rgba(0, 0, 0, 0.4)";
         ctx.beginPath();
-        ctx.roundRect(240, 2720, 2000, 130, 65);
+        ctx.roundRect(240, pillTopY, 2000, 130, 65);
         ctx.fill();
         ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
         ctx.lineWidth = 3;
         ctx.stroke();
 
+        const posterPillText =
+          "① Scan with Phone Camera  •  ② Pick Instant AI Compliments  •  ③ Post in 5 Sec";
+        let posterPillFontSize = 44;
+        ctx.font = `bold ${posterPillFontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        while (ctx.measureText(posterPillText).width > 1860 && posterPillFontSize > 26) {
+          posterPillFontSize -= 1;
+          ctx.font = `bold ${posterPillFontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        }
         ctx.fillStyle = activeTheme.text;
-        ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("① Scan with Phone Camera  •  ② Pick Instant AI Compliments  •  ③ Post in 5 Sec", 1240, 2785);
+        ctx.fillText(posterPillText, 1240, pillTopY + 65);
 
         // Verified Partner Footer
         ctx.fillStyle = activeTheme.accent;
         ctx.font = "bold 46px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
         ctx.fillText("✨ ReviewSmart AI • Verified Google Partner", 1240, 3280);
 
         if (showCropMarks) {
@@ -2179,7 +2913,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
               )}
 
               <h2
-                className="text-base font-black tracking-tight leading-tight max-w-[280px]"
+                className="text-sm font-black tracking-tight leading-snug max-w-[280px] line-clamp-2 break-words"
                 style={{ color: activeTheme.text }}
               >
                 {business.name}
@@ -2187,7 +2921,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
 
               {business.googleAddress && (
                 <p
-                  className="text-[10px] truncate max-w-[260px] mt-0.5 font-medium"
+                  className="text-[9.5px] leading-tight line-clamp-2 break-words max-w-[270px] mt-0.5 font-medium"
                   style={{ color: activeTheme.subtext }}
                 >
                   📍 {business.googleAddress}
@@ -2233,13 +2967,13 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
             {/* Stand Footer */}
             <div className="space-y-0.5 pb-0.5 z-10">
               <h3
-                className="text-xs font-black tracking-tight"
+                className="text-xs font-black tracking-tight line-clamp-2 break-words max-w-[280px]"
                 style={{ color: activeTheme.text }}
               >
                 {calloutTitle}
               </h3>
               <p
-                className="text-[10px] max-w-[260px] font-medium"
+                className="text-[10px] max-w-[260px] font-medium line-clamp-2 break-words"
                 style={{ color: activeTheme.subtext }}
               >
                 {calloutSubtitle}
@@ -2353,7 +3087,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                     )}
 
                     <h2
-                      className="text-xs font-black tracking-tight leading-tight max-w-[240px] truncate"
+                      className="text-[11px] font-black tracking-tight leading-tight max-w-[235px] line-clamp-2 break-words"
                       style={{ color: activeTheme.text }}
                     >
                       {business.name}
@@ -2361,7 +3095,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
 
                     {business.googleAddress && (
                       <p
-                        className="text-[9px] truncate max-w-[220px] font-medium"
+                        className="text-[8.5px] leading-tight line-clamp-2 break-words max-w-[225px] mt-0.5 font-medium"
                         style={{ color: activeTheme.subtext }}
                       >
                         📍 {business.googleAddress}
@@ -2413,7 +3147,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                   {/* Footer */}
                   <div className="space-y-0.5 z-10">
                     <p
-                      className="text-[9px] font-bold tracking-tight"
+                      className="text-[9px] font-bold tracking-tight line-clamp-1 break-words max-w-[235px]"
                       style={{ color: activeTheme.text }}
                     >
                       {calloutTitle}
@@ -2465,7 +3199,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                           Official Business Identity
                         </div>
                         <h3
-                          className="text-xs font-black truncate max-w-[210px]"
+                          className="text-[11px] font-black leading-tight line-clamp-2 break-words max-w-[215px]"
                           style={{ color: activeTheme.text }}
                         >
                           {business.name}
@@ -2508,7 +3242,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
                             ✉️ {visitingEmail}
                           </div>
                         )}
-                        <div className="text-slate-400 truncate">
+                        <div className="text-slate-400 leading-tight line-clamp-2 break-words">
                           📍 {visitingAddress || business.googleAddress || "Kadapa • Bengaluru"}
                         </div>
                       </div>
@@ -2790,7 +3524,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
               )}
 
               <h2
-                className="text-base font-black tracking-tight leading-tight max-w-[280px] truncate"
+                className="text-sm font-black tracking-tight leading-snug max-w-[280px] line-clamp-2 break-words"
                 style={{ color: activeTheme.text }}
               >
                 {business.name}
@@ -2798,7 +3532,7 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
 
               {business.googleAddress && (
                 <p
-                  className="text-[10px] truncate max-w-[260px] mt-0.5 font-medium"
+                  className="text-[9.5px] leading-tight line-clamp-2 break-words max-w-[270px] mt-0.5 font-medium"
                   style={{ color: activeTheme.subtext }}
                 >
                   📍 {business.googleAddress}
@@ -2844,13 +3578,13 @@ All high-resolution 300 DPI files are ready. Print on A4 paper or let us know if
             {/* Poster Footer */}
             <div className="space-y-0.5 pb-0.5 z-10">
               <h3
-                className="text-xs font-black tracking-tight"
+                className="text-xs font-black tracking-tight line-clamp-2 break-words max-w-[280px]"
                 style={{ color: activeTheme.text }}
               >
                 {calloutTitle}
               </h3>
               <p
-                className="text-[10px] max-w-[260px] font-medium"
+                className="text-[10px] max-w-[260px] font-medium line-clamp-2 break-words"
                 style={{ color: activeTheme.subtext }}
               >
                 {calloutSubtitle}
